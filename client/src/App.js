@@ -1,7 +1,11 @@
+import './App.css';
+
 function App() {
   return (
     <div>
-      <h1>Jiating</h1>
+      <h1>
+        JIATING LET'S GOOO
+      </h1>
     </div>
   );
 }
