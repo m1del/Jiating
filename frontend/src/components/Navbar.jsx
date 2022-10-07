@@ -9,14 +9,22 @@ export default function Navbar() {
     <div className="Navbar"> 
         <div className="navLeft">
 
-          <img className="ig-icon" src={instagramSVG}/> {/*Add ALT source for image*/}
+          <a href="https://www.instagram.com/jiating.lion.dragon/">
+            <img className="ig-icon" src={instagramSVG}/> {/*Add ALT source for image*/}
+          </a>
 
         </div>
         <div className="navCenter">
           <ul className="navList">
-            <li className="navListItem">HOME</li>
-            <li className="navListItem">ABOUT</li>
-            <li className="navListItem">CONTACT</li>
+            <a className="navLink" href="/">
+              <li className="navListItem">HOME</li>
+            </a>
+            <a className="navLink" href="/about">
+              <li className="navListItem">ABOUT</li>
+            </a>
+            <a className="navLink" href='/contact'>
+              <li className="navListItem">CONTACT</li>
+            </a>
           </ul>
         </div>
         
