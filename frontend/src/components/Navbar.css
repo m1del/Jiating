@@ -3,5 +3,47 @@
     height: 50px;
     color: white;
     background-color: black;
-    text-align: center;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    display: flex;
+    font-family: 'Poppins', sans-serif;
+}
+.navLeft,.navRight {
+    flex: 3;
+    align-items: center;
+    display: flex;
+    justify-content: center;
+}
+
+.navCenter{
+    flex: 6;
+}
+
+.ig-icon,.search-icon{
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    filter: invert(100%) sepia(0%) saturate(7424%) hue-rotate(174deg) brightness(118%) contrast(116%);
+    cursor: pointer;
+}
+.jiating-logo{
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    margin-right: 20px;
+}
+
+.navList{
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.navListItem{
+    margin-right: 20px;
+    font-size: 16px;
+    font-weight: 200;
+    cursor: pointer;
 }
