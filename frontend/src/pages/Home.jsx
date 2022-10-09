@@ -13,7 +13,7 @@ import "./styles.css"
 function Home() {
   return (
     <div className='Home'>
-      <Parallax pages={4}>
+      <Parallax pages={2}>
 
         <ParallaxLayer
         offset={0}
