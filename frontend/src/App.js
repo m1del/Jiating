@@ -1,10 +1,22 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Home from "./pages/Home";
 import Contact from "./pages/Contact"
 import About from './pages/About'
 import Navbar from "./components/Navbar";
 
 function App() {
+
+  //Parallax
+  const [offsetY,setOffsetY] = useState(0);
+  const handleScroll = () => setOffsetY(window.pageYOffset);
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  
+  //Accessing different pages
   let pageComponent
   switch(window.location.pathname) {
     case "/":
@@ -20,7 +32,9 @@ function App() {
   return(
     <div className="App">
       <Navbar/>
-      {pageComponent}
+      <section className="page-content">
+        {pageComponent}
+      </section>
     </div>
   );
 }
