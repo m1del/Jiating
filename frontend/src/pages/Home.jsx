@@ -13,7 +13,7 @@ import "./styles.css"
 function Home() {
   return (
     <div className='Home'>
-      <Parallax pages={2}>
+      <Parallax pages={3}>
 
         <ParallaxLayer
         offset={0}
@@ -22,6 +22,7 @@ function Home() {
         style={{
           backgroundImage: `url(${lionsG14})`,
           backgroundSize: 'cover',
+          
         }}
         />
 
@@ -78,9 +79,9 @@ function Home() {
               of the United States. Join us as in our expeditions to find the hidden dragon (in your butt).
             </p>
             <div className='row'>
-              <img className='abt-img' src={errbody}/>
-              <img className='abt-img' src={left}/>
-              <img className='abt-img' src={right}/>
+              <img className='abt-img' src={errbody} width="33%" height="100%"/>
+              <img className='abt-img' src={left} width="33%" height="100%"/>
+              <img className='abt-img' src={right} width="33%" height="100%"/>
             </div>
           </div>
         </ParallaxLayer>
