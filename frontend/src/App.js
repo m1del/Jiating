@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import Home from "./pages/Home";
-import Contact from "./pages/Contact"
-import About from './pages/About'
 import Navbar from "./components/Navbar";
+import About from './pages/About';
+import Contact from "./pages/Contact";
+import Home from "./pages/Home";
+import Photoshoots from "./pages/Photoshoots";
 
 function App() {  
   //Accessing different pages
@@ -16,6 +17,9 @@ function App() {
       break
     case "/contact":
       pageComponent = <Contact/>
+      break
+    case "/photoshoots":
+      pageComponent = <Photoshoots/>
       break
   }
   return(

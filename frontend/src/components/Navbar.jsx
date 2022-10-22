@@ -1,8 +1,8 @@
 import React from "react"
-import "./Navbar.css"
 import instagramSVG from '../icons/instagram.svg'
 import searchSVG from '../icons/magnifying-glass-solid.svg'
 import jiatingLogo from '../images/white-black.png'
+import "./Navbar.css"
 
 export default function Navbar() {
   return (
@@ -24,6 +24,9 @@ export default function Navbar() {
             </a>
             <a className="navLink" href='/contact'>
               <li className="navListItem">CONTACT</li>
+            </a>
+            <a className="navLink" href='/photoshoots'>
+              <li className="navListItem">PHOTOSHOOTS</li>
             </a>
           </ul>
         </div>
