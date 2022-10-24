@@ -7,13 +7,13 @@ import "./Navbar.css"
 export default function Navbar() {
   return (
     <div className="Navbar"> 
+
         <div className="navLeft">
-
           <a href="https://www.instagram.com/jiating.lion.dragon/">
-            <img className="ig-icon" src={instagramSVG}/> {/*Add ALT source for image*/}
+            <img className="ig-icon" src={instagramSVG} alt="instagram logo"/>
           </a>
-
         </div>
+
         <div className="navCenter">
           <ul className="navList">
             <a className="navLink" href="/">
@@ -32,8 +32,10 @@ export default function Navbar() {
         </div>
         
         <div className="navRight">
-          <img className="jiating-logo" src={jiatingLogo}/> {/*Add ALT source for image */}
-          <img className="search-icon" src={searchSVG}/> {/*Add ALT source for image*/}
+          <a href="/">
+            <img className="jiating-logo" src={jiatingLogo} alt="jiating icon"/>
+          </a>
+          <img className="search-icon" src={searchSVG} alt="search icon"/>
         </div>
     </div>
   )

@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from "react";
 import Navbar from "./components/Navbar";
 import About from './pages/About';
 import Contact from "./pages/Contact";
@@ -21,7 +20,11 @@ function App() {
     case "/photoshoots":
       pageComponent = <Photoshoots/>
       break
+    default:
+      pageComponent = <Home/>
+      break
   }
+  
   return(
     <div className="App">
       <Navbar/>

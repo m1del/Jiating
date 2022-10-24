@@ -27,11 +27,17 @@
     filter: invert(100%) sepia(0%) saturate(7424%) hue-rotate(174deg) brightness(118%) contrast(116%);
     cursor: pointer;
 }
+.search-icon:hover{
+    opacity: .5;
+}
 .jiating-logo{
     width: 50px;
     height: 50px;
     object-fit: cover;
     margin-right: 20px;
+}
+.jiating-logo:hover{
+    opacity: 0.5;
 }
 
 .navList{
@@ -51,4 +57,13 @@
 .navLink{
     text-decoration: none;
     color: white;
+}
+.navLink:hover{
+    text-decoration: none;
+    color: white;
+    opacity: 0.5;
+}
+.ig-icon:hover{
+    color: white;
+    opacity: 0.5;
 }

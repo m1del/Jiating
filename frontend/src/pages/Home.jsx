@@ -1,13 +1,13 @@
+import { Parallax, ParallaxLayer } from '@react-spring/parallax'
 import React from 'react'
-import lionsG14 from '../images/background1.jpg'
-import liongif1 from '../images/lion-gif1.gif'
-import liongif2 from '../images/lion-gif2.gif'
-import errbody from '../images/errbody.jpg'
+import logo from '..//images/sketchy.png'
 import left from '../images/ab1.jpg'
 import right from '../images/ab2.jpg'
+import lionsG14 from '../images/background1.jpg'
+import errbody from '../images/errbody.jpg'
 import bg2 from '../images/lamp-bg.jpg'
-import logo from '..//images/sketchy.png'
-import {Parallax, ParallaxLayer} from '@react-spring/parallax'
+import liongif1 from '../images/lion-gif1.gif'
+import liongif2 from '../images/lion-gif2.gif'
 import "./styles.css"
 
 function Home() {
@@ -49,14 +49,14 @@ function Home() {
         offset={.95}
         speed={.5}
         factor={1}>
-          <img className='gif1' src={liongif1}/>
+          <img className='gif1' src={liongif1} alt="lion dancer gif"/>
         </ParallaxLayer>
 
         <ParallaxLayer 
         offset={.95}
         speed={.5}
         factor={1}>
-          <img className='gif2' src={liongif2}/>
+          <img className='gif2' src={liongif2} alt="lion dancer gif"/>
         </ParallaxLayer>
 
         <ParallaxLayer
@@ -79,9 +79,9 @@ function Home() {
               of the United States. Join us as in our expeditions to find the hidden dragon (in your butt).
             </p>
             <div className='row'>
-              <img className='abt-img' src={errbody} width="33%" height="100%"/>
-              <img className='abt-img' src={left} width="33%" height="100%"/>
-              <img className='abt-img' src={right} width="33%" height="100%"/>
+              <img className='abt-img' src={errbody} alt="jiating group pic" width="33%" height="100%"/>
+              <img className='abt-img' src={left} alt="jiating group pic" width="33%" height="100%"/>
+              <img className='abt-img' src={right} alt="jiating group pic"width="33%" height="100%"/>
             </div>
           </div>
         </ParallaxLayer>
