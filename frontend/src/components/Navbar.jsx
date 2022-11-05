@@ -1,42 +1,62 @@
-import React from "react"
-import instagramSVG from '../icons/instagram.svg'
-import searchSVG from '../icons/magnifying-glass-solid.svg'
-import jiatingLogo from '../images/white-black.png'
-import "./Navbar.css"
+import { useRef } from 'react';
+import { FaBars, FaTimes } from "react-icons/fa";
+import { Link } from 'react-scroll';
+import jiatingLogo from '../assets/images/white-black.png';
+import "./Navbar.scss";
 
-export default function Navbar() {
+function Navbar() {
+
+  const navRef = useRef();
+
+  const showNavbar = () => {
+		navRef.current.classList.toggle('responsive_nav');
+  }
+
   return (
-    <div className="Navbar"> 
+    <div id='parent'>
+    <header>
+      <div>
+        <a href='/'>
+        <img className='navLogo' src={jiatingLogo} alt="Navbar Logo" />
+        </a>
+      </div>
+      
+      <nav ref={navRef}>
+      <ul id='nav' className="navList">
+          <li className='navListItem'>
+            <Link onClick={showNavbar} spy={true} smooth={true} offset={-60} duration={500} className='navLink' to='home'>
+              HOME
+            </Link>
+          </li>
+          <li className='navListItem'>
+            <Link onClick={showNavbar} spy={true} smooth={true} offset={-60} duration={500} className='navLink' to='about'>
+              ABOUT
+            </Link>
+          </li>
+          <li className='navListItem'>
+            <Link onClick={showNavbar} spy={true} smooth={true} offset={-60} duration={500} className='navLink' to='skills'>
+              PHOTOSHOOTS
+            </Link>
+          </li>
+          <li className='navListItem'>
+            <Link onClick={showNavbar} spy={true} smooth={true} offset={-60} duration={500} className='navLink' to='contact'>
+              CONTACT
+            </Link>
+          </li>
+          <li>
+            <button onClick={showNavbar} className='nav-btn nav-close-btn'>
+              <FaTimes size={30}/>
+            </button>
+          </li>
+      </ul>
+      </nav>
 
-        <div className="navLeft">
-          <a href="https://www.instagram.com/jiating.lion.dragon/">
-            <img className="ig-icon" src={instagramSVG} alt="instagram logo"/>
-          </a>
-        </div>
-
-        <div className="navCenter">
-          <ul className="navList">
-            <a className="navLink" href="/">
-              <li className="navListItem">HOME</li>
-            </a>
-            <a className="navLink" href="/about">
-              <li className="navListItem">ABOUT</li>
-            </a>
-            <a className="navLink" href='/contact'>
-              <li className="navListItem">CONTACT</li>
-            </a>
-            <a className="navLink" href='/photoshoots'>
-              <li className="navListItem">PHOTOSHOOTS</li>
-            </a>
-          </ul>
-        </div>
-        
-        <div className="navRight">
-          <a href="/">
-            <img className="jiating-logo" src={jiatingLogo} alt="jiating icon"/>
-          </a>
-          <img className="search-icon" src={searchSVG} alt="search icon"/>
-        </div>
+      <button className='nav-btn' onClick={showNavbar}>
+        <FaBars size={30}/>
+      </button>
+    </header>
     </div>
   )
 }
+
+export default Navbar
