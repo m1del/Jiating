@@ -1,13 +1,5 @@
 import { Parallax, ParallaxLayer } from '@react-spring/parallax'
 import React from 'react'
-import left from '../../assets/images/ab1.jpg'
-import right from '../../assets/images/ab2.jpg'
-import lionsG14 from '../../assets/images/background1.jpg'
-import errbody from '../../assets/images/errbody.jpg'
-import bg2 from '../../assets/images/lamp-bg.jpg'
-import liongif1 from '../../assets/images/lion-gif1.gif'
-import liongif2 from '../../assets/images/lion-gif2.gif'
-import logo from '../../assets/images/sketchy.png'
 import './index.scss'
 
 function Home() {
