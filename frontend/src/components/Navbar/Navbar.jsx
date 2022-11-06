@@ -34,7 +34,7 @@ function Navbar() {
             </Link>
           </li>
           <li className='navListItem'>
-            <Link onClick={showNavbar} spy={true} smooth={true} offset={-60} duration={500} className='navLink' to='skills'>
+            <Link onClick={showNavbar} spy={true} smooth={true} offset={-60} duration={500} className='navLink' to='contact'>
               CONTACT
             </Link>
           </li>

@@ -18,6 +18,10 @@ function App() {
       <section id='about'>
         <About/>
       </section>
+
+      <section id='contact'>
+        <Contact/>
+      </section>
       
     </div>
   );
