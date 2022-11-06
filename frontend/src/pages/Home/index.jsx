@@ -8,7 +8,7 @@ import bg2 from '../../assets/images/lamp-bg.jpg'
 import liongif1 from '../../assets/images/lion-gif1.gif'
 import liongif2 from '../../assets/images/lion-gif2.gif'
 import logo from '../../assets/images/sketchy.png'
-import './Home.scss'
+import './index.scss'
 
 function Home() {
   return (
