@@ -1,0 +1,23 @@
+@font-face {
+    font-family: 'gong-xi';
+    src: local('gong-xi'), url(./assets/fonts/gong-xi-regular.otf) format('opentype');
+}
+
+:root {
+    --main-bg: #212227;
+    --primary: #B5E6F6;
+}
+
+html {
+
+}
+
+body {
+    background-color: var(--main-bg)
+}
+
+h1 {
+    font-family: 'gong-xi';
+    font-size: 8rem;
+    color: var(--primary);
+}
