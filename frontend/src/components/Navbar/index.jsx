@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { FaBars, FaTimes } from "react-icons/fa";
 import { Link } from 'react-scroll';
 import jiatingLogo from '../../assets/images/white-black.png';
-import "./Navbar.scss";
+import "./index.scss";
 
 function Navbar() {
 
