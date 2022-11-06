@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { FaBars, FaTimes } from "react-icons/fa";
 import { Link } from 'react-scroll';
-import jiatingLogo from '../../assets/images/white-black.png';
+import navLogo from '../../assets/images/logo-gray.png';
 import "./index.scss";
 
 function Navbar() {
@@ -17,7 +17,7 @@ function Navbar() {
     <header>
       <div>
         <a href='/'>
-        <img className='navLogo' src={jiatingLogo} alt="Navbar Logo" />
+        <img className='navLogo' src={navLogo} alt="Navbar Logo" />
         </a>
       </div>
       
