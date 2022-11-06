@@ -1,19 +1,23 @@
 import { Parallax, ParallaxLayer } from '@react-spring/parallax'
 import React from 'react'
-import logo from '..//images/sketchy.png'
-import left from '../images/ab1.jpg'
-import right from '../images/ab2.jpg'
-import lionsG14 from '../images/background1.jpg'
-import errbody from '../images/errbody.jpg'
-import bg2 from '../images/lamp-bg.jpg'
-import liongif1 from '../images/lion-gif1.gif'
-import liongif2 from '../images/lion-gif2.gif'
-import "./styles.css"
+import left from '../../assets/images/ab1.jpg'
+import right from '../../assets/images/ab2.jpg'
+import lionsG14 from '../../assets/images/background1.jpg'
+import errbody from '../../assets/images/errbody.jpg'
+import bg2 from '../../assets/images/lamp-bg.jpg'
+import liongif1 from '../../assets/images/lion-gif1.gif'
+import liongif2 from '../../assets/images/lion-gif2.gif'
+import logo from '../../assets/images/sketchy.png'
+import './Home.scss'
 
 function Home() {
   return (
-    <div className='Home'>
-      <Parallax pages={3}>
+    <div id='home-container'>
+
+      <h1>
+        HELLO FROM HOME
+      </h1>
+      {/* <Parallax pages={3}>
 
         <ParallaxLayer
         offset={0}
@@ -88,7 +92,7 @@ function Home() {
 
         
 
-      </Parallax>
+      </Parallax> */}
     </div>
   )
 }

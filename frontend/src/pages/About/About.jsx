@@ -1,8 +1,13 @@
 import React from 'react'
+import './About.scss'
 
 function About() {
   return (
-    <div>About</div>
+    <div id='about-container'>
+      <h1>
+        HELLO FROM ABOUT
+      </h1>
+    </div>
   )
 }
 

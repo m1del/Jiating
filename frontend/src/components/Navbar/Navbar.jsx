@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { FaBars, FaTimes } from "react-icons/fa";
 import { Link } from 'react-scroll';
-import jiatingLogo from '../assets/images/white-black.png';
+import jiatingLogo from '../../assets/images/white-black.png';
 import "./Navbar.scss";
 
 function Navbar() {
@@ -35,12 +35,12 @@ function Navbar() {
           </li>
           <li className='navListItem'>
             <Link onClick={showNavbar} spy={true} smooth={true} offset={-60} duration={500} className='navLink' to='skills'>
-              PHOTOSHOOTS
+              CONTACT
             </Link>
           </li>
           <li className='navListItem'>
             <Link onClick={showNavbar} spy={true} smooth={true} offset={-60} duration={500} className='navLink' to='contact'>
-              CONTACT
+              PHOTOSHOOTS
             </Link>
           </li>
           <li>

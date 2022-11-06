@@ -1,5 +1,3 @@
-
-
 header {
     display: flex;
     position: fixed;
@@ -7,7 +5,7 @@ header {
     left: 0;
     right: 0;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     height: 5rem;
     padding: 0 2rem;
     -webkit-backdrop-filter: blur(8px);
@@ -17,11 +15,9 @@ header {
 .navLogo {
     width: 5rem;
     height: auto;
-    position: absolute;
-    top: 0;
-    left: 0;
     box-sizing: border-box;
     margin-left: 4rem;
+    margin-right: 4rem;
     background: none;
 }
 
