@@ -4,16 +4,22 @@
 }
 
 :root {
-    --main-bg: #212227;
-    --primary: #B5E6F6;
+    --main-bg: #000000;
+    --primary: #FCFCFC;
+    --secondary: #9CA0B5;
+    --accent: #0DB3B9;
+    --accent-dark: #01172F; //oxford blue (low contrast)
+    --accent-striking: #FC6471; //fiery rose
+
 }
 
 html {
-
+    color: var(--primary);
+    font-family: 'Montserrat', sans-serif;
 }
 
 body {
-    background-color: var(--main-bg)
+    background-color: var(--main-bg);
 }
 
 h1 {
