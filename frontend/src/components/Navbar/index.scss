@@ -1,6 +1,7 @@
 header {
     display: flex;
     position: fixed;
+    z-index: 99;
     color: var(--secondary);
     top: 0;
     left: 0;
