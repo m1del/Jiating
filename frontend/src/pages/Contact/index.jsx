@@ -1,12 +1,23 @@
-import React from 'react'
-import './index.scss'
+import React from 'react';
+import { FaFacebook, FaInstagram } from "react-icons/fa";
+import './index.scss';
 
 function Contact() {
   return (
     <div id='contact-container'>
-      <h1>
-        HELLO FROM CONTACT
-      </h1>
+
+      <div id='text-container'>
+        <h1>
+          CONTACT
+        </h1>
+        <h4>
+          Connect with us on our social medias!
+        </h4>
+        <div id='media-icons'>
+          <FaFacebook/>
+          <FaInstagram/>
+        </div>
+      </div>
     </div>
   )
 }
