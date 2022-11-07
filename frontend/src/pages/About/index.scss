@@ -1,6 +1,15 @@
 #about-container {
     min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: block;
+
+    #text-container {
+        padding-left: 5rem;
+        padding-top: 8rem;
+        .mission-statement {
+            max-width: 60rem;
+            font-size: 2rem;
+            line-height: 1.6;
+            text-indent: 2rem;
+        }
+    }
 }
