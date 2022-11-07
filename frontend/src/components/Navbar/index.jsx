@@ -12,6 +12,10 @@ function Navbar() {
 		navRef.current.classList.toggle('responsive_nav');
   }
 
+  const noPage = () => {
+    alert('Sorry, this page is still under development!');
+  }
+
   return (
     <div id='parent'>
     <header>
@@ -24,22 +28,22 @@ function Navbar() {
       <nav ref={navRef}>
       <ul id='nav' className="navList">
           <li className='navListItem'>
-            <Link onClick={showNavbar} spy={true} smooth={true} offset={-60} duration={500} className='navLink' to='home'>
+            <Link onClick={showNavbar} spy={true} smooth={true} offset={-80} duration={500} className='navLink' to='home'>
               HOME
             </Link>
           </li>
           <li className='navListItem'>
-            <Link onClick={showNavbar} spy={true} smooth={true} offset={-60} duration={500} className='navLink' to='about'>
+            <Link onClick={showNavbar} spy={true} smooth={true} offset={-80} duration={500} className='navLink' to='about'>
               ABOUT
             </Link>
           </li>
           <li className='navListItem'>
-            <Link onClick={showNavbar} spy={true} smooth={true} offset={-60} duration={500} className='navLink' to='contact'>
+            <Link onClick={showNavbar} spy={true} smooth={true} offset={-80} duration={500} className='navLink' to='contact'>
               CONTACT
             </Link>
           </li>
           <li className='navListItem'>
-            <Link onClick={showNavbar} spy={true} smooth={true} offset={-60} duration={500} className='navLink' to='contact'>
+            <Link onClick={noPage} spy={true} smooth={true} offset={-80} duration={500} className='navLink'>
               PHOTOSHOOTS
             </Link>
           </li>
