@@ -19,6 +19,11 @@ html {
 
 body {
     background-color: var(--main-bg);
+    background-image: url("./assets/images/china-landscape.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
 }
 
 h1 {
