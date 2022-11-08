@@ -3,6 +3,12 @@
     src: local('gong-xi'), url(./assets/fonts/gong-xi-regular.otf) format('opentype');
 }
 
+@import "tailwindcss/base";
+
+@import "tailwindcss/components";
+
+@import "tailwindcss/utilities";
+
 :root {
     --main-bg: #000000;
     --primary: #FCFCFC;
