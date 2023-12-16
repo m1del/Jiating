@@ -6,6 +6,9 @@ WORKDIR /usr/src/app
 # Package for hot reloading go file
 RUN go install github.com/cosmtrek/air@latest
 
+# Add to path
+ENV PATH="${PATH}:/root/go/bin"
+
 # Copy stuff from home directory to docker container
 COPY . .
 
