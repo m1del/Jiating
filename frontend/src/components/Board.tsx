@@ -1,11 +1,11 @@
 import React from 'react'
 
-function Login() {
+function Board() {
   return (
     <div>
-      login stub
+      
     </div>
   )
 }
 
-export default Login
+export default Board
