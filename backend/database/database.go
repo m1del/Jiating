@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/driver/postgres"
-	"github.com/m1del/Jiating/models"
+	"github.com/m1del/Jiating/backend/models"
 )
 
 type Dbinstance struct {

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/m1del/Jiating/handlers"
+	"github.com/m1del/Jiating/backend/handlers"
 	"github.com/gofiber/fiber/v2"
 )
 

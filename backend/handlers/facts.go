@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/m1del/Jiating/models"
-	"github.com/m1del/Jiating/database"
+	"github.com/m1del/Jiating/backend/models"
+	"github.com/m1del/Jiating/backend/database"
 )
 
 func ListFacts(c *fiber.Ctx) error {
