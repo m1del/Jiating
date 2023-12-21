@@ -14,14 +14,14 @@ type Fact struct {
 
 // Admin represents a Jaiting admin. Jiating email is perma linked to the admin, and users are added based on board membership.
 type Admin struct {
-	gorm.Model         // adds fields ID, CreatedAt, UpdatedAt, DeletedAt
-	AdminID    uint    `gorm:"primaryKey;autoIncrement" json:"admin_id"`   // primary key
-	Name       string  `gorm:"type:varchar(100)" json:"name"`              // name of the admin
-	Email      string  `gorm:"type:varchar(100);uniqueIndex" json:"email"` // personal email
-	Password   string  `gorm:"type:varchar(100)" json:"-"`                 // password to login to admin dashboard
-	Position   string  `gorm:"type:varchar(100)" json:"position"`          // position in the organization
-	Status     string  `gorm:"type:varchar(10)" json:"status"`             // active, inactive, hiatus
-	Events     []Event `json:"-"`                                          // events associated with the admin
+	gorm.Model           // adds fields ID, CreatedAt, UpdatedAt, DeletedAt
+	AdminID      uint    `gorm:"primaryKey;autoIncrement" json:"admin_id"`   // primary key
+	Name         string  `gorm:"type:varchar(100)" json:"name"`              // name of the admin
+	Email        string  `gorm:"type:varchar(100);uniqueIndex" json:"email"` // personal email
+	PasswordHash string  `gorm:"not null"`                                   // password to login to admin dashboard
+	Position     string  `gorm:"type:varchar(100)" json:"position"`          // position in the organization
+	Status       string  `gorm:"type:varchar(10)" json:"status"`             // active, inactive, hiatus
+	Events       []Event `json:"-"`                                          // events associated with the admin
 }
 
 // Event describes a Jiating event. Events are created by admins and are displayed on the website.
