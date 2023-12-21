@@ -43,3 +43,13 @@ type Image struct {
 	EventID  uint   `gorm:"not null" json:"event_id"`                 // foreign key to the event
 	ImageURL string `gorm:"type:varchar(255)" json:"image_url"`       // url of the image (s3)
 }
+
+// LoginRequest represents the structure of a login request.
+type LoginRequest struct {
+	Email    string `json:"email"`    // Email is the user's email address.
+	Password string `json:"password"` // Password is the user's password.
+}
+
+type LoginResponse struct {
+	Token string `json:"token"`
+}
