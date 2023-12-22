@@ -124,16 +124,20 @@ func (s *Server) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	// next, clear application session data
 	session, err := auth.Store.Get(r, "session-name")
 	if err == nil {
+		fmt.Println("clearing session data")
 		// delete session data
 		session.Values["userID"] = nil
 		session.Values["name"] = nil
 		session.Values["email"] = nil
+		session.Values["avatar_url"] = nil
+
+		session.Options.MaxAge = -1
 		// save changes
 		session.Save(r, w)
 	}
 
 	// redirect to homepage
-	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+	http.Redirect(w, r, "http://localhost:5173", http.StatusTemporaryRedirect)
 }
 
 // initiates the auth process
