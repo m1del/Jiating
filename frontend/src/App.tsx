@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { Footer, Navbar } from './components';
 import { AuthProvider } from './context/AuthContext';
+import AdminDashboard from './features/admin/AdminDashboard';
+import ProtectedRoute from './features/authentication/components/ProtectedRoute';
 import { Contact, Events, Home } from './pages';
 import { styles } from './styles';
 
@@ -27,6 +29,13 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/events" element={<Events />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path='/admin/dashboard'
+              element={
+                <ProtectedRoute>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
           <Footer/>
         </div>
