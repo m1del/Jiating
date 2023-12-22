@@ -1,15 +1,22 @@
-import React, { ReactNode, createContext, useContext, useState } from 'react';
+// context/AuthContext.tsx
+import React, { createContext, useContext, useState } from 'react';
 
+type UserType = {
+  name: string;
+  email: string;
+};
+
+// define a type for the context
 type AuthContextType = {
   isAuthenticated: boolean;
-  user: any; // TODO: define user type
-  setUser: (user: any) => void;
+  user: UserType | null;
+  setUser: (user: UserType | null) => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState(null);
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState<UserType | null>(null);
 
   return (
     <AuthContext.Provider value={{ isAuthenticated: !!user, user, setUser }}>
@@ -21,7 +28,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within a AuthProvider');
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 };
