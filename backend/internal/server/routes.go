@@ -33,6 +33,9 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// mount admin routes under /admin
 	r.Mount("/admin", adminRouter)
 
+	// route to get session info
+	r.Get("/api/session-info", s.sessionInfoHandler)
+
 	return r
 }
 
