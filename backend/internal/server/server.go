@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"backend/internal/database"
+
 	_ "github.com/joho/godotenv/autoload"
 )
 
@@ -23,7 +24,7 @@ func NewServer() *http.Server {
 		db:   database.New(),
 	}
 
-	// Declare Server config
+	// declare Server config
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", NewServer.port),
 		Handler:      NewServer.RegisterRoutes(),
