@@ -98,11 +98,21 @@ func (s *Server) getAuthCallbackHandler(w http.ResponseWriter, r *http.Request) 
 
 // handle user logout
 func (s *Server) logoutHandler(w http.ResponseWriter, r *http.Request) {
+	// clearing OAuth data
 	provider := chi.URLParam(r, "provider")
-
-	r = r.WithContext(context.WithValue(context.Background(), "provider", provider))
-
+	r = r.WithContext(context.WithValue(r.Context(), "provider", provider))
 	gothic.Logout(w, r)
+
+	// next, clear application session data
+	session, err := auth.Store.Get(r, "session-name")
+	if err == nil {
+		// delete session data
+		session.Values["userID"] = nil
+		session.Values["name"] = nil
+		session.Values["email"] = nil
+		// save changes
+		session.Save(r, w)
+	}
 
 	// redirect to homepage
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
