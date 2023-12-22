@@ -1,5 +1,6 @@
+import bwLogo from "./bw-logo.png";
 import logo from "./logo.png";
 import menu from "./menu-bars.svg";
+import teamLogoBW from './team-bw-logo.png';
 import close from "./xmark-solid.svg";
-import bwLogo from "./bw-logo.png";
-export { bwLogo, close, logo, menu };
+export { bwLogo, close, logo, menu, teamLogoBW };
