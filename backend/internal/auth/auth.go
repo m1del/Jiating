@@ -18,6 +18,8 @@ const (
 	IsProd = false
 )
 
+var Store *sessions.CookieStore
+
 func Init() {
 	err := godotenv.Load()
 	if err != nil {
@@ -31,10 +33,13 @@ func Init() {
 	store.MaxAge(MaxAge)
 
 	store.Options.Path = "/"
-	store.Options.HttpOnly = true
+	store.Options.HttpOnly = true // HttpOnly should always be enabled
 	store.Options.Secure = IsProd
 
 	gothic.Store = store
+
+	// assign store to export
+	Store = store
 
 	goth.UseProviders(
 		google.New(googleClientID, googleClientSecret, "http://localhost:3000/auth/google/callback"),
@@ -43,12 +48,13 @@ func Init() {
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if _, err := gothic.CompleteUserAuth(w, r); err != nil {
-			// user is not authenticated, redirect to login page
+		session, err := Store.Get(r, "session-name")
+		if err != nil || session.Values["userID"] == nil {
+			// User is not logged in, redirect to login page
 			http.Redirect(w, r, "/auth/google", http.StatusSeeOther)
 			return
 		}
-		// user is authenticated; proceed with the request
+		// User is authenticated; proceed with the request
 		next.ServeHTTP(w, r)
 	})
 }
