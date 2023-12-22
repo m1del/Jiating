@@ -1,26 +1,16 @@
 version: '3.8'
 
 services:
-  web:
-    build: .
-    env_file:
-      - .env
-    ports: 
-      - 3000:3000
-    volumes:
-      - .:/usr/src/app
-    command: air cmd/main.go -b 0.0.0.0
-  
-  db:
-    image: postgres:alpine
+  psql:
+    image: postgres:latest
     environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_NAME}
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - 5432:5432
+      - "${DB_PORT}:5432"
     volumes:
-      - postgres-db:/var/lib/postgresql/data
+      - psql_volume:/var/lib/postgresql/data
 
 volumes:
-  postgres-db:
+  psql_volume:
