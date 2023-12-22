@@ -6,22 +6,39 @@ const AdminDashboard = () => {
   const { user, setUser, isAuthenticated } = useAuth();
 
   useEffect(() => {
-    // Example: Fetch user session info from backend if not already authenticated
-    if (!isAuthenticated) {
-      fetch('/api/session-info')
-        .then(response => response.json())
-        .then(data => {
-          if (data.user) {
-            setUser(data.user);
-          }
+    fetch('/api/session-info')
+        .then(res => {
+            if (res.ok) {
+                return res.json();
+            } else {
+                throw new Error('Not Authenticated');
+            }
         })
-        .catch(error => console.error('Failed to fetch user session:', error));
+        .then(data => {
+            if (data.authenticated) {
+                setUser({
+                    userID: data.userID,
+                    name: data.name,
+                    email: data.email,
+                })
+            }
+        })
+        .catch(error => {
+            console.log("Authentication error: ", error);
+        })
+  }, [setUser]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+        // redirect to login page if not authenticated
+      window.location.href = '/auth/google';
     }
-  }, [isAuthenticated, setUser]);
+  }, [isAuthenticated]);
 
   return (
     <div>
-      admin dash
+        <h1>Admin Dashboard</h1>
+        {user && <p>Welcome, {user.name}</p>}
     </div>
   );
 };
