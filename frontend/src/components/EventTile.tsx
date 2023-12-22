@@ -44,7 +44,7 @@ function EventTile({ size, gridPos }) {
             </div>
           </div>
         </div>
-        <div className="arrow bottom-5">
+        <div className="arrow bottom-5 group-hover:hidden">
           <span></span>
           <span></span>
           <span></span>
