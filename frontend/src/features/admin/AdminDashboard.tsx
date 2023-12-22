@@ -3,45 +3,42 @@ import React, { useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 
 const AdminDashboard = () => {
-  const { user, setUser, isAuthenticated } = useAuth();
+    console.log('AdminDashboard');
+    const { setAuthUser, setIsLoggedin } = useAuth();
 
-  useEffect(() => {
-    fetch('http://localhost:3000/api/session-info', {
-        credentials: 'include', // include cookies
-    })
-        .then(res => {
+    useEffect(() => {
+        fetch('http://localhost:3000/api/session-info', { credentials: 'include' })
+          .then(res => {
             if (res.ok) {
-                return res.json();
+              return res.json();
             } else {
-                throw new Error('Not Authenticated');
+              throw new Error('Not Authenticated');
             }
-        })
-        .then(data => {
+          })
+          .then(data => {
             if (data.authenticated) {
-                setUser({
-                    name: data.name,
-                    email: data.email,
-                })
+              setAuthUser({ email: data.email, name: data.name });
+              setIsLoggedin(true);
+            } else {
+              setIsLoggedin(false);
+              window.location.href = 'http://localhost:3000/auth/google';
             }
-        })
-        .catch(error => {
+          })
+          .catch(error => {
             console.log("Authentication error: ", error);
-        })
-  }, [setUser]);
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-        // redirect to login page if not authenticated
-      window.location.href = '/auth/google';
-    }
-  }, [isAuthenticated]);
-
-  return (
-    <div>
-        <h1>Admin Dashboard</h1>
-        {user && <p>Welcome, {user.name}</p>}
-    </div>
-  );
+            setIsLoggedin(false);
+            window.location.href = 'http://localhost:3000/auth/google';
+          });
+    }, [setAuthUser, setIsLoggedin]);
+      
+      
+      
+  
+    return (
+        <div>
+            <h1>Admin Dashboard</h1>
+        </div>
+    );
 };
 
 export default AdminDashboard;
