@@ -35,7 +35,7 @@ function Navbar({ isSticky }) {
 
   return (
     <nav
-      className={`${styles.paddingX} sitems-center ${
+      className={`${styles.paddingX} items-center ${
         isSticky ? 'bg-black-rgba fixed' : 'relative bg-black'
       } top-0 z-20
     flex h-16 w-full py-5 backdrop-blur-sm`}
