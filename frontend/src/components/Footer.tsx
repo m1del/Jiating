@@ -23,8 +23,6 @@ const Footer = () => (
         </div>
       </div>
 
-      <GoogleLoginButton/>
-
       <div className="social-media flex">
         <a href="https://www.tiktok.com/@jiatingliondragon" className="mr-2" target="_blank" rel="noopener noreferrer">
           <FaTiktok className="text-white text-2xl"/>
