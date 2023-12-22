@@ -1,8 +1,8 @@
+import { useEffect, useRef, useState } from 'react';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
-import Navbar from './components/Navbar';
+import { Footer, Navbar } from './components';
 import { Contact, Events, Home } from './pages';
 import { styles } from './styles';
-import { useEffect, useState, useRef } from 'react';
 
 function App() {
   const [intersecting, setIntersecting] = useState(true);
@@ -26,6 +26,7 @@ function App() {
           <Route path="/events" element={<Events />} />
           <Route path="/contact" element={<Contact />} />
         </Routes>
+        <Footer/>
       </div>
     </Router>
   );
