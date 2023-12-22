@@ -6,7 +6,7 @@ const AdminDashboard = () => {
   const { user, setUser, isAuthenticated } = useAuth();
 
   useEffect(() => {
-    fetch('/api/session-info', {
+    fetch('http://localhost:3000/api/session-info', {
         credentials: 'include', // include cookies
     })
         .then(res => {

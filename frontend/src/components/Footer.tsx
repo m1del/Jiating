@@ -1,6 +1,7 @@
 import { FaDiscord, FaFacebookF, FaInstagram, FaTiktok, FaYoutube } from "react-icons/fa";
 import { MdOutlineEmail, MdOutlineLocationOn } from "react-icons/md";
 import { teamLogoBW } from '../assets';
+import GoogleLoginButton from "../features/authentication/components/GoogleLoginButton";
 import { styles } from '../styles';
 
 const Footer = () => (
@@ -21,6 +22,8 @@ const Footer = () => (
           <span>University of Florida, Gainesville, FL</span>
         </div>
       </div>
+
+      <GoogleLoginButton/>
 
       <div className="social-media flex">
         <a href="https://www.tiktok.com/@jiatingliondragon" className="mr-2" target="_blank" rel="noopener noreferrer">
