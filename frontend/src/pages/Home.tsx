@@ -1,7 +1,8 @@
 import React from 'react';
 import FloatBar from '../components/FloatBar';
-import HomeHeading from '../components/HomeHeading';
 import Hero from '../components/Hero';
+import HomeHeading from '../components/HomeHeading';
+import { GoogleLoginButton } from '../features/authentication';
 
 function Home() {
   return (
@@ -9,6 +10,9 @@ function Home() {
       <div className="flex flex-col items-center">
         <HomeHeading />
         <FloatBar />
+
+        <GoogleLoginButton className='m-8'/>
+
         <Hero />
       </div>
     </div>

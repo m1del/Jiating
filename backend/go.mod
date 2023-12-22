@@ -8,6 +8,7 @@ require (
 	github.com/jackc/pgx/v5 v5.5.1
 	github.com/joho/godotenv v1.5.1
 	github.com/markbates/goth v1.78.0
+	github.com/rs/cors v1.10.1
 )
 
 require (

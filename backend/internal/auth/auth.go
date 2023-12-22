@@ -42,8 +42,10 @@ func Init() {
 	Store = store
 
 	goth.UseProviders(
-		google.New(googleClientID, googleClientSecret, "http://localhost:3000/auth/google/callback"),
+		google.New(googleClientID, googleClientSecret, "http://localhost:3000/auth/google/callback",
+			"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"),
 	)
+
 }
 
 func AuthMiddleware(next http.Handler) http.Handler {

@@ -11,9 +11,18 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/markbates/goth/gothic"
+	"github.com/rs/cors"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
+	// enable CORS
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:5173"}, // react dev server
+		AllowCredentials: true,
+		AllowedHeaders:   []string{"*"},
+	})
+
+	// initalize chi router
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
@@ -33,7 +42,13 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// mount admin routes under /admin
 	r.Mount("/admin", adminRouter)
 
-	return r
+	// route to get session info
+	r.Get("/api/session-info", s.sessionInfoHandler)
+
+	// apply cors middleware to all routes
+	corsHandler := c.Handler(r)
+
+	return corsHandler
 }
 
 func (s *Server) HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
@@ -77,10 +92,16 @@ func (s *Server) getAuthCallbackHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	fmt.Println("user id: ", user.UserID)
+	fmt.Println("email: ", user.Email)
+	fmt.Println("name: ", user.Name)
+	fmt.Println("avatar url: ", user.AvatarURL)
+	fmt.Println("first name: ", user.FirstName)
 	// store user data in session
 	session.Values["userID"] = user.UserID
 	session.Values["email"] = user.Email
 	session.Values["name"] = user.Name
+	session.Values["avatar_url"] = user.AvatarURL
 
 	// save session
 	if err := session.Save(r, w); err != nil {
@@ -95,14 +116,28 @@ func (s *Server) getAuthCallbackHandler(w http.ResponseWriter, r *http.Request) 
 
 // handle user logout
 func (s *Server) logoutHandler(w http.ResponseWriter, r *http.Request) {
+	// clearing OAuth data
 	provider := chi.URLParam(r, "provider")
-
-	r = r.WithContext(context.WithValue(context.Background(), "provider", provider))
-
+	r = r.WithContext(context.WithValue(r.Context(), "provider", provider))
 	gothic.Logout(w, r)
 
+	// next, clear application session data
+	session, err := auth.Store.Get(r, "session-name")
+	if err == nil {
+		fmt.Println("clearing session data")
+		// delete session data
+		session.Values["userID"] = nil
+		session.Values["name"] = nil
+		session.Values["email"] = nil
+		session.Values["avatar_url"] = nil
+
+		session.Options.MaxAge = -1
+		// save changes
+		session.Save(r, w)
+	}
+
 	// redirect to homepage
-	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+	http.Redirect(w, r, "http://localhost:5173", http.StatusTemporaryRedirect)
 }
 
 // initiates the auth process
@@ -133,4 +168,26 @@ func (s *Server) adminDashboardHandler(w http.ResponseWriter, r *http.Request) {
 
 	// for a simple response for development purposes
 	fmt.Fprintf(w, "Welcome to the Admin Dashboard")
+}
+
+func (s *Server) sessionInfoHandler(w http.ResponseWriter, r *http.Request) {
+	// check if user is authenticated
+	session, err := auth.Store.Get(r, "session-name")
+	fmt.Printf("Session values: %v\n", session.Values)
+	if err != nil || session.Values["userID"] == nil {
+		// user is not authenticated
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]interface{}{"authenticated": false})
+		return
+	}
+
+	// respond with user info
+	userInfo := map[string]interface{}{
+		"authenticated": true,
+		"userID":        session.Values["userID"],
+		"name":          session.Values["name"],
+		"email":         session.Values["email"],
+		"avatar_url":    session.Values["avatar_url"],
+	}
+	json.NewEncoder(w).Encode(userInfo)
 }
