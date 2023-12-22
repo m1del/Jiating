@@ -11,7 +11,7 @@ const Footer = () => (
         <img src={teamLogoBW} alt="Logo" className="hidden sm:block sm:h-24 sm:w-24"/>
       </div>
 
-      <div className="text-white contact-info flex flex-col items-center mb-4 sm:mb-0">
+      <div className="text-white contact-info flex flex-col items-start mb-4 sm:mb-0">
         <div className="email-section mb-2 flex">
           <MdOutlineEmail className="text-white text-2xl mr-2"/>
           <span>jiating.lion.dragon@gmail.com</span>
