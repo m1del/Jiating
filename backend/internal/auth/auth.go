@@ -1,7 +1,9 @@
 package auth
 
 import (
+	"context"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/gorilla/sessions"
@@ -38,4 +40,18 @@ func Init() {
 	goth.UseProviders(
 		google.New(googleClientID, googleClientSecret, "http://localhost:3000/auth/google/callback"),
 	)
+}
+
+func AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if user, err := gothic.CompleteUserAuth(w, r); err == nil {
+			// user is not authenticated, redirect to login page
+			http.Redirect(w, r, "/auth/google", http.StatusSeeOther)
+			return
+		} else {
+			// user is auth, set the user in the context
+			ctx := context.WithValue(r.Context(), "user", user)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		}
+	})
 }
