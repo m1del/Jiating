@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { IoClose, IoMenu } from "react-icons/io5";
 import { Link, useNavigate } from 'react-router-dom';
-import { close, logo, menu } from '../assets';
+import { logo } from '../assets';
 import { navLinks } from '../constants';
 import { styles } from '../styles';
 
@@ -78,12 +79,11 @@ function Navbar({ isSticky }) {
 
         {/*Mobile nav*/}
         <div className="flex flex-1 items-center justify-end sm:hidden">
-          <img
-            src={toggle ? close : menu}
-            alt="menu"
-            className="h-[28px] w-[28px] cursor-pointer"
-            onClick={() => setToggle(!toggle)}
-          />
+          {toggle ? (
+            <IoClose className="h-8 w-8 cursor-pointer text-white" onClick={() => setToggle(!toggle)} />
+          ) : (
+            <IoMenu className="h-8 w-8 cursor-pointer text-white" onClick={() => setToggle(!toggle)} />
+          )}
           <div
             className={`${!toggle ? 'hidden' : 'flex'} 
               absolute right-0 top-20 z-10 mx-4 my-2 min-w-[140px]
