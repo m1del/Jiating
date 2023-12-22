@@ -11,9 +11,18 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/markbates/goth/gothic"
+	"github.com/rs/cors"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
+	// enable CORS
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:5173"}, // react dev server
+		AllowCredentials: true,
+		AllowedHeaders:   []string{"*"},
+	})
+
+	// initalize chi router
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
@@ -36,7 +45,10 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// route to get session info
 	r.Get("/api/session-info", s.sessionInfoHandler)
 
-	return r
+	// apply cors middleware to all routes
+	corsHandler := c.Handler(r)
+
+	return corsHandler
 }
 
 func (s *Server) HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
@@ -80,10 +92,16 @@ func (s *Server) getAuthCallbackHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	fmt.Println("user id: ", user.UserID)
+	fmt.Println("email: ", user.Email)
+	fmt.Println("name: ", user.Name)
+	fmt.Println("avatar url: ", user.AvatarURL)
+	fmt.Println("first name: ", user.FirstName)
 	// store user data in session
 	session.Values["userID"] = user.UserID
 	session.Values["email"] = user.Email
 	session.Values["name"] = user.Name
+	session.Values["avatar_url"] = user.AvatarURL
 
 	// save session
 	if err := session.Save(r, w); err != nil {
@@ -149,21 +167,23 @@ func (s *Server) adminDashboardHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) sessionInfoHandler(w http.ResponseWriter, r *http.Request) {
-	// retrieve the user from the context
+	// check if user is authenticated
 	session, err := auth.Store.Get(r, "session-name")
-	if err != nil {
+	fmt.Printf("Session values: %v\n", session.Values)
+	if err != nil || session.Values["userID"] == nil {
 		// user is not authenticated
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(map[string]interface{}{"authenticated": false})
 		return
 	}
 
-	// respond with user info if authenticated
+	// respond with user info
 	userInfo := map[string]interface{}{
 		"authenticated": true,
 		"userID":        session.Values["userID"],
 		"name":          session.Values["name"],
 		"email":         session.Values["email"],
+		"avatar_url":    session.Values["avatar_url"],
 	}
 	json.NewEncoder(w).Encode(userInfo)
 }
