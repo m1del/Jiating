@@ -2,30 +2,22 @@ package tests
 
 import (
 	"backend/internal/server"
-	"github.com/gofiber/fiber/v2"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
 func TestHandler(t *testing.T) {
-	// Create a Fiber app for testing
-	app := fiber.New()
-	// Inject the Fiber app into the server
-	s := &server.FiberServer{App: app}
-	// Define a route in the Fiber app
-	app.Get("/", s.HelloWorldHandler)
-	// Create a test HTTP request
-	req, err := http.NewRequest("GET", "/", nil)
-	if err != nil {
-		t.Fatalf("error creating request. Err: %v", err)
-	}
-	// Perform the request
-	resp, err := app.Test(req)
+	s := &server.Server{}
+	server := httptest.NewServer(http.HandlerFunc(s.HelloWorldHandler))
+	defer server.Close()
+	resp, err := http.Get(server.URL)
 	if err != nil {
 		t.Fatalf("error making request to server. Err: %v", err)
 	}
-	// Your test assertions...
+	defer resp.Body.Close()
+	// Assertions
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("expected status OK; got %v", resp.Status)
 	}
