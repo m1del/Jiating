@@ -13,6 +13,8 @@ export default {
       'black-rgba': 'rgba(0, 0, 0, 0.8)',
       white: colors.white,
       gray: colors.gray,
+      red: colors.red,
+      transparent: colors.transparent,
     },
   },
   plugins: [
