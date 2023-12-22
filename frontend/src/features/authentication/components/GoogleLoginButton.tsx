@@ -5,7 +5,7 @@ function GoogleLoginButton() {
   }
 
   return (
-    <button onClick={handleLogin}>
+    <button onClick={handleLogin} className="text-white">
       Login with Google
     </button>
   )
