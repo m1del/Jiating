@@ -1,7 +1,7 @@
 // components/AdminDashboard.tsx
 import React, { useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import GoogleLogoutButton from '../authentication/components/GoogleLogoutButton';
+import { GoogleLogoutButton } from '../authentication';
 
 const AdminDashboard = () => {
     const {authUser, setAuthUser, setIsLoggedin } = useAuth();

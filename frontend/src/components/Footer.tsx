@@ -1,7 +1,7 @@
 import { FaDiscord, FaFacebookF, FaInstagram, FaTiktok, FaYoutube } from "react-icons/fa";
 import { MdOutlineEmail, MdOutlineLocationOn } from "react-icons/md";
 import { teamLogoBW } from '../assets';
-import GoogleLoginButton from "../features/authentication/components/GoogleLoginButton";
+import { GoogleLoginButton } from "../features/authentication";
 import { styles } from '../styles';
 
 const Footer = () => (
