@@ -1,3 +1,5 @@
+import { styles } from '../../../styles';
+
 function GoogleLoginButton() {
   const handleLogin = () => {
     // redirect to google login page
@@ -5,7 +7,7 @@ function GoogleLoginButton() {
   }
 
   return (
-    <button onClick={handleLogin} className="text-white">
+    <button className={`${styles.button}`} onClick={handleLogin}>
       Login with Google
     </button>
   )
