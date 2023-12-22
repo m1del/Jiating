@@ -17,10 +17,10 @@
 
 .arrow span {
   display: block;
-  width: 0.6vw;
-  height: 0.6vw;
-  border-bottom: 2px solid white;
-  border-right: 2px solid white;
+  width: 1vw;
+  height: 1vw;
+  border-bottom: 4px solid rgb(0, 255, 255);
+  border-right: 4px solid rgb(0, 255, 255);
   transform: rotate(45deg);
   margin: -10px;
   animation: animate 2s infinite;
