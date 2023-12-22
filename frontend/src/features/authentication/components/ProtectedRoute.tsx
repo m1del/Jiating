@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute: React.FC<React.PropsWithChildren<{}>> = ({ children }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -28,7 +28,9 @@ const ProtectedRoute = ({ children }) => {
         return <div>Loading...</div>;
     }
 
-    return isAuthenticated ? children : <Navigate to="/login" />;
+    // If the user is authenticated, return the protected component
+    // Else, redirect the user to the home lol TODO: add need to login message in a page?
+    return isAuthenticated ? children : <Navigate to="/" />;
 };
 
 export default ProtectedRoute;
