@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 
 const AdminDashboard = () => {
     console.log('AdminDashboard');
-    const { setAuthUser, setIsLoggedin } = useAuth();
+    const {authUser, setAuthUser, setIsLoggedin } = useAuth();
 
     useEffect(() => {
         fetch('http://localhost:3000/api/session-info', { credentials: 'include' })
@@ -17,7 +17,12 @@ const AdminDashboard = () => {
           })
           .then(data => {
             if (data.authenticated) {
-              setAuthUser({ email: data.email, name: data.name });
+              setAuthUser({ 
+                id: data.id, 
+                email: data.email, 
+                name: data.name, 
+                avatar_url: data.avatar_url 
+              });
               setIsLoggedin(true);
             } else {
               setIsLoggedin(false);
@@ -30,13 +35,18 @@ const AdminDashboard = () => {
             window.location.href = 'http://localhost:3000/auth/google';
           });
     }, [setAuthUser, setIsLoggedin]);
-      
-      
-      
+    
   
     return (
-        <div>
-            <h1>Admin Dashboard</h1>
+        <div className='flex flex-col items-center justify-center'>
+            <h1 className='text-3xl text-bold mb-4'>Admin Dashboard</h1>
+            {authUser && (
+                <div className='flex justify-center items-center'>
+                    <p className='text-lg'>hi, <span>{authUser.email}</span></p>
+                    <img className='rounded-full m-5'
+                    src={authUser.avatar_url} alt={authUser.name} />
+                </div>
+            )}
         </div>
     );
 };
