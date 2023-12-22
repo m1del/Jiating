@@ -1,9 +1,9 @@
 // components/AdminDashboard.tsx
 import React, { useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import GoogleLogoutButton from '../authentication/components/GoogleLogoutButton';
 
 const AdminDashboard = () => {
-    console.log('AdminDashboard');
     const {authUser, setAuthUser, setIsLoggedin } = useAuth();
 
     useEffect(() => {
@@ -47,6 +47,7 @@ const AdminDashboard = () => {
                     src={authUser.avatar_url} alt={authUser.name} />
                 </div>
             )}
+            <GoogleLogoutButton />
         </div>
     );
 };
