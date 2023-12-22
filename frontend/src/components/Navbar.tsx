@@ -4,7 +4,7 @@ import { close, logo, menu } from '../assets';
 import { navLinks } from '../constants';
 import { styles } from '../styles';
 
-function Navbar() {
+function Navbar({ isSticky }) {
   const [active, setActive] = React.useState('');
   const [toggle, setToggle] = useState(false);
 
@@ -35,8 +35,10 @@ function Navbar() {
 
   return (
     <nav
-      className={`${styles.paddingX} bg-black-rgba fixed top-0 z-20 flex
-    w-full items-center py-5 backdrop-blur-sm`}
+      className={`${styles.paddingX} sitems-center ${
+        isSticky ? 'bg-black-rgba fixed' : 'relative bg-black'
+      } top-0 z-20
+    flex h-16 w-full py-5 backdrop-blur-sm`}
     >
       <div
         className="mx-auto flex w-full max-w-[1350px] 
@@ -66,8 +68,8 @@ function Navbar() {
             <li
               key={link.title}
               className={`${
-                active === link.title ? 'text-accent' : 'text-white'
-              } cursor-pointer text-[16px] font-medium uppercase`}
+                active === link.title ? 'text-cyan' : 'text-white'
+              } hover:text-cyan cursor-pointer text-[16px] font-medium uppercase transition-colors`}
             >
               <a onClick={() => handleNavClick(link)}>{link.title}</a>
             </li>

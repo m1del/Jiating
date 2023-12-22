@@ -15,5 +15,10 @@ export default {
       gray: colors.gray,
     },
   },
-  plugins: [],
+  plugins: [
+    function ({ addVariant }) {
+      addVariant('child', '& > *');
+      addVariant('child-hover', '& > *:hover');
+    },
+  ],
 };
