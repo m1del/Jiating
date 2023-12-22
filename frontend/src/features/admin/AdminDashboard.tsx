@@ -1,12 +1,14 @@
 // components/AdminDashboard.tsx
 import React, { useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 const AdminDashboard = () => {
   const { user, setUser, isAuthenticated } = useAuth();
 
   useEffect(() => {
-    fetch('/api/session-info')
+    fetch('/api/session-info', {
+        credentials: 'include', // include cookies
+    })
         .then(res => {
             if (res.ok) {
                 return res.json();
@@ -17,7 +19,6 @@ const AdminDashboard = () => {
         .then(data => {
             if (data.authenticated) {
                 setUser({
-                    userID: data.userID,
                     name: data.name,
                     email: data.email,
                 })
