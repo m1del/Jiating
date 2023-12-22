@@ -134,3 +134,23 @@ func (s *Server) adminDashboardHandler(w http.ResponseWriter, r *http.Request) {
 	// for a simple response for development purposes
 	fmt.Fprintf(w, "Welcome to the Admin Dashboard")
 }
+
+func (s *Server) sessionInfoHandler(w http.ResponseWriter, r *http.Request) {
+	// retrieve the user from the context
+	session, err := auth.Store.Get(r, "session-name")
+	if err != nil {
+		// user is not authenticated
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]interface{}{"authenticated": false})
+		return
+	}
+
+	// respond with user info if authenticated
+	userInfo := map[string]interface{}{
+		"authenticated": true,
+		"userID":        session.Values["userID"],
+		"name":          session.Values["name"],
+		"email":         session.Values["email"],
+	}
+	json.NewEncoder(w).Encode(userInfo)
+}
