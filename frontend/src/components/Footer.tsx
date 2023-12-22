@@ -3,47 +3,43 @@ import { MdOutlineEmail, MdOutlineLocationOn } from "react-icons/md";
 import { teamLogoBW } from '../assets';
 import { styles } from '../styles';
 
-
 const Footer = () => (
-  <div className={`${styles.paddingX} bg-black
-  items-center border-t w- full py-5 px-5`}>
-    <div className='mx-auto flex w-full max-w-[1350px] items-center
-    justify-between'>
-        <div className="logo-section">
-        <img src={teamLogoBW} alt="Logo" className="h-24 w-24"/>
-        </div>
+  <div className={`${styles.paddingX} bg-black border-t w-full py-5 px-5`}>
 
-        <div className="text-white contact-info flex flex-col items-center">
+    <div className='mx-auto flex flex-col sm:flex-row w-full max-w-[1350px] items-center justify-between'>
+      <div className="logo-section mb-4 sm:mb-0">
+        <img src={teamLogoBW} alt="Logo" className="hidden sm:block sm:h-24 sm:w-24"/>
+      </div>
+
+      <div className="text-white contact-info flex flex-col items-center mb-4 sm:mb-0">
         <div className="email-section mb-2 flex">
-            <MdOutlineEmail className="text-white text-2xl mr-2"/>
-            <span>jiating.lion.dragon@gmail.com</span>
+          <MdOutlineEmail className="text-white text-2xl mr-2"/>
+          <span>jiating.lion.dragon@gmail.com</span>
         </div>
         <div className="address-section flex">
-            <MdOutlineLocationOn className="text-white text-2xl mr-2"/>
-            <span>University of Florida, Gainesville, FL</span>
+          <MdOutlineLocationOn className="text-white text-2xl mr-2"/>
+          <span>University of Florida, Gainesville, FL</span>
         </div>
-        </div>
+      </div>
 
-        <div className="social-media flex items-center">
-        <a href="https://tiktok.com/yourprofile" className="mr-2" target="_blank" rel="noopener noreferrer">
-            <FaTiktok className="text-white text-2xl"/>
+      <div className="social-media flex">
+        <a href="https://www.tiktok.com/@jiatingliondragon" className="mr-2" target="_blank" rel="noopener noreferrer">
+          <FaTiktok className="text-white text-2xl"/>
         </a>
-        <a href="https://youtube.com/yourchannel" className="mr-2" target="_blank" rel="noopener noreferrer">
-            <FaYoutube className="text-white text-2xl"/>
+        <a href="https://www.youtube.com/channel/UCH-SNRsw6u9_549hUCxM9Zw" className="mr-2" target="_blank" rel="noopener noreferrer">
+          <FaYoutube className="text-white text-2xl"/>
         </a>
-        <a href="https://facebook.com/yourpage" className="mr-2" target="_blank" rel="noopener noreferrer">
-            <FaFacebookF className="text-white text-2xl"/>
+        <a href="https://www.facebook.com/jiatingliondragon" className="mr-2" target="_blank" rel="noopener noreferrer">
+          <FaFacebookF className="text-white text-2xl"/>
         </a>
-        <a href="https://instagram.com/yourhandle" className="mr-2" target="_blank" rel="noopener noreferrer">
-            <FaInstagram className="text-white text-2xl"/>
+        <a href="https://www.instagram.com/jiating.lion.dragon/" className="mr-2" target="_blank" rel="noopener noreferrer">
+          <FaInstagram className="text-white text-2xl"/>
         </a>
-        <a href="https://discord.com/yourserver" target="_blank" rel="noopener noreferrer">
-            <FaDiscord className="text-white text-2xl"/>
+        <a href="https://discord.gg/AHnNzWZTax" target="_blank" rel="noopener noreferrer">
+          <FaDiscord className="text-white text-2xl"/>
         </a>
-        </div>
+      </div>
     </div>
-
-    
   </div>
 );
 
