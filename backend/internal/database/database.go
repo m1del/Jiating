@@ -14,6 +14,7 @@ import (
 
 type Service interface {
 	Health() map[string]string
+	CreateAdminTable() error
 }
 
 type service struct {
@@ -50,4 +51,26 @@ func (s *service) Health() map[string]string {
 	return map[string]string{
 		"message": "It's healthy",
 	}
+}
+
+func (s *service) CreateAdminTable() error {
+	createTableSQL := `
+    CREATE TABLE IF NOT EXISTS admins (
+        id SERIAL PRIMARY KEY,
+        created_at TIMESTAMP NOT NULL,
+        updated_at TIMESTAMP NOT NULL,
+        deleted_at TIMESTAMP NULL,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        position VARCHAR(255) NOT NULL,
+        status VARCHAR(50) NOT NULL
+    );`
+
+	_, err := s.db.Exec(createTableSQL)
+	if err != nil {
+		loggers.Error.Printf("Error creating admin table: %v", err)
+		return err
+	}
+
+	return nil
 }
