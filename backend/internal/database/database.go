@@ -1,10 +1,10 @@
 package database
 
 import (
+	"backend/loggers"
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -32,7 +32,7 @@ func New() Service {
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", username, password, host, port, database)
 	db, err := sql.Open("pgx", connStr)
 	if err != nil {
-		log.Fatal(err)
+		loggers.Error.Fatalf("error connecting to the database: %v", err)
 	}
 	s := &service{db: db}
 	return s
@@ -44,7 +44,7 @@ func (s *service) Health() map[string]string {
 
 	err := s.db.PingContext(ctx)
 	if err != nil {
-		log.Fatalf(fmt.Sprintf("db down: %v", err))
+		loggers.Error.Fatalf(fmt.Sprintf("db down: %v", err))
 	}
 
 	return map[string]string{
