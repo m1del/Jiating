@@ -87,6 +87,7 @@ func (s *service) GetAllAdmins() ([]*models.Admin, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
+	loggers.Debug.Println("Querying admins table...")
 	rows, err := s.db.QueryContext(ctx, "SELECT * FROM admins")
 	if err != nil {
 		loggers.Error.Printf("Error querying admins table: %v", err)
@@ -113,10 +114,10 @@ func (s *service) CreateAdmin(admin models.Admin) error {
 	defer cancel()
 
 	const query = `INSERT INTO admins (
-		created_at, updated_at, name, email, position, status
-	) VALUES ($1, $2, $3, $4, $5, $6)`
+        created_at, updated_at, name, email, position, status
+    ) VALUES ($1, $2, $3, $4, $5, $6)`
 
-	_, err := s.db.ExecContext(ctx, query)
+	_, err := s.db.ExecContext(ctx, query, time.Now(), time.Now(), admin.Name, admin.Email, admin.Position, admin.Status)
 	if err != nil {
 		loggers.Error.Printf("Error creating admin: %v", err)
 		return err
