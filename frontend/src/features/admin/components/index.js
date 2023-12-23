@@ -1,3 +1,5 @@
+import AdminForm from './AdminForm';
 import UserInfo from './UserInfo';
 
-export { UserInfo };
+export { AdminForm, UserInfo };
+
