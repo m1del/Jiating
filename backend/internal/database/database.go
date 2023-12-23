@@ -15,7 +15,8 @@ import (
 
 type Service interface {
 	Health() map[string]string
-	GetAllAdmins() ([]*Admin, error)
+	GetAllAdmins() ([]*models.Admin, error)
+	CreateAdmin(admin models.Admin) error
 }
 
 type service struct {
@@ -105,4 +106,21 @@ func (s *service) GetAllAdmins() ([]*models.Admin, error) {
 	}
 
 	return admins, nil
+}
+
+func (s *service) CreateAdmin(admin models.Admin) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
+	const query = `INSERT INTO admins (
+		created_at, updated_at, name, email, position, status
+	) VALUES ($1, $2, $3, $4, $5, $6)`
+
+	_, err := s.db.ExecContext(ctx, query)
+	if err != nil {
+		loggers.Error.Printf("Error creating admin: %v", err)
+		return err
+	}
+
+	return nil
 }
