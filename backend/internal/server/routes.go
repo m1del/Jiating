@@ -115,7 +115,7 @@ func (s *Server) getAuthCallbackHandler(w http.ResponseWriter, r *http.Request) 
 // handle user logout
 func (s *Server) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	// clearing OAuth data
-	loggesr.Debug.Println("Clearing OAuth data...")
+	loggers.Debug.Println("Clearing OAuth data...")
 	provider := chi.URLParam(r, "provider")
 	r = r.WithContext(context.WithValue(r.Context(), "provider", provider))
 	gothic.Logout(w, r)
