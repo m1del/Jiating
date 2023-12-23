@@ -13,10 +13,9 @@ func main() {
 	auth.Init()
 
 	// initialize the server
-	loggers.Info.Println("Initializing server...")
+	loggers.Info.Println("Starting server...")
 	server := server.NewServer()
 
-	loggers.Info.Println("Starting server...")
 	err := server.ListenAndServe()
 	if err != nil {
 		loggers.Error.Fatalf("Error starting server: %s", err)
