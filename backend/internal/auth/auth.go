@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"log"
+	"backend/loggers"
 	"net/http"
 	"os"
 
@@ -23,11 +23,14 @@ var Store *sessions.CookieStore
 func Init() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		loggers.Error.Fatal("Error loading .env file")
 	}
 
 	googleClientID := os.Getenv("GOOGLE_CLIENT_ID")
 	googleClientSecret := os.Getenv("GOOGLE_CLIENT_SECRET")
+	if googleClientID == "" || googleClientSecret == "" {
+		loggers.Error.Fatal("Missing Google Client ID or Client Secret")
+	}
 
 	store := sessions.NewCookieStore([]byte(key))
 	store.MaxAge(MaxAge)
@@ -45,14 +48,16 @@ func Init() {
 		google.New(googleClientID, googleClientSecret, "http://localhost:3000/auth/google/callback",
 			"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"),
 	)
-
 }
 
 func AuthMiddleware(next http.Handler) http.Handler {
+	loggers.Debug.Println("AuthMiddleware called")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		loggers.Debug.Println("Retreiving session...")
 		session, err := Store.Get(r, "session-name")
 		if err != nil || session.Values["userID"] == nil {
 			// User is not logged in, redirect to login page
+			loggers.Debug.Println("User is not logged in, redirecting to login page...")
 			http.Redirect(w, r, "/auth/google", http.StatusSeeOther)
 			return
 		}

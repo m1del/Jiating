@@ -2,9 +2,9 @@ package server
 
 import (
 	"backend/internal/auth"
+	"backend/loggers"
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -72,31 +72,29 @@ func (s *Server) getAuthCallbackHandler(w http.ResponseWriter, r *http.Request) 
 	provider := chi.URLParam(r, "provider")
 
 	// add provider to the existing context, not overwrite it
+	loggers.Debug.Printf("Adding provider %s to context", provider)
 	newCtx := context.WithValue(r.Context(), "provider", provider)
 	r = r.WithContext(newCtx)
 
+	loggers.Debug.Println("Getting user from gothic...")
 	user, err := gothic.CompleteUserAuth(w, r)
 	if err != nil {
 		// log the error for internal tracking
-		log.Printf("error completing auth: %v", err)
+		loggers.Error.Printf("error completing auth: %v", err)
 		// redirect the user to a login error page or display an error message
 		http.Redirect(w, r, "/login-error", http.StatusSeeOther)
 		return
 	}
 
 	// create session or retrive existing
+	loggers.Debug.Println("Retreiving session...")
 	session, err := auth.Store.Get(r, "session-name")
 	if err != nil {
-		log.Printf("error retrieving session: %v", err)
+		loggers.Error.Printf("error retrieving session: %v", err)
 		http.Redirect(w, r, "/login-error", http.StatusSeeOther)
 		return
 	}
 
-	fmt.Println("user id: ", user.UserID)
-	fmt.Println("email: ", user.Email)
-	fmt.Println("name: ", user.Name)
-	fmt.Println("avatar url: ", user.AvatarURL)
-	fmt.Println("first name: ", user.FirstName)
 	// store user data in session
 	session.Values["userID"] = user.UserID
 	session.Values["email"] = user.Email
@@ -105,7 +103,7 @@ func (s *Server) getAuthCallbackHandler(w http.ResponseWriter, r *http.Request) 
 
 	// save session
 	if err := session.Save(r, w); err != nil {
-		log.Printf("error saving session: %v", err)
+		loggers.Error.Printf("error saving session: %v", err)
 		http.Redirect(w, r, "/login-error", http.StatusSeeOther)
 		return
 	}
@@ -117,6 +115,7 @@ func (s *Server) getAuthCallbackHandler(w http.ResponseWriter, r *http.Request) 
 // handle user logout
 func (s *Server) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	// clearing OAuth data
+	loggesr.Debug.Println("Clearing OAuth data...")
 	provider := chi.URLParam(r, "provider")
 	r = r.WithContext(context.WithValue(r.Context(), "provider", provider))
 	gothic.Logout(w, r)
@@ -124,7 +123,8 @@ func (s *Server) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	// next, clear application session data
 	session, err := auth.Store.Get(r, "session-name")
 	if err == nil {
-		fmt.Println("clearing session data")
+		loggers.Debug.Println("Clearing application session data...")
+
 		// delete session data
 		session.Values["userID"] = nil
 		session.Values["name"] = nil
@@ -152,28 +152,27 @@ func (s *Server) beginAuthHandler(w http.ResponseWriter, r *http.Request) {
 // admin auth middleware
 func (s *Server) adminDashboardHandler(w http.ResponseWriter, r *http.Request) {
 	// retrieve the user from the context
+	loggers.Debug.Println("Retrieving user from context...")
 	user := r.Context().Value("user")
 
 	// check if the user is actually set in the context
 	if user == nil {
-		// If no user is set, it means the user is not authenticated
+		// if no user is set, it means the user is not authenticated
+		loggers.Debug.Println("User is not authenticated")
 		http.Error(w, "Access denied", http.StatusForbidden)
 		return
 	}
+	loggers.Debug.Printf("User: %v\n", user)
 
 	// TODO: extracct info form user object if needed
 	// e.g. popular user name, role, etc. to personalize the dashboard
 
 	// TODO: generate and serve the admin dashboard page
-
-	// for a simple response for development purposes
-	fmt.Fprintf(w, "Welcome to the Admin Dashboard")
 }
 
 func (s *Server) sessionInfoHandler(w http.ResponseWriter, r *http.Request) {
 	// check if user is authenticated
 	session, err := auth.Store.Get(r, "session-name")
-	fmt.Printf("Session values: %v\n", session.Values)
 	if err != nil || session.Values["userID"] == nil {
 		// user is not authenticated
 		w.WriteHeader(http.StatusUnauthorized)
