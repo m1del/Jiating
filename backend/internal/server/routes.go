@@ -39,8 +39,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 	adminRouter := chi.NewRouter()
 	adminRouter.Use(auth.AuthMiddleware)
 	adminRouter.Get("/dashboard", s.adminDashboardHandler) // handles admin dashboard
-	adminRouter.Get("/list", s.listAdminHandler)           // handles admin list
-	adminRouter.Post("/create", s.createAdminHandler)      // handles admin creation
+	r.Get("/api/list", s.listAdminHandler)                 // handles admin list
+	r.Post("/api/create", s.createAdminHandler)            // handles admin creation
 
 	// mount admin routes under /admin
 	r.Mount("/admin", adminRouter)
@@ -209,9 +209,15 @@ func (s *Server) listAdminHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//cors
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write(jsonResp)
+	_, err = w.Write(jsonResp)
+	if err != nil {
+		loggers.Error.Fatalf("writing response: %v", err)
+	}
 }
 
 func (s *Server) createAdminHandler(w http.ResponseWriter, r *http.Request) {
