@@ -2,13 +2,13 @@ package server
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
 
 	"backend/internal/database"
+	"backend/loggers"
 
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -19,20 +19,23 @@ type Server struct {
 }
 
 func NewServer() *http.Server {
-	log.Println("Starting the server...")
+
+	loggers.Info.Println("Starting server...")
 
 	port, err := strconv.Atoi(os.Getenv("PORT"))
 	if err != nil {
-		log.Fatalf("Error reading PORT env variable to int: %v", err)
+		// no port provided, default to 8080
+		loggers.Info.Println("No port provided, defaulting to 8080")
+		port = 8080
 	}
 
-	log.Println("Connecting to the database...")
+	loggers.Info.Println("Connecting to the database...")
 	NewServer := &Server{
 		port: port,
 		db:   database.New(),
 	}
 
-	log.Println("Registering routes...")
+	loggers.Info.Println("Registering routes...")
 	// declare Server config
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", NewServer.port),
@@ -42,6 +45,6 @@ func NewServer() *http.Server {
 		WriteTimeout: 30 * time.Second,
 	}
 
-	log.Println("Server is ready to handle requests at", server.Addr)
+	loggers.Info.Println("Server is ready to handle requests at", server.Addr)
 	return server
 }
