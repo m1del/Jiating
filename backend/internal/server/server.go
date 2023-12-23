@@ -19,16 +19,20 @@ type Server struct {
 }
 
 func NewServer() *http.Server {
+	log.Println("Starting the server...")
+
 	port, err := strconv.Atoi(os.Getenv("PORT"))
 	if err != nil {
 		log.Fatalf("Error reading PORT env variable to int: %v", err)
 	}
 
+	log.Println("Connecting to the database...")
 	NewServer := &Server{
 		port: port,
 		db:   database.New(),
 	}
 
+	log.Println("Registering routes...")
 	// declare Server config
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", NewServer.port),
@@ -38,5 +42,6 @@ func NewServer() *http.Server {
 		WriteTimeout: 30 * time.Second,
 	}
 
+	log.Println("Server is ready to handle requests at", server.Addr)
 	return server
 }
