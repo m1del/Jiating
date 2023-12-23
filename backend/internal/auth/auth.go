@@ -53,11 +53,20 @@ func Init() {
 func AuthMiddleware(next http.Handler) http.Handler {
 	loggers.Debug.Println("AuthMiddleware called")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		loggers.Debug.Println("Retreiving session...")
+		loggers.Debug.Println("Retrieving session...")
 		session, err := Store.Get(r, "session-name")
 		if err != nil || session.Values["userID"] == nil {
-			// User is not logged in, redirect to login page
-			loggers.Debug.Println("User is not logged in, redirecting to login page...")
+			loggers.Debug.Println("User is not logged in")
+
+			// Check if the request is an AJAX request
+			if r.Header.Get("X-Requested-With") == "XMLHttpRequest" {
+				loggers.Debug.Println("AJAX request detected, sending unauthorized status")
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+
+			// For non-AJAX requests, redirect to login
+			loggers.Debug.Println("Redirecting to login page...")
 			http.Redirect(w, r, "/auth/google", http.StatusSeeOther)
 			return
 		}
