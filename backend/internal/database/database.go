@@ -1,6 +1,7 @@
 package database
 
 import (
+	"backend/internal/models"
 	"backend/loggers"
 	"context"
 	"database/sql"
@@ -14,7 +15,7 @@ import (
 
 type Service interface {
 	Health() map[string]string
-	CreateAdminTable() error
+	GetAllAdmins() ([]*Admin, error)
 }
 
 type service struct {
@@ -35,6 +36,12 @@ func New() Service {
 	if err != nil {
 		loggers.Error.Fatalf("error connecting to the database: %v", err)
 	}
+
+	// initialize tables
+	if err := createAdminTable(db); err != nil {
+		loggers.Error.Fatalf("error creating admin table: %v", err)
+	}
+
 	s := &service{db: db}
 	return s
 }
@@ -53,7 +60,7 @@ func (s *service) Health() map[string]string {
 	}
 }
 
-func (s *service) CreateAdminTable() error {
+func createAdminTable(db *sql.DB) error {
 	createTableSQL := `
     CREATE TABLE IF NOT EXISTS admins (
         id SERIAL PRIMARY KEY,
@@ -66,11 +73,36 @@ func (s *service) CreateAdminTable() error {
         status VARCHAR(50) NOT NULL
     );`
 
-	_, err := s.db.Exec(createTableSQL)
+	_, err := db.Exec(createTableSQL)
 	if err != nil {
 		loggers.Error.Printf("Error creating admin table: %v", err)
 		return err
 	}
 
 	return nil
+}
+
+func (s *service) GetAllAdmins() ([]*models.Admin, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
+	rows, err := s.db.QueryContext(ctx, "SELECT * FROM admins")
+	if err != nil {
+		loggers.Error.Printf("Error querying admins table: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	admins := make([]*models.Admin, 0)
+	for rows.Next() {
+		admin := new(models.Admin)
+		err := rows.Scan(&admin.ID, &admin.CreatedAt, &admin.UpdatedAt, &admin.DeletedAt, &admin.Name, &admin.Email, &admin.Position, &admin.Status)
+		if err != nil {
+			loggers.Error.Printf("Error scanning admin row: %v", err)
+			return nil, err
+		}
+		admins = append(admins, admin)
+	}
+
+	return admins, nil
 }

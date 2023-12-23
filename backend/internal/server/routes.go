@@ -37,13 +37,16 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// admin routes
 	adminRouter := chi.NewRouter()
 	adminRouter.Use(auth.AuthMiddleware)
-	adminRouter.Get("/dashboard", s.adminDashboardHandler)
+	adminRouter.Get("/dashboard", s.adminDashboardHandler) // handles admin dashboard
+	adminRouter.Get("/list", s.adminListHandler)           // handles admin list
 
 	// mount admin routes under /admin
 	r.Mount("/admin", adminRouter)
 
 	// route to get session info
 	r.Get("/api/session-info", s.sessionInfoHandler)
+
+	// database routes
 
 	// apply cors middleware to all routes
 	corsHandler := c.Handler(r)
@@ -189,4 +192,22 @@ func (s *Server) sessionInfoHandler(w http.ResponseWriter, r *http.Request) {
 		"avatar_url":    session.Values["avatar_url"],
 	}
 	json.NewEncoder(w).Encode(userInfo)
+}
+
+func (s *Server) adminListHandler(w http.ResponseWriter, r *http.Request) {
+	admins, err := s.db.GetAllAdmins()
+	if err != nil {
+		loggers.Error.Fatalf("getting admins: %v", err)
+	}
+
+	jsonResp, err := json.Marshal(admins)
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		loggers.Error.Fatalf("handling JSON marshal. Err: %v", err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(jsonResp)
 }
