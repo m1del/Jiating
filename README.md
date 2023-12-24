@@ -36,6 +36,7 @@ or
 ```
 docker compose up
 ```
+Now to view the database and run sql commands directly:
 ```
 psql -h 127.0.0.1 -p 5432 -U [DB_USER] -d [DB_DATABASE]
 ```
