@@ -27,7 +27,15 @@ otherwise, use `make watch` to enable hot reload.
 see Makefile for more options
 
 #### Database
-For this part, have psql 15.5 installed, and the backend Go server running
+For this part, have psql 15.5 installed and docker
+Run the database:
+```
+make docker-run
+```
+or
+```
+docker compose up
+```
 ```
 psql -h 127.0.0.1 -p 5432 -U [DB_USER] -d [DB_DATABASE]
 ```
