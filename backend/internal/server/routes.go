@@ -2,7 +2,7 @@ package server
 
 import (
 	"backend/internal/auth"
-	"backend/internal/models"
+	"backend/internal/handlers"
 	"backend/loggers"
 	"context"
 	"encoding/json"
@@ -38,9 +38,9 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// admin routes
 	adminRouter := chi.NewRouter()
 	adminRouter.Use(auth.AuthMiddleware)
-	adminRouter.Get("/dashboard", s.adminDashboardHandler) // handles admin dashboard
-	r.Get("/api/list", s.listAdminHandler)                 // handles admin list
-	r.Post("/api/create", s.createAdminHandler)            // handles admin creation
+	adminRouter.Get("/dashboard", handlers.AdminDashboardHandler()) // handles admin dashboard
+	r.Get("/api/list", handlers.ListAdminHandler(s.db))             // handles admin list
+	r.Post("/api/create", handlers.CreateAdminHandler(s.db))        // handles admin creation
 
 	// mount admin routes under /admin
 	r.Mount("/admin", adminRouter)
@@ -154,27 +154,6 @@ func (s *Server) beginAuthHandler(w http.ResponseWriter, r *http.Request) {
 	gothic.BeginAuthHandler(w, r)
 }
 
-// admin auth middleware
-func (s *Server) adminDashboardHandler(w http.ResponseWriter, r *http.Request) {
-	// retrieve the user from the context
-	loggers.Debug.Println("Retrieving user from context...")
-	user := r.Context().Value("user")
-
-	// check if the user is actually set in the context
-	if user == nil {
-		// if no user is set, it means the user is not authenticated
-		loggers.Debug.Println("User is not authenticated")
-		http.Error(w, "Access denied", http.StatusForbidden)
-		return
-	}
-	loggers.Debug.Printf("User: %v\n", user)
-
-	// TODO: extracct info form user object if needed
-	// e.g. popular user name, role, etc. to personalize the dashboard
-
-	// TODO: generate and serve the admin dashboard page
-}
-
 func (s *Server) sessionInfoHandler(w http.ResponseWriter, r *http.Request) {
 	// check if user is authenticated
 	session, err := auth.Store.Get(r, "session-name")
@@ -194,46 +173,4 @@ func (s *Server) sessionInfoHandler(w http.ResponseWriter, r *http.Request) {
 		"avatar_url":    session.Values["avatar_url"],
 	}
 	json.NewEncoder(w).Encode(userInfo)
-}
-
-func (s *Server) listAdminHandler(w http.ResponseWriter, r *http.Request) {
-	admins, err := s.db.GetAllAdmins()
-	if err != nil {
-		loggers.Error.Fatalf("getting admins: %v", err)
-	}
-
-	jsonResp, err := json.Marshal(admins)
-	if err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		loggers.Error.Fatalf("handling JSON marshal. Err: %v", err)
-		return
-	}
-
-	//cors
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	_, err = w.Write(jsonResp)
-	if err != nil {
-		loggers.Error.Fatalf("writing response: %v", err)
-	}
-}
-
-func (s *Server) createAdminHandler(w http.ResponseWriter, r *http.Request) {
-	var admin models.Admin
-	if err := json.NewDecoder(r.Body).Decode(&admin); err != nil {
-		http.Error(w, "Bad request", http.StatusBadRequest)
-		loggers.Error.Fatalf("handling JSON decode. Err: %v", err)
-		return
-	}
-
-	if err := s.db.CreateAdmin(admin); err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		loggers.Error.Fatalf("creating admin: %v", err)
-		return
-	}
-
-	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("Admin created successfully"))
 }
