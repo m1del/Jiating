@@ -10,7 +10,7 @@ func main() {
 
 	// initialize the auth package
 	loggers.Info.Println("Initializing auth package...")
-	auth.Init()
+	auth.NewAuth()
 
 	// initialize the server
 	loggers.Info.Println("Starting server...")

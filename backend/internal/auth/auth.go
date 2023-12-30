@@ -20,7 +20,7 @@ const (
 
 var Store *sessions.CookieStore
 
-func Init() {
+func NewAuth() {
 	err := godotenv.Load()
 	if err != nil {
 		loggers.Error.Fatal("Error loading .env file")
