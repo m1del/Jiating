@@ -9,14 +9,36 @@ type Admin = {
 };
 
 function AdminForm() {
-    const [admin, setAdmin] = useState<Admin>({ name: '', email: '', position: '', status: '' });
+    const [admin, setAdmin] = useState<Admin>({ name: '', email: '', position: '', status: 'Active' });
+    const [errors, setErrors] = useState<Admin>({ name: '', email: '', position: '', status: '' });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setAdmin({ ...admin, [e.target.name]: e.target.value });
+
+        // clear warning message
+        if (errors[e.target.name]) {
+            setErrors({ ...errors, [e.target.name]: '' });
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        const newErrors = { name: '', email: '', position: '', status: '' };
+        let isValid = true;        
+        // validate form
+        Object.keys(admin).forEach((key) => {
+            if (!admin[key]) {
+                newErrors[key] = `${key} is required`;
+                isValid = false;
+            }
+        });
+
+        setErrors(newErrors);
+        if (!isValid) {
+            return;
+        }
+
         try {
             const response = await fetch('http://localhost:3000/api/create', {
                 method: 'POST',
@@ -43,24 +65,29 @@ function AdminForm() {
                 placeholder="Name"
                 value={admin.name}
                 onChange={handleChange}
-                className="p-2 border rounded"
+                className={`p-2 border rounded ${errors.name ? 'border-red-500' : ''}`}
             />
+            {errors.name && <p className="text-red-500">{errors.name}</p>}
+
             <input
                 type="email"
                 name="email"
                 placeholder="Email"
                 value={admin.email}
                 onChange={handleChange}
-                className="p-2 border rounded"
+                className={`p-2 border rounded ${errors.email ? 'border-red-500' : ''}`}
             />
+            {errors.email && <p className="text-red-500">{errors.email}</p>}
+
             <input
                 type="text"
                 name="position"
                 placeholder="Position"
                 value={admin.position}
                 onChange={handleChange}
-                className="p-2 border rounded"
+                className={`p-2 border rounded ${errors.position ? 'border-red-500' : ''}`}
             />
+            {errors.position && <p className="text-red-500">{errors.position}</p>}
            <div className="relative inline-block w-full text-gray-700">
                 <select
                     name="status"
