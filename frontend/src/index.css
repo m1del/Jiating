@@ -19,11 +19,10 @@
   display: block;
   width: 1vw;
   height: 1vw;
-  border-bottom: 4px solid rgb(0, 255, 255);
-  border-right: 4px solid rgb(0, 255, 255);
+  border-bottom: 4px solid rgb(255, 255, 255);
+  border-right: 4px solid rgb(255, 255, 255);
   transform: rotate(45deg);
   margin: -10px;
-  animation: animate 2s infinite;
 }
 
 .arrow span:nth-child(2) {

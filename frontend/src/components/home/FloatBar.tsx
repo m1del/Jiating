@@ -1,4 +1,4 @@
-import FloatButton from './ui/FloatButton';
+import FloatButton from './FloatButton';
 function FloatBar() {
   return (
     <>
