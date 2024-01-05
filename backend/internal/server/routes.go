@@ -2,6 +2,7 @@ package server
 
 import (
 	"backend/internal/auth"
+	"backend/internal/handlers"
 	"backend/loggers"
 	"context"
 	"encoding/json"
@@ -37,13 +38,17 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// admin routes
 	adminRouter := chi.NewRouter()
 	adminRouter.Use(auth.AuthMiddleware)
-	adminRouter.Get("/dashboard", s.adminDashboardHandler)
+	adminRouter.Get("/dashboard", handlers.AdminDashboardHandler()) // handles admin dashboard
+	r.Get("/api/list", handlers.ListAdminHandler(s.db))             // handles admin list
+	r.Post("/api/create", handlers.CreateAdminHandler(s.db))        // handles admin creation
 
 	// mount admin routes under /admin
 	r.Mount("/admin", adminRouter)
 
 	// route to get session info
 	r.Get("/api/session-info", s.sessionInfoHandler)
+
+	// database routes
 
 	// apply cors middleware to all routes
 	corsHandler := c.Handler(r)
@@ -147,27 +152,6 @@ func (s *Server) beginAuthHandler(w http.ResponseWriter, r *http.Request) {
 	r = r.WithContext(context.WithValue(context.Background(), "provider", provider))
 
 	gothic.BeginAuthHandler(w, r)
-}
-
-// admin auth middleware
-func (s *Server) adminDashboardHandler(w http.ResponseWriter, r *http.Request) {
-	// retrieve the user from the context
-	loggers.Debug.Println("Retrieving user from context...")
-	user := r.Context().Value("user")
-
-	// check if the user is actually set in the context
-	if user == nil {
-		// if no user is set, it means the user is not authenticated
-		loggers.Debug.Println("User is not authenticated")
-		http.Error(w, "Access denied", http.StatusForbidden)
-		return
-	}
-	loggers.Debug.Printf("User: %v\n", user)
-
-	// TODO: extracct info form user object if needed
-	// e.g. popular user name, role, etc. to personalize the dashboard
-
-	// TODO: generate and serve the admin dashboard page
 }
 
 func (s *Server) sessionInfoHandler(w http.ResponseWriter, r *http.Request) {

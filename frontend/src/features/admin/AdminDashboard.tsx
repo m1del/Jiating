@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { GoogleLogoutButton } from '../authentication';
 import { UserInfo } from './components';
+import AdminForm from './components/AdminForm';
 
 const AdminDashboard = () => {
     const {authUser, setAuthUser, setIsLoggedin } = useAuth();
@@ -43,6 +44,8 @@ const AdminDashboard = () => {
           <h1 className='text-4xl font-bold text-gray-800 mb-6'>Admin Dashboard</h1>
 
           {authUser && <UserInfo user={authUser} />}
+
+          <AdminForm/>
 
           <div className='mt-5'>
               <GoogleLogoutButton />
