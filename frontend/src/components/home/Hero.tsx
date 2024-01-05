@@ -1,4 +1,4 @@
-import { bwLogo } from '../assets';
+import { bwLogo } from '../../assets';
 
 function Hero() {
   return (

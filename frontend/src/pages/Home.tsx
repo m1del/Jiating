@@ -1,6 +1,6 @@
-import FloatBar from '../components/FloatBar';
-import Hero from '../components/Hero';
-import HomeHeading from '../components/HomeHeading';
+import FloatBar from '../components/home/FloatBar';
+import Hero from '../components/home/Hero';
+import HomeHeading from '../components/home/HomeHeading';
 import { GoogleLoginButton } from '../features/authentication';
 
 function Home() {
@@ -10,7 +10,7 @@ function Home() {
         <HomeHeading />
         <FloatBar />
 
-        <GoogleLoginButton className='m-8'/>
+        <GoogleLoginButton className="m-8" />
 
         <Hero />
       </div>
