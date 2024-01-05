@@ -9,7 +9,9 @@ const AdminList = () => {
 
     const fetchAdmins = () => {
         setIsLoading(true);
-        fetch('http://localhost:3000/admin/list')
+        fetch('http://localhost:3000/admin/list', {
+            credentials: 'include',
+        })
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -73,4 +75,3 @@ const AdminList = () => {
 };
 
 export default AdminList;
-

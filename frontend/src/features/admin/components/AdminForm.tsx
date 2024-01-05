@@ -46,6 +46,7 @@ function AdminForm() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(admin),
+                credentials: 'include',
             });
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -113,4 +114,4 @@ function AdminForm() {
     );
 }
 
-export default AdminForm
+export default AdminForm;

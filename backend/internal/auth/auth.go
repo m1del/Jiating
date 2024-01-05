@@ -56,7 +56,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		loggers.Debug.Println("Retrieving session...")
 		session, err := Store.Get(r, "session-name")
 		if err != nil || session.Values["userID"] == nil {
-			loggers.Debug.Println("User is not logged in")
+			loggers.Debug.Println("User not logged in")
 
 			// Check if the request is an AJAX request
 			if r.Header.Get("X-Requested-With") == "XMLHttpRequest" {

@@ -17,7 +17,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5173"}, // react dev server
 		AllowCredentials: true,
-		AllowedHeaders:   []string{"*"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization"},
 	})
 
 	// initalize chi router
