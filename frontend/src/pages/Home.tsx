@@ -14,8 +14,6 @@ function Home() {
         <FloatBar />
 
         <GoogleLoginButton className='m-8'/>
-        <AdminForm/>
-        <AdminList/>
 
         <Hero />
       </div>
