@@ -15,10 +15,21 @@ const EmailForm = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    console.log(formData);
-    // TODO: send email to server
+    try {
+      const resp = await fetch('http://localhost:3000/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      if (!resp.ok) {
+        throw new Error('Failed to send email');
+      }
+      //TODO: handle sucess -> clear form & show sucess message
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
