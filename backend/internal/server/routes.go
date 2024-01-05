@@ -32,6 +32,9 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Get("/logout/{provider}", handlers.LogoutHandler())
 	r.Get("/auth/{provider}", handlers.BeginAuthHandler())
 
+	// email
+	r.Post("/api/send-email", handlers.ContactFormSubmissionHandler())
+
 	// admin routes
 	adminRouter := chi.NewRouter()
 	adminRouter.Use(auth.AuthMiddleware)
