@@ -9,7 +9,7 @@ const AdminList = () => {
 
     const fetchAdmins = () => {
         setIsLoading(true);
-        fetch('http://localhost:3000/api/list')
+        fetch('http://localhost:3000/admin/list')
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
