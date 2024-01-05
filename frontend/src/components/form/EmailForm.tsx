@@ -17,6 +17,25 @@ const EmailForm = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+
+    // email Validation
+    if (!validateEmail(formData.email)) {
+      alert('Please enter a valid email address.');
+      return;
+    }
+
+    // text Fields Validation
+    if (!sanitizeInput(formData.name) || !sanitizeInput(formData.subject) || !sanitizeInput(formData.message)) {
+      alert('Invalid characters in the input fields.');
+      return;
+    }
+
+    // length Checks
+    if (formData.name.length > 100 || formData.subject.length > 150 || formData.message.length > 1000) {
+      alert('Input is too long.');
+      return;
+    }
+
     try {
       const resp = await fetch('http://localhost:3000/api/send-email', {
         method: 'POST',
@@ -31,6 +50,16 @@ const EmailForm = () => {
       console.error(err);
     }
   };
+
+  const validateEmail = (email: string) => {
+    const re = /\S+@\S+\.\S+/;
+    return re.test(email);
+  };
+
+  const sanitizeInput = (input: string) => {
+    const re = /[<>]/;
+    return !re.test(input);
+  }; 
 
   return (
     <div className="container mx-auto px-4">
