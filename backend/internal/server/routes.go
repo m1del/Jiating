@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/cors"
+	"golang.org/x/time/rate"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
@@ -33,7 +34,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Get("/auth/{provider}", handlers.BeginAuthHandler())
 
 	// email
-	r.Post("/api/send-email", handlers.ContactFormSubmissionHandler())
+	r.With(RateLimitMiddleware).Post("/api/send-email", handlers.ContactFormSubmissionHandler())
 
 	// admin routes
 	adminRouter := chi.NewRouter()
@@ -54,6 +55,18 @@ func (s *Server) RegisterRoutes() http.Handler {
 	corsHandler := c.Handler(r)
 
 	return corsHandler
+}
+
+var limiter = rate.NewLimiter(1, 2)
+
+func RateLimitMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !limiter.Allow() {
+			http.Error(w, "Too many requests", http.StatusTooManyRequests)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 func (s *Server) HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
