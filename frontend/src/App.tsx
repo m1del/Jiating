@@ -4,7 +4,7 @@ import { Footer, Navbar } from './components';
 import { AuthProvider } from './context/AuthContext';
 import AdminDashboard from './features/admin/AdminDashboard';
 import ProtectedRoute from './features/authentication/components/ProtectedRoute';
-import { Contact, Events, Home } from './pages';
+import { Contact, Events, Home, CreatePost } from './pages';
 import { styles } from './styles';
 
 function App() {
@@ -29,7 +29,9 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/events" element={<Events />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path='/admin/dashboard'
+            <Route path="/postform" element={<CreatePost />} />
+            <Route
+              path="/admin/dashboard"
               element={
                 <ProtectedRoute>
                   <AdminDashboard />
@@ -37,7 +39,7 @@ function App() {
               }
             />
           </Routes>
-          <Footer/>
+          <Footer />
         </div>
       </Router>
     </AuthProvider>

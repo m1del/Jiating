@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 function EventTile({ size, gridPos }) {
   const imgPath = '../lion_1.png';
-  const convertPath = `\'${imgPath}\'`;
+  const convertPath = `'${imgPath}'`;
   let spefClass = '';
 
   const bounceVariants = {

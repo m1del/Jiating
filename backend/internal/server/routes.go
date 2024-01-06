@@ -43,6 +43,9 @@ func (s *Server) RegisterRoutes() http.Handler {
 	adminRouter.Get("/list", handlers.ListAdminHandler(s.db))            // handles admin list
 	adminRouter.Post("/create-admin", handlers.CreateAdminHandler(s.db)) // handles admin creation
 
+	// event post routes
+	adminRouter.Post("/publish-form", handlers.PostFormSubmitHandler())            // handles event list
+
 	// mount admin routes under /admin
 	r.Mount("/admin", adminRouter)
 
