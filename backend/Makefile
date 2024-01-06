@@ -1,9 +1,9 @@
 # Makefile for a Go server and postgresdb with Docker
 
 # start Docker containers
-run:
+up:
 	docker compose up
-run-d:
+up-d:
 	docker compose up -d
 
 # stop Docker containers (if in detached mode)
