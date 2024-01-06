@@ -1,7 +1,23 @@
 version: '3.8'
 
 services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: jiating_server
+    container_name: jiating_server
+    ports:
+      - "${PORT}:3000"
+    env_file:
+      - .env
+    volumes:
+      - .:/app # mount current backend folder to docker container
+    depends_on:
+      - psql
+
   psql:
+    container_name: jiating_psql
     image: postgres:15.5-alpine3.19
     environment:
       POSTGRES_DB: ${DB_DATABASE}
