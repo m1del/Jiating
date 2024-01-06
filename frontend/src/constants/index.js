@@ -15,6 +15,11 @@ export const navLinks = [
         type: "page"
     },
     {
+        path: "/media",
+        title: "Media",
+        type: "page"
+    },
+    {
         path: "/contact",
         title: "Contact",
         type: "page"
