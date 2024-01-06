@@ -1,40 +1,6 @@
-import React, { FormEvent, useState, useRef, useEffect } from 'react';
-
-import { useAuth } from '../../context/AuthContext';
+import React, { FormEvent, useState, useRef } from 'react';
 
 export default function PostForm() {
-  const { authUser, setAuthUser, setIsLoggedin } = useAuth();
-
-  useEffect(() => {
-    fetch('http://localhost:3000/api/session-info', { credentials: 'include' })
-      .then((res) => {
-        if (res.ok) {
-          return res.json();
-        } else {
-          throw new Error('Not Authenticated');
-        }
-      })
-      .then((data) => {
-        if (data.authenticated) {
-          setAuthUser({
-            id: data.id,
-            email: data.email,
-            name: data.name,
-            avatar_url: data.avatar_url,
-          });
-          setIsLoggedin(true);
-        } else {
-          setIsLoggedin(false);
-          window.location.href = 'http://localhost:3000/auth/google';
-        }
-      })
-      .catch((error) => {
-        console.log('Authentication error: ', error);
-        setIsLoggedin(false);
-        window.location.href = 'http://localhost:3000/auth/google';
-      });
-  }, [setAuthUser, setIsLoggedin]);
-
   const submitRef = useRef<HTMLFormElement>(null);
 
   type FormData = {
