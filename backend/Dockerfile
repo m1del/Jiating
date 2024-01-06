@@ -2,6 +2,9 @@ FROM golang:1.21-alpine3.19
 
 WORKDIR /app
 
+# install bash
+RUN apk add --no-cache bash
+
 # copy the Go module files and download dependencies
 COPY go.mod go.sum ./
 RUN go mod download
