@@ -56,3 +56,25 @@ func (s *service) GetEvents(year string) ([]string, error) {
 
 	return events, nil
 }
+
+func (s *service) GetPhotos(year, event string) ([]string, error) {
+	bucket := os.Getenv("S3_BUCKET_NAME")
+	prefix := fmt.Sprintf("photoshoots/%s/%s/", year, event)
+
+	output, err := s.s3Client.ListObjectsV2(context.TODO(), &s3.ListObjectsV2Input{
+		Bucket:    aws.String(bucket),
+		Prefix:    aws.String(prefix),
+		Delimiter: aws.String("/"),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list objects from s3: %v", err)
+	}
+
+	var photos []string
+	for _, content := range output.Contents {
+		photo := strings.TrimPrefix(*content.Key, prefix)
+		photos = append(photos, photo)
+	}
+
+	return photos, nil
+}

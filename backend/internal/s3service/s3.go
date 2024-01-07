@@ -15,6 +15,7 @@ import (
 type Service interface {
 	GetYears() ([]string, error)
 	GetEvents(year string) ([]string, error)
+	GetPhotos(year, event string) ([]string, error)
 }
 
 // S3ClientAPI defines the methods used from the S3 client.
