@@ -43,6 +43,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	//media
 	r.Get("/api/get/photoshoot-years", deps.GetYearsHandler())
 	r.Get("/api/get/photoshoot-events/{year}", deps.GetEventsHandler())
+	r.Get("/api/get/photoshoot-photos/{year}/{event}", deps.GetPhotosHandler())
 
 	// email
 	r.With(RateLimitMiddleware).Post("/api/send-email", handlers.ContactFormSubmissionHandler())
