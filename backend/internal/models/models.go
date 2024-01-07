@@ -17,17 +17,15 @@ type Admin struct {
 }
 
 type Event struct {
-	ID          uint      `json:"id"`           // primary key
+	ID          string    `json:"id"`           // primary key
 	CreatedAt   time.Time `json:"created_at"`   // time of creation
 	UpdatedAt   time.Time `json:"updated_at"`   // time of last update
 	DeletedAt   time.Time `json:"deleted_at"`   // time of deletion, permenant !!
 	AdminID     uint      `json:"admin_id"`     // foreign key to the admin
 	EventName   string    `json:"event_name"`   // name of the event
-	Date        time.Time `json:"date"`         // date of the event
 	Content     string    `json:"content"`      // for text content, ig/yt embed links
-	Draft       bool      `json:"draft"`        // if the event is a draft
+	IsDraft     bool      `json:"is_draft"`     // if the event is a draft
 	PublishedAt time.Time `json:"published_at"` // time of publication, nil if draft
-	Admin       Admin     `json:"-"`            // one to one relationship
 	Images      []Image   `json:"images"`       // one to many relationship
 }
 
@@ -35,6 +33,6 @@ type Image struct {
 	ID        uint      `json:"id"`         // primary key
 	CreatedAt time.Time `json:"created_at"` // time of creation
 	UpdatedAt time.Time `json:"updated_at"` // time of last update
-	EventID   uint      `json:"event_id"`   // foreign key to the event
+	EventID   string    `json:"event_id"`   // foreign key to the event
 	ImageURL  string    `json:"image_url"`  // url of the image (s3)
 }
