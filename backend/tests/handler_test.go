@@ -94,3 +94,48 @@ func TestGetYearsIntegration(t *testing.T) {
 	// checking values
 	assert.Contains(t, years, "2020-2021")
 }
+
+func TestGetEvents(t *testing.T) {
+	mockS3Client := new(MockS3Client)
+	s3Service := s3service.NewService(mockS3Client)
+
+	// define mock response
+	mockS3Client.On("ListObjectsV2", mock.Anything, mock.AnythingOfType("*s3.ListObjectsV2Input"), mock.Anything).Return(&s3.ListObjectsV2Output{
+		CommonPrefixes: []types.CommonPrefix{
+			{Prefix: aws.String("photoshoots/2020-2021/Event1")},
+			{Prefix: aws.String("photoshoots/2020-2021/Event2")},
+		},
+	}, nil)
+
+	// call function to test
+	events, err := s3Service.GetEvents("2020-2021")
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"Event1", "Event2"}, events)
+
+	mockS3Client.AssertExpectations(t)
+}
+
+func TestGetEventsIntegration(t *testing.T) {
+	if os.Getenv("RUN_INTEGRATION_TESTS") != "true" {
+		t.Skip("Skipping integration test")
+	}
+
+	cfg, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithRegion(os.Getenv("AWS_REGION")),
+	)
+	assert.NoError(t, err)
+
+	s3Client := s3.NewFromConfig(cfg)
+	s3Service := s3service.NewService(s3Client)
+
+	expectedYear := "2020-2021"
+	expectedEvents := []string{"AASA 2020", "CNY 2021"}
+
+	events, err := s3Service.GetEvents(expectedYear)
+	assert.NoError(t, err)
+
+	// checking if events is not empty
+	assert.NotEmpty(t, events)
+	// checking values
+	assert.Equal(t, expectedEvents, events)
+}
