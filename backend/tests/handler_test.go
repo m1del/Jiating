@@ -139,3 +139,47 @@ func TestGetEventsIntegration(t *testing.T) {
 	// checking values
 	assert.Equal(t, expectedEvents, events)
 }
+
+func TestGetPhotos(t *testing.T) {
+	mockS3Client := new(MockS3Client)
+	s3Service := s3service.NewService(mockS3Client)
+
+	mockS3Client.On("ListObjectsV2", mock.Anything, mock.AnythingOfType("*s3.ListObjectsV2Input"), mock.Anything).Return(&s3.ListObjectsV2Output{
+		Contents: []types.Object{
+			{Key: aws.String("photoshoots/2020-2021/Event1/photo1.jpg")},
+			{Key: aws.String("photoshoots/2020-2021/Event1/photo2.jpg")},
+		},
+	}, nil)
+
+	photos, err := s3Service.GetPhotos("2020-2021", "Event1")
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"photo1.jpg", "photo2.jpg"}, photos)
+
+	mockS3Client.AssertExpectations(t)
+}
+
+func TestGetPhotosIntegration(t *testing.T) {
+	if os.Getenv("RUN_INTEGRATION_TESTS") != "true" {
+		t.Skip("Skipping integration test")
+	}
+
+	cfg, err := config.LoadDefaultConfig(context.TODO(),
+		config.WithRegion(os.Getenv("AWS_REGION")),
+	)
+	assert.NoError(t, err)
+
+	s3Client := s3.NewFromConfig(cfg)
+	s3Service := s3service.NewService(s3Client)
+
+	expectedYear := "2020-2021"
+	expectedEvent := "AASA 2020"
+	expectedPhotos := "DSC01330.jpg"
+
+	photos, err := s3Service.GetPhotos(expectedYear, expectedEvent)
+	assert.NoError(t, err)
+
+	// checking if photos is not empty
+	assert.NotEmpty(t, photos)
+	// checking values
+	assert.Contains(t, photos, expectedPhotos)
+}
