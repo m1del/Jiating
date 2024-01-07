@@ -1,59 +1,39 @@
-# Simple Makefile for a Go project
+# Makefile for a Go server and postgresdb with Docker
 
-# Build the application
-all: build
+# environment variables
+include .env
+export
 
-build:
-	@echo "Building..."
-	@go build -o main cmd/api/main.go
+# start Docker containers
+up:
+	@docker compose up
+up-d:
+	@docker compose up -d
 
-# Run the application
-run:
-	@go run cmd/api/main.go
+# connect to database
+db:
+	@PGPASSWORD=${DB_PASSWORD} psql -h localhost -p ${DB_PORT} -U ${DB_USERNAME} -d ${DB_DATABASE}
 
-# Create DB container
-docker-run:
-	@if docker compose up 2>/dev/null; then \
-		: ; \
-	else \
-		echo "Falling back to Docker Compose V1"; \
-		docker-compose up; \
-	fi
+# connect to server
+server:
+	@docker exec -it jiating_server bash
 
-# Shutdown DB container
-docker-down:
-	@if docker compose down 2>/dev/null; then \
-		: ; \
-	else \
-		echo "Falling back to Docker Compose V1"; \
-		docker-compose down; \
-	fi
+# stop Docker containers (if in detached mode)
+down:
+	@docker compose down
 
-# Test the application
+# rebuild and start Docker containers
+rebuild:
+	@docker-compose up -d --build
+
+# test the application inside Docker
 test:
-	@echo "Testing..."
-	@go test ./tests -v
+	@docker compose exec server go test ./tests -v
 
-# Clean the binary
+# Clean up
 clean:
-	@echo "Cleaning..."
-	@rm -f main
+	@docker compose down
+	@docker system prune -f
+	@docker volume prune -f
 
-# Live Reload
-watch:
-	@if command -v air > /dev/null; then \
-	    air; \
-	    echo "Watching...";\
-	else \
-	    read -p "Go's 'air' is not installed on your machine. Do you want to install it? [Y/n] " choice; \
-	    if [ "$$choice" != "n" ] && [ "$$choice" != "N" ]; then \
-	        go install github.com/cosmtrek/air@latest; \
-	        air; \
-	        echo "Watching...";\
-	    else \
-	        echo "You chose not to install air. Exiting..."; \
-	        exit 1; \
-	    fi; \
-	fi
-
-.PHONY: all build run test clean
+.PHONY: up up-d down db server rebuild test clean

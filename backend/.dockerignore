@@ -1,0 +1,26 @@
+# compiled object files
+*.o
+*.a
+*.so
+
+# folders
+tmp
+
+# executables
+*.exe
+*.exe~
+*.dll
+*.dylib
+
+# test binaries
+*.test
+*.out
+
+# misc
+post_cmd.txt
+pre_cmd.txt
+
+# project files
+.DS_Store
+.vscode
+.idea

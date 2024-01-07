@@ -1,49 +1,52 @@
-# Project backend
+# Jiating Backend
 
-One Paragraph of project description goes here
+This backend is part of the Jiating website and is designed to work with the client built using React. It's built with Go, using the go-chi framework for the HTTP services (the REST API) with a PostgresQL database. It is dockerized for easy development and deployment.
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+These instructions will help you set up the backend services on your local machine for development and testing purposes.
 
-## MakeFile
+### Prequisites
+- Docker
+- Docker Compose
+#### Optional
+- Go version 1.21.5
+- psql 15.5 (recommended)
 
-run all make commands with clean tests
-```bash
-make all build
+## Using Docker for Development
+
+This project uses Docker to simplify dependency management and to ensure a consistent development environment. Here's how to get started:
+
+
+Start the application
+```
+make up
+```
+Start the application (in detached mode)
+```
+make up-d
 ```
 
-build the application
-```bash
-make build
+Stop the application
+```
+make down
 ```
 
-run the application
-```bash
-make run
+Rebuilding and restarting the application:
+```
+make rebuild
 ```
 
-Create DB container
-```bash
-make docker-run
+Running Tests
 ```
-
-Shutdown DB container
-```bash
-make docker-down
-```
-
-live reload the application
-```bash
-make watch
-```
-
-run the test suite
-```bash
 make test
 ```
 
-clean up binary from the last build
-```bash
+Clean up (remove containers, networks, and volumes)
+```
 make clean
 ```
+
+# Deployment
+
+lol todo ;-;
