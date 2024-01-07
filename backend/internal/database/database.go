@@ -40,7 +40,15 @@ func New() Service {
 
 	// initialize tables
 	if err := createAdminTable(db); err != nil {
-		loggers.Error.Fatalf("error creating admin table: %v", err)
+		loggers.Error.Fatalf("error creating admins table: %v", err)
+	}
+
+	if err := createImageTable(db); err != nil {
+		loggers.Error.Fatalf("error creating images table: %v", err)
+	}
+
+	if err := createEventTable(db); err != nil {
+		loggers.Error.Fatalf("error creating events table: %v", err)
 	}
 
 	s := &service{db: db}
@@ -117,9 +125,53 @@ func (s *service) CreateAdmin(admin models.Admin) error {
         created_at, updated_at, name, email, position, status
     ) VALUES ($1, $2, $3, $4, $5, $6)`
 
-	_, err := s.db.ExecContext(ctx, query, time.Now(), time.Now(), admin.Name, admin.Email, admin.Position, admin.Status)
+	_, err := s.db.ExecContext(
+		ctx, query, time.Now(), time.Now(), admin.Name, admin.Email, admin.Position, admin.Status,
+	)
 	if err != nil {
 		loggers.Error.Printf("Error creating admin: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+func createImageTable(db *sql.DB) error {
+	createTableSQL := `
+    CREATE TABLE IF NOT EXISTS images (
+        id SERIAL PRIMARY KEY,
+        created_at TIMESTAMP NOT NULL,
+        updated_at TIMESTAMP NOT NULL,
+        image_url VARCHAR(255) NOT NULL
+    );`
+
+	_, err := db.Exec(createTableSQL)
+	if err != nil {
+		loggers.Error.Printf("Error creating admin table: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+func createEventTable(db *sql.DB) error {
+	createTableSQL := `
+    CREATE TABLE IF NOT EXISTS events (
+        id VARCHAR(36) PRIMARY KEY,
+        created_at TIMESTAMP NOT NULL,
+        updated_at TIMESTAMP NOT NULL,
+        deleted_at TIMESTAMP NULL,
+		admin_id INT REFERENCES admins(id),
+        event_name VARCHAR(255) NOT NULL,
+		content TEXT, 
+        is_draft BOOLEAN NOT NULL,
+		published_at TIMESTAMP NULL,
+		image_id INT REFERENCES images(id)
+    );`
+
+	_, err := db.Exec(createTableSQL)
+	if err != nil {
+		loggers.Error.Printf("Error creating event table: %v", err)
 		return err
 	}
 
