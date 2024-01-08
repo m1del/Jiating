@@ -102,10 +102,11 @@ const EmailForm = () => {
 
   return (
     <div className="container mx-auto px-4">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="flex flex-col md:flex-row md:space-x-4">
+      <form onSubmit={handleSubmit} 
+        className="space-y-6 bg-white p-6 rounded-lg shadow-md text-2xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block font-medium text-gray-700">
               Name
               <input
                 type="text"
@@ -114,12 +115,12 @@ const EmailForm = () => {
                 onChange={handleChange}
                 required
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
-                focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                focus:outline-none focus:ring-cyan-700 focus:border-cyan-700"
               />
             </label>
           </div>
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block font-medium text-gray-700">
               Email
               <input
                 type="email"
@@ -128,14 +129,14 @@ const EmailForm = () => {
                 onChange={handleChange}
                 required
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
-                focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                focus:outline-none focus:ring-cyan-700-500 focus:border-cyan-700"
               />
             </label>
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block font-medium text-gray-700">
             Subject
             <input
               type="text"
@@ -144,13 +145,13 @@ const EmailForm = () => {
               onChange={handleChange}
               required
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
-              focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              focus:outline-none focus:ring-cyan-700 focus:border-cyan-700"
             />
           </label>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block font-medium text-gray-700">
             Message
             <textarea
               name="message"
@@ -158,7 +159,7 @@ const EmailForm = () => {
               onChange={handleChange}
               required
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
-              focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              focus:outline-none focus:ring-cyan-700 focus:border-cyan-700"
               rows={4}
             />
           </label>
@@ -168,7 +169,7 @@ const EmailForm = () => {
           type="submit"
           className={`${styles.button}`}
         >
-          Send
+          Get in touch
         </button>
       </form>
       {showModal && <Modal msg={modalMsg} onClose={closeModal} />}
