@@ -43,12 +43,29 @@ func (deps *HandlerDependencies) GetEventsHandler() http.HandlerFunc {
 	}
 }
 
+func (deps *HandlerDependencies) ListPhotosHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		year := chi.URLParam(r, "year")
+		event := chi.URLParam(r, "event")
+		loggers.Debug.Printf("year: %v, event: %v", year, event)
+		photos, err := deps.S3Service.ListPhotos(year, event)
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			loggers.Error.Printf("Error getting photos: %v", err)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(photos)
+	}
+}
+
 func (deps *HandlerDependencies) GetPhotosHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		year := chi.URLParam(r, "year")
 		event := chi.URLParam(r, "event")
 		loggers.Debug.Printf("year: %v, event: %v", year, event)
-		photos, err := deps.S3Service.GetPhotos(year, event)
+		photos, err := deps.S3Service.GetPhotos(r.Context(), year, event)
 		if err != nil {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			loggers.Error.Printf("Error getting photos: %v", err)
