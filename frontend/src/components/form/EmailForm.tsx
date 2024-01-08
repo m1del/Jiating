@@ -83,7 +83,7 @@ const EmailForm = () => {
   return (
     <div className="container mx-auto px-4">
       <form onSubmit={handleSubmit} 
-        className="space-y-6 bg-white p-6 rounded-lg shadow-md text-2xl">
+        className="space-y-6 bg-slate-100 p-6 rounded-lg shadow-md text-2xl">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="flex-1">
             <label className="block font-medium text-gray-700">
