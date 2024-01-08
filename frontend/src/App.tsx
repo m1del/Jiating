@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
-import { Footer, Navbar } from './components';
+import { Footer, Navbar, Event } from './components';
 import { AuthProvider } from './context/AuthContext';
 import AdminDashboard from './features/admin/AdminDashboard';
 import ProtectedRoute from './features/authentication/components/ProtectedRoute';
-import { Contact, Events, Home, CreatePost } from './pages';
+import { Contact, Events, Home, CreateEvent } from './pages';
 import { styles } from './styles';
 
 function App() {
@@ -29,7 +29,15 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/events" element={<Events />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/postform" element={<CreatePost />} />
+            <Route path="/event" element={<Event />} />
+            <Route
+              path="/admin/eventform"
+              element={
+                <ProtectedRoute>
+                  <CreateEvent />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/admin/dashboard"
               element={
@@ -38,6 +46,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path="/admin/get-event" element={<Event />}></Route>
           </Routes>
           <Footer />
         </div>

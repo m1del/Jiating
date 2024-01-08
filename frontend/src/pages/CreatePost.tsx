@@ -1,12 +1,12 @@
 import React from 'react';
-import PostForm from '../components/postForm/PostForm';
+import EventForm from '../features/admin/components/EventForm';
 
-function CreatePost() {
+function CreateEvent() {
   return (
     <div>
-      <PostForm />
+      <EventForm />
     </div>
   );
 }
 
-export default CreatePost;
+export default CreateEvent;
