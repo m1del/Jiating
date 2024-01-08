@@ -1,7 +1,15 @@
-const EventNavigation = ({ events, onEventSelect, selectedEvent }) => {
+import { FC } from 'react';
+
+interface EventNavigationProps {
+  events: string[];
+  onEventSelect: (event: string) => void;
+  selectedEvent: string;
+}
+
+const EventNavigation: FC<EventNavigationProps> = ({ events, onEventSelect, selectedEvent }) => {
   return (
     <div className="flex overflow-x-auto space-x-4 bg-gray-200 px-4 py-2 rounded-lg shadow-md">
-      {events.map(event => (
+      {events.map((event) => (
         <button
           key={event}
           className={`bg-cyan-600 hover:bg-cyan-800 text-white font-medium py-2 px-4 rounded
