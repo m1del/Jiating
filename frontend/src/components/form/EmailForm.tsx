@@ -8,15 +8,50 @@ type FormData = {
   message: string;
 };
 
+const Modal = ({ msg, onClose }) => {
+  return (
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div className="mt-3 text-center">
+          <h3 className="text-lg leading-6 font-medium text-gray-900">{msg}</h3>
+          <div className="mt-2 px-7 py-3">
+            <button
+              onClick={onClose}
+              className={`${styles.button}`}
+              type="button"
+              style={{ transition: "all .15s ease" }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const EmailForm = () => {
   const [formData, setFormData] = useState<FormData>({ name: '', email: '', subject: '', message: '' });
+  const [modalMsg, setModalMsg] = useState<string>('');
+  const [showModal, setShowModal] = useState<boolean>(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const resetForm = () => {
+    setFormData({ name: '', email: '', subject: '', message: '' });
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setModalMsg('');
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setModalMsg('');
+    setShowModal(false);
 
     // email Validation
     if (!validateEmail(formData.email)) {
@@ -45,9 +80,13 @@ const EmailForm = () => {
       if (!resp.ok) {
         throw new Error('Failed to send email');
       }
-      //TODO: handle sucess -> clear form & show sucess message
+      setModalMsg('Email sent successfully!');
+      setShowModal(true);
+      resetForm();
     } catch (err) {
       console.error(err);
+      setModalMsg('An error occurred :(');
+      setShowModal(true);
     }
   };
 
@@ -132,6 +171,7 @@ const EmailForm = () => {
           Send
         </button>
       </form>
+      {showModal && <Modal msg={modalMsg} onClose={closeModal} />}
     </div>
   );
 };
