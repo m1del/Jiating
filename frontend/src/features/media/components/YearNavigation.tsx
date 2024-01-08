@@ -1,7 +1,15 @@
-const YearNavigation = ({ years, onYearSelect, selectedYear }) => {
+import { FC } from 'react';
+
+interface YearNavigationProps {
+  years: string[];
+  onYearSelect: (year: string) => void;
+  selectedYear: string;
+}
+
+const YearNavigation: FC<YearNavigationProps> = ({ years, onYearSelect, selectedYear }) => {
   return (
     <div className="flex overflow-x-auto space-x-3 bg-white shadow-md rounded-md py-2 px-2">
-      {years.map(year => (
+      {years.map((year) => (
         <button
           key={year}
           className={`bg-cyan-600 hover:bg-cyan-700 text-white font-medium py-2 px-4 

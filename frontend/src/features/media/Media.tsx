@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { EventNavigation, PhotoGallery, YearNavigation } from './components';
+import { EventNavigation, Loader, PhotoGallery, YearNavigation } from './components';
 
 function Media() {
     const [years, setYears] = useState([]);
@@ -7,13 +7,15 @@ function Media() {
     const [photos, setPhotos] = useState([]); // State to hold photo paths
     const [selectedYear, setSelectedYear] = useState('');
     const [selectedEvent, setSelectedEvent] = useState('');
-    const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    // handle loading for events and photos separately
+    const [loadingEvents, setLoadingEvents] = useState(false);
+    const [loadingPhotos, setLoadingPhotos] = useState(false);
 
 
     useEffect(() => {
         const fetchYears = async () => {
-            setLoading(true);
             try {
                 const response = await fetch('http://localhost:3000/api/get/photoshoot-years');
                 if (!response.ok) {
@@ -24,8 +26,6 @@ function Media() {
             } catch (error) {
                 console.error('Error fetching years:', error);
                 setError('Failed to load years');
-            } finally {
-                setLoading(false);
             }
         };
 
@@ -35,7 +35,7 @@ function Media() {
     const handleYearSelect = async (year: string) => {
         setSelectedYear(year);
         setEvents([]);
-        setLoading(true);
+        setLoadingEvents(true);
 
         try {
             const response = await fetch(`http://localhost:3000/api/get/photoshoot-events/${year}`);
@@ -48,12 +48,12 @@ function Media() {
             console.error('Error fetching events:', err);
             setError('Failed to load events');
         } finally {
-            setLoading(false);
+            setLoadingEvents(false);
         }
     };
 
     const handleEventSelect = async (event: string) => {
-        setLoading(true);
+        setLoadingPhotos(true);
         try {
             const response = await fetch(`http://localhost:3000/api/get/photoshoot-photos/${selectedYear}/${event}`);
             if (!response.ok) {
@@ -61,29 +61,36 @@ function Media() {
             }
             const data = await response.json();
             setSelectedEvent(event)
-            setPhotos(data); // Update the photos state
+            setPhotos(data);
         } catch (err) {
             console.error('Error fetching photos:', err);
             setError('Failed to load photos');
         } finally {
-            setLoading(false);
+            setLoadingPhotos(false);
         }
     };
-
-
-    if (loading) {
-        return <div>Loading...</div>;
-    }
 
     if (error) {
         return <div>Error: {error}</div>;
     }
 
     return (
-        <div className="container mx-auto p-4">
+        <div className="min-h-screen container mx-auto p-4">
+            <div className="bg-gray-700 text-white p-6 rounded-md shadow-md">
+                <h1 className="text-4xl font-bold mb-2">Media</h1>
+                <p className="text-xl">Explore our collection of photos and events</p>
+            </div>
+
             <YearNavigation years={years} selectedYear={selectedYear} onYearSelect={handleYearSelect} />
-            <EventNavigation events={events} selectedEvent={selectedEvent} onEventSelect={handleEventSelect} />
-            <PhotoGallery photos={photos} />
+
+            {loadingEvents ? <Loader /> : (
+                <EventNavigation events={events} selectedEvent={selectedEvent} onEventSelect={handleEventSelect} />
+            )}            
+
+             {loadingPhotos ? <Loader /> : (
+                <PhotoGallery photos={photos} />
+            )}
+            
         </div>
     )
 }

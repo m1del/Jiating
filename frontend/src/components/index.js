@@ -1,5 +1,8 @@
 import Footer from './Footer';
+import Modal from './Modal';
 import Navbar from './Navbar';
-import EmailForm from './form/EmailForm';
 import Event from './events/Event';
-export { EmailForm, Footer, Navbar, Event };
+import EmailForm from './form/EmailForm';
+
+export { EmailForm, Event, Footer, Modal, Navbar };
+

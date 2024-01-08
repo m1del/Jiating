@@ -1,8 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 
-const PhotoModal = ({ photo, onClose }) => {
+interface PhotoModalProps {
+  photo: string;
+  onClose: () => void;
+}
+
+const PhotoModal: FC<PhotoModalProps> = ({ photo, onClose }) => {
   useEffect(() => {
-    const handleKeyUp = (e) => {
+    const handleKeyUp = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
       }
@@ -21,7 +26,8 @@ const PhotoModal = ({ photo, onClose }) => {
         <button 
           onClick={onClose} 
           className="absolute top-2 right-2 bg-black bg-opacity-50 text-white text-5xl 
-          font-bold hover:bg-opacity-70 rounded-full shadow-lg h-10 w-10 flex items-center justify-center"        >
+          font-bold hover:bg-opacity-70 rounded-full shadow-lg h-10 w-10 flex items-center justify-center"
+        >
           &times;
         </button>
         <img src={photo} alt="Enlarged view" className="max-h-[80vh] w-auto" />
@@ -30,37 +36,41 @@ const PhotoModal = ({ photo, onClose }) => {
   );
 };
 
-const PhotoGallery = ({ photos }) => {
-    const [selectedPhoto, setSelectedPhoto] = useState(null);
+interface PhotoGalleryProps {
+  photos: string[];
+}
 
-    const handlePhotoClick = (photo, isLoaded) => {
-        if (isLoaded) {
-            setSelectedPhoto(photo);
-        }
-    };
+const PhotoGallery: FC<PhotoGalleryProps> = ({ photos }) => {
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
 
-    const handleCloseModal = () => {
-        setSelectedPhoto(null);
-    };
+  const handlePhotoClick = (photo: string, isLoaded: boolean) => {
+    if (isLoaded) {
+      setSelectedPhoto(photo);
+    }
+  };
 
-    return (
-        <div>
-            {selectedPhoto && <PhotoModal photo={selectedPhoto} onClose={handleCloseModal} />}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
-                {photos.map((photo, index) => (
-                    <div key={index} className="overflow-hidden rounded-lg shadow-lg cursor-pointer">
-                        <img 
-                            src={photo} 
-                            alt={`Photo ${index + 1}`} 
-                            className="object-cover w-full h-full transition-transform duration-300 ease-in-out hover:scale-110 hover:shadow-xl" 
-                            onClick={(e) => handlePhotoClick(photo, e.target.complete)}
-                            loading="lazy"
-                        />
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
+  const handleCloseModal = () => {
+    setSelectedPhoto(null);
+  };
+
+  return (
+    <div>
+      {selectedPhoto && <PhotoModal photo={selectedPhoto} onClose={handleCloseModal} />}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+        {photos.map((photo, index) => (
+          <div key={index} className="overflow-hidden rounded-lg shadow-lg cursor-pointer">
+            <img 
+              src={photo} 
+              alt={`Photo ${index + 1}`} 
+              className="object-cover w-full h-full transition-transform duration-300 ease-in-out hover:scale-110 hover:shadow-xl" 
+              onClick={(e) => handlePhotoClick(photo, (e.target as HTMLImageElement).complete)}
+              loading="lazy"
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
 export default PhotoGallery;
