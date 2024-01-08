@@ -18,7 +18,12 @@ const PhotoModal = ({ photo, onClose }) => {
   return (
     <div className="z-10 fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4">
       <div className="relative max-w-full max-h-full overflow-auto">
-        <button onClick={onClose} className="absolute top-2 right-2 text-white text-3xl font-bold hover:text-gray-300">&times;</button>
+        <button 
+          onClick={onClose} 
+          className="absolute top-2 right-2 bg-black bg-opacity-50 text-white text-5xl 
+          font-bold hover:bg-opacity-70 rounded-full shadow-lg h-10 w-10 flex items-center justify-center"        >
+          &times;
+        </button>
         <img src={photo} alt="Enlarged view" className="max-h-[80vh] w-auto" />
       </div>
     </div>
