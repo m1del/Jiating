@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
-import { Footer, Navbar } from './components';
+import { Event, Footer, Navbar } from './components';
 import { AuthProvider } from './context/AuthContext';
 import AdminDashboard from './features/admin/AdminDashboard';
 import ProtectedRoute from './features/authentication/components/ProtectedRoute';
 import Media from './features/media/Media';
-import { Contact, Events, Home } from './pages';
+import { Contact, CreateEvent, Events, Home } from './pages';
 import { styles } from './styles';
 
 function App() {
@@ -31,15 +31,26 @@ function App() {
             <Route path="/media" element={<Media />} />
             <Route path="/events" element={<Events />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path='/admin/dashboard'
+            <Route path="/event" element={<Event />} />
+            <Route
+              path="/admin/eventform"
+              element={
+                <ProtectedRoute>
+                  <CreateEvent />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/dashboard"
               element={
                 <ProtectedRoute>
                   <AdminDashboard />
                 </ProtectedRoute>
               }
             />
+            <Route path="/admin/get-event" element={<Event />}></Route>
           </Routes>
-          <Footer/>
+          <Footer />
         </div>
       </Router>
     </AuthProvider>
