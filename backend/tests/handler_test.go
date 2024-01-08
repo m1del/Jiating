@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
+	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/stretchr/testify/assert"
@@ -51,9 +51,20 @@ func (m *MockS3Client) ListObjectsV2(ctx context.Context, input *s3.ListObjectsV
 	return args.Get(0).(*s3.ListObjectsV2Output), args.Error(1)
 }
 
+type MockPresigner struct {
+	mock.Mock
+}
+
+func (m *MockPresigner) GetObject(bucketName string, objectKey string, lifetimeSecs int64) (*v4.PresignedHTTPRequest, error) {
+	args := m.Called(bucketName, objectKey, lifetimeSecs)
+	return args.Get(0).(*v4.PresignedHTTPRequest), args.Error(1)
+}
+
 func TestGetYears(t *testing.T) {
 	mockS3Client := new(MockS3Client)
-	s3Service := s3service.NewService(mockS3Client)
+	mockPresigner := new(MockPresigner)
+
+	s3Service := s3service.NewMockService(mockS3Client, mockPresigner)
 
 	expectedYears := []string{"2020-2021", "2021-2022", "2022-2023", "2023-2024"}
 	mockS3Client.On("ListObjectsV2", mock.Anything, mock.AnythingOfType("*s3.ListObjectsV2Input"), mock.Anything).Return(&s3.ListObjectsV2Output{
@@ -78,13 +89,7 @@ func TestGetYearsIntegration(t *testing.T) {
 		t.Skip("Skipping integration test")
 	}
 
-	cfg, err := config.LoadDefaultConfig(context.TODO(),
-		config.WithRegion(os.Getenv("AWS_REGION")),
-	)
-	assert.NoError(t, err)
-
-	s3Client := s3.NewFromConfig(cfg)
-	s3Service := s3service.NewService(s3Client)
+	s3Service := s3service.NewService()
 
 	years, err := s3Service.GetYears()
 	assert.NoError(t, err)
@@ -97,7 +102,9 @@ func TestGetYearsIntegration(t *testing.T) {
 
 func TestGetEvents(t *testing.T) {
 	mockS3Client := new(MockS3Client)
-	s3Service := s3service.NewService(mockS3Client)
+	mockPresigner := new(MockPresigner)
+
+	s3Service := s3service.NewMockService(mockS3Client, mockPresigner)
 
 	// define mock response
 	mockS3Client.On("ListObjectsV2", mock.Anything, mock.AnythingOfType("*s3.ListObjectsV2Input"), mock.Anything).Return(&s3.ListObjectsV2Output{
@@ -120,13 +127,7 @@ func TestGetEventsIntegration(t *testing.T) {
 		t.Skip("Skipping integration test")
 	}
 
-	cfg, err := config.LoadDefaultConfig(context.TODO(),
-		config.WithRegion(os.Getenv("AWS_REGION")),
-	)
-	assert.NoError(t, err)
-
-	s3Client := s3.NewFromConfig(cfg)
-	s3Service := s3service.NewService(s3Client)
+	s3Service := s3service.NewService()
 
 	expectedYear := "2020-2021"
 	expectedEvents := []string{"AASA 2020", "CNY 2021"}
@@ -140,9 +141,11 @@ func TestGetEventsIntegration(t *testing.T) {
 	assert.Equal(t, expectedEvents, events)
 }
 
-func TestGetPhotos(t *testing.T) {
+func TestListPhotos(t *testing.T) {
 	mockS3Client := new(MockS3Client)
-	s3Service := s3service.NewService(mockS3Client)
+	mockPresigner := new(MockPresigner)
+
+	s3Service := s3service.NewMockService(mockS3Client, mockPresigner)
 
 	mockS3Client.On("ListObjectsV2", mock.Anything, mock.AnythingOfType("*s3.ListObjectsV2Input"), mock.Anything).Return(&s3.ListObjectsV2Output{
 		Contents: []types.Object{
@@ -151,11 +154,62 @@ func TestGetPhotos(t *testing.T) {
 		},
 	}, nil)
 
-	photos, err := s3Service.GetPhotos("2020-2021", "Event1")
+	photos, err := s3Service.ListPhotos("2020-2021", "Event1")
 	assert.NoError(t, err)
 	assert.Equal(t, []string{"photo1.jpg", "photo2.jpg"}, photos)
 
 	mockS3Client.AssertExpectations(t)
+}
+
+func TestListPhotosIntegration(t *testing.T) {
+	if os.Getenv("RUN_INTEGRATION_TESTS") != "true" {
+		t.Skip("Skipping integration test")
+	}
+
+	s3Service := s3service.NewService()
+
+	expectedYear := "2020-2021"
+	expectedEvent := "AASA 2020"
+	expectedPhotos := "DSC01330.jpg"
+
+	photos, err := s3Service.ListPhotos(expectedYear, expectedEvent)
+	assert.NoError(t, err)
+
+	// checking if photos is not empty
+	assert.NotEmpty(t, photos)
+	// checking values
+	assert.Contains(t, photos, expectedPhotos)
+}
+
+func TestGetPhotos(t *testing.T) {
+	mockS3Client := new(MockS3Client)
+	mockPresigner := new(MockPresigner)
+
+	s3Service := s3service.NewMockService(mockS3Client, mockPresigner)
+
+	year := "2020-2021"
+	event := "AASA 2020"
+	bucket := os.Getenv("S3_BUCKET_NAME")
+
+	// mock s3 response
+	mockS3Client.On("ListObjectsV2", mock.Anything, mock.AnythingOfType("*s3.ListObjectsV2Input"), mock.Anything).Return(&s3.ListObjectsV2Output{
+		Contents: []types.Object{
+			{Key: aws.String("photoshoots/2020-2021/AASA 2020/DSC01330.jpg")},
+			{Key: aws.String("photoshoots/2020-2021/AASA 2020/DSC01331.jpg")},
+		},
+	}, nil)
+
+	// mock presigner response
+	mockPresigner.On("GetObject", bucket, "photoshoots/2020-2021/AASA 2020/DSC01330.jpg", int64(900)).Return(&v4.PresignedHTTPRequest{URL: "https://presigned.url/DSC01330.jpg"}, nil)
+	mockPresigner.On("GetObject", bucket, "photoshoots/2020-2021/AASA 2020/DSC01331.jpg", int64(900)).Return(&v4.PresignedHTTPRequest{URL: "https://presigned.url/DSC01331.jpg"}, nil)
+
+	// call function to test
+	urls, err := s3Service.GetPhotos(context.Background(), year, event)
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"https://presigned.url/DSC01330.jpg", "https://presigned.url/DSC01331.jpg"}, urls)
+
+	mockS3Client.AssertExpectations(t)
+	mockPresigner.AssertExpectations(t)
 }
 
 func TestGetPhotosIntegration(t *testing.T) {
@@ -163,23 +217,18 @@ func TestGetPhotosIntegration(t *testing.T) {
 		t.Skip("Skipping integration test")
 	}
 
-	cfg, err := config.LoadDefaultConfig(context.TODO(),
-		config.WithRegion(os.Getenv("AWS_REGION")),
-	)
-	assert.NoError(t, err)
-
-	s3Client := s3.NewFromConfig(cfg)
-	s3Service := s3service.NewService(s3Client)
+	s3Service := s3service.NewService()
 
 	expectedYear := "2020-2021"
 	expectedEvent := "AASA 2020"
-	expectedPhotos := "DSC01330.jpg"
 
-	photos, err := s3Service.GetPhotos(expectedYear, expectedEvent)
+	photos, err := s3Service.GetPhotos(context.Background(), expectedYear, expectedEvent)
 	assert.NoError(t, err)
 
 	// checking if photos is not empty
 	assert.NotEmpty(t, photos)
 	// checking values
-	assert.Contains(t, photos, expectedPhotos)
+	for _, photo := range photos {
+		assert.Contains(t, photo, "https://")
+	}
 }
