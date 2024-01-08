@@ -10,7 +10,7 @@ function Home() {
         <HomeHeading />
         <FloatBar />
 
-        <GoogleLoginButton className="m-8" />
+        <GoogleLoginButton />
 
         <Hero />
       </div>
