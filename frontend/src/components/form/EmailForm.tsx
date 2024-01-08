@@ -9,13 +9,20 @@ type FormData = {
   message: string;
 };
 
-
 const EmailForm = () => {
-  const [formData, setFormData] = useState<FormData>({ name: '', email: '', subject: '', message: '' });
+  const [formData, setFormData] = useState<FormData>({
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+  });
   const [modalMsg, setModalMsg] = useState<string>('');
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -32,6 +39,7 @@ const EmailForm = () => {
     e.preventDefault();
     setModalMsg('');
     setShowModal(false);
+    setIsLoading(true);
 
     // email Validation
     if (!validateEmail(formData.email)) {
@@ -40,13 +48,21 @@ const EmailForm = () => {
     }
 
     // text Fields Validation
-    if (!sanitizeInput(formData.name) || !sanitizeInput(formData.subject) || !sanitizeInput(formData.message)) {
+    if (
+      !sanitizeInput(formData.name) ||
+      !sanitizeInput(formData.subject) ||
+      !sanitizeInput(formData.message)
+    ) {
       alert('Invalid characters in the input fields.');
       return;
     }
 
     // length Checks
-    if (formData.name.length > 100 || formData.subject.length > 150 || formData.message.length > 1000) {
+    if (
+      formData.name.length > 100 ||
+      formData.subject.length > 150 ||
+      formData.message.length > 1000
+    ) {
       alert('Input is too long.');
       return;
     }
@@ -60,6 +76,7 @@ const EmailForm = () => {
       if (!resp.ok) {
         throw new Error('Failed to send email');
       }
+      setIsLoading(false);
       setModalMsg('Email sent successfully!');
       setShowModal(true);
       resetForm();
@@ -78,13 +95,15 @@ const EmailForm = () => {
   const sanitizeInput = (input: string) => {
     const re = /[<>]/;
     return !re.test(input);
-  }; 
+  };
 
   return (
     <div className="container mx-auto px-4">
-      <form onSubmit={handleSubmit} 
-        className="space-y-6 bg-slate-100 p-6 rounded-lg shadow-md text-2xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-6 rounded-lg bg-slate-100 p-6 text-2xl shadow-md"
+      >
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="flex-1">
             <label className="block font-medium text-gray-700">
               Name
@@ -94,8 +113,8 @@ const EmailForm = () => {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
-                focus:outline-none focus:ring-cyan-700 focus:border-cyan-700"
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm 
+                focus:border-cyan-700 focus:outline-none focus:ring-cyan-700"
               />
             </label>
           </div>
@@ -108,8 +127,8 @@ const EmailForm = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
-                focus:outline-none focus:ring-cyan-700-500 focus:border-cyan-700"
+                className="focus:ring-cyan-700-500 mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 
+                shadow-sm focus:border-cyan-700 focus:outline-none"
               />
             </label>
           </div>
@@ -124,8 +143,8 @@ const EmailForm = () => {
               value={formData.subject}
               onChange={handleChange}
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
-              focus:outline-none focus:ring-cyan-700 focus:border-cyan-700"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm 
+              focus:border-cyan-700 focus:outline-none focus:ring-cyan-700"
             />
           </label>
         </div>
@@ -138,19 +157,18 @@ const EmailForm = () => {
               value={formData.message}
               onChange={handleChange}
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
-              focus:outline-none focus:ring-cyan-700 focus:border-cyan-700"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm 
+              focus:border-cyan-700 focus:outline-none focus:ring-cyan-700"
               rows={4}
             />
           </label>
         </div>
 
-        <button
-          type="submit"
-          className={`${styles.button}`}
-        >
-          Get in touch
-        </button>
+        {(isLoading && <div className="loader"></div>) || (
+          <button type="submit" className={`${styles.button}`}>
+            Get in touch
+          </button>
+        )}
       </form>
       {showModal && <Modal msg={modalMsg} onClose={closeModal} />}
     </div>
