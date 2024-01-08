@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { EventNavigation, PhotoGallery, YearNavigation } from './components';
 
 function Media() {
@@ -6,6 +6,7 @@ function Media() {
     const [events, setEvents] = useState([]);
     const [photos, setPhotos] = useState([]); // State to hold photo paths
     const [selectedYear, setSelectedYear] = useState('');
+    const [selectedEvent, setSelectedEvent] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -59,7 +60,7 @@ function Media() {
                 throw new Error('Network response was not ok');
             }
             const data = await response.json();
-            console.log(data);
+            setSelectedEvent(event)
             setPhotos(data); // Update the photos state
         } catch (err) {
             console.error('Error fetching photos:', err);
@@ -79,9 +80,9 @@ function Media() {
     }
 
     return (
-        <div className="p-4">
-            <YearNavigation years={years} onYearSelect={handleYearSelect} />
-            <EventNavigation events={events} onEventSelect={handleEventSelect} />
+        <div className="container mx-auto p-4">
+            <YearNavigation years={years} selectedYear={selectedYear} onYearSelect={handleYearSelect} />
+            <EventNavigation events={events} selectedEvent={selectedEvent} onEventSelect={handleEventSelect} />
             <PhotoGallery photos={photos} />
         </div>
     )
