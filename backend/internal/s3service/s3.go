@@ -29,6 +29,8 @@ type S3ClientAPI interface {
 // PresignerAPI defines the methods used from the presigner.
 type PresignerAPI interface {
 	GetObject(bucketName string, objectKey string, lifetimeSecs int64) (*v4.PresignedHTTPRequest, error)
+	PutObject(bucketName string, objectKey string, lifetimeSecs int64) (*v4.PresignedHTTPRequest, error)
+	DeleteObject(bucketName string, objectKey string) (*v4.PresignedHTTPRequest, error)
 }
 
 // service struct
