@@ -28,7 +28,10 @@ export default function PostForm() {
     image_id: 0,
   });
 
+  //Want to make sure latest formData is being used (useState is async)
+  const [firstLoad, setFirstLoad] = useState(true);
   const [formUpdate, setFormUpdate] = useState(false);
+  const [formSubmit, setFormSubmit] = useState(false);
 
   //Check auth and get google auth information
 
@@ -71,33 +74,55 @@ export default function PostForm() {
   }, [formData]);
 
   useEffect(() => {
-    CheckAuth(setAuthUser, setIsLoggedin);
-    GetEvents(setFormData);
+    if (firstLoad) {
+      // Want to make sure we don't check auth and get events on every render
+      CheckAuth(setAuthUser, setIsLoggedin);
+      GetEvents(setFormData);
+      setFirstLoad(false);
+    }
     if (formUpdate) {
-      handleSubmit();
       setFormUpdate(false);
     }
-  }, [setAuthUser, setIsLoggedin, formUpdate, handleSubmit]);
+
+    if (formSubmit) {
+      handleSubmit();
+      setFormSubmit(false);
+    }
+  }, [
+    setAuthUser,
+    setIsLoggedin,
+    firstLoad,
+    formData,
+    formUpdate,
+    formSubmit,
+    handleSubmit,
+  ]);
 
   const checkDraft = async (e: FormEvent, isDraft: boolean) => {
     e.preventDefault();
 
     // Set eventID if it is a new event
-    if (formData.id === '') setFormData({ ...formData, id: uuidv4() });
-
-    setFormData({ ...formData, is_draft: isDraft });
+    if (formData.id === '') {
+      setFormData({ ...formData, id: uuidv4(), is_draft: isDraft });
+    } else {
+      setFormData({ ...formData, is_draft: isDraft });
+    }
 
     if (submitRef.current) {
       submitRef.current.checkValidity();
-      setFormUpdate(true);
-      // handleSubmit();
+      setFormSubmit(true);
     }
   };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+    setFormUpdate(true);
   };
 
   const sanitizeInput = (input: string) => {
