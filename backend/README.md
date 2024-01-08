@@ -26,6 +26,13 @@ Start the application (in detached mode)
 ```
 make up-d
 ```
+Connect to the services:
+```
+make db
+```
+```
+make server
+```
 
 Stop the application
 ```
