@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
-import { Footer, Navbar, Event } from './components';
+import { Event, Footer, Navbar } from './components';
 import { AuthProvider } from './context/AuthContext';
 import AdminDashboard from './features/admin/AdminDashboard';
 import ProtectedRoute from './features/authentication/components/ProtectedRoute';
-import { Contact, Events, Home, CreateEvent } from './pages';
+import Media from './features/media/Media';
+import { Contact, CreateEvent, Events, Home } from './pages';
 import { styles } from './styles';
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
           <Navbar isSticky={!intersecting} />
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/media" element={<Media />} />
             <Route path="/events" element={<Events />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/event" element={<Event />} />

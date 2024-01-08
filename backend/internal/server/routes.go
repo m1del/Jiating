@@ -3,6 +3,7 @@ package server
 import (
 	"backend/internal/auth"
 	"backend/internal/handlers"
+	"backend/internal/s3service"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -21,6 +22,12 @@ func (s *Server) RegisterRoutes() http.Handler {
 		AllowedHeaders:   []string{"Content-Type", "Authorization"},
 	})
 
+	// configure handler dependencies
+	s3service := s3service.NewService()
+	deps := &handlers.HandlerDependencies{
+		S3Service: s3service,
+	}
+
 	// initalize chi router
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
@@ -32,6 +39,12 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Get("/auth/{provider}/callback", handlers.GetAuthCallbackHandler())
 	r.Get("/logout/{provider}", handlers.LogoutHandler())
 	r.Get("/auth/{provider}", handlers.BeginAuthHandler())
+
+	//media
+	r.Get("/api/get/photoshoot-years", deps.GetYearsHandler())
+	r.Get("/api/get/photoshoot-events/{year}", deps.GetEventsHandler())
+	r.Get("/api/get/photoshoot-list/{year}/{event}", deps.ListPhotosHandler())
+	r.Get("/api/get/photoshoot-photos/{year}/{event}", deps.GetPhotosHandler())
 
 	// email
 	r.With(RateLimitMiddleware).Post("/api/send-email", handlers.ContactFormSubmissionHandler())
