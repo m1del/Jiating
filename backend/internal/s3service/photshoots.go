@@ -12,6 +12,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 )
 
+// GetYears returns a list of years representing the available photoshoots in the S3 bucket.
+// It retrieves the list of objects from the S3 bucket with the specified prefix and extracts the years from the common prefixes.
+// The years are returned as a slice of strings, or error if the operation failed.
 func (s *service) GetYears(ctx context.Context) ([]string, error) {
 	startTime := time.Now()
 	bucket := os.Getenv("S3_BUCKET_NAME")
@@ -40,6 +43,9 @@ func (s *service) GetYears(ctx context.Context) ([]string, error) {
 	return years, nil
 }
 
+// GetEvents retrieves a list of events for a given year from the S3 bucket.
+// It takes a context.Context and a year string as input parameters.
+// It returns a slice of strings representing the events and an error if any.
 func (s *service) GetEvents(ctx context.Context, year string) ([]string, error) {
 	startTime := time.Now()
 	bucket := os.Getenv("S3_BUCKET_NAME")
@@ -67,6 +73,9 @@ func (s *service) GetEvents(ctx context.Context, year string) ([]string, error) 
 	return events, nil
 }
 
+// ListPhotos retrieves a list of photos from the S3 bucket for a specific year and event.
+// It takes a context.Context, year, and event as parameters.
+// It returns a slice of strings containing the photo names and an error if any.
 func (s *service) ListPhotos(ctx context.Context, year, event string) ([]string, error) {
 	startTime := time.Now()
 	bucket := os.Getenv("S3_BUCKET_NAME")
@@ -93,6 +102,9 @@ func (s *service) ListPhotos(ctx context.Context, year, event string) ([]string,
 	return photos, nil
 }
 
+// GetPhotos retrieves the URLs of photos from the specified S3 bucket for a given year and event.
+// It takes a context.Context, year, and event as input parameters.
+// It returns a slice of strings containing the photo URLs and an error if any.
 func (s *service) GetPhotos(ctx context.Context, year, event string) ([]string, error) {
 	startTime := time.Now()
 	bucket := os.Getenv("S3_BUCKET_NAME")
