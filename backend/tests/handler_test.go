@@ -76,7 +76,7 @@ func TestGetYears(t *testing.T) {
 		},
 	}, nil)
 
-	years, err := s3Service.GetYears()
+	years, err := s3Service.GetYears(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, expectedYears, years)
 
@@ -91,7 +91,7 @@ func TestGetYearsIntegration(t *testing.T) {
 
 	s3Service := s3service.NewService()
 
-	years, err := s3Service.GetYears()
+	years, err := s3Service.GetYears(context.Background())
 	assert.NoError(t, err)
 
 	// checking if years is not empty
@@ -115,7 +115,7 @@ func TestGetEvents(t *testing.T) {
 	}, nil)
 
 	// call function to test
-	events, err := s3Service.GetEvents("2020-2021")
+	events, err := s3Service.GetEvents(context.Background(), "2020-2021")
 	assert.NoError(t, err)
 	assert.Equal(t, []string{"Event1", "Event2"}, events)
 
@@ -132,7 +132,7 @@ func TestGetEventsIntegration(t *testing.T) {
 	expectedYear := "2020-2021"
 	expectedEvents := []string{"AASA 2020", "CNY 2021"}
 
-	events, err := s3Service.GetEvents(expectedYear)
+	events, err := s3Service.GetEvents(context.Background(), expectedYear)
 	assert.NoError(t, err)
 
 	// checking if events is not empty
@@ -154,7 +154,7 @@ func TestListPhotos(t *testing.T) {
 		},
 	}, nil)
 
-	photos, err := s3Service.ListPhotos("2020-2021", "Event1")
+	photos, err := s3Service.ListPhotos(context.Background(), "2020-2021", "Event1")
 	assert.NoError(t, err)
 	assert.Equal(t, []string{"photo1.jpg", "photo2.jpg"}, photos)
 
@@ -172,7 +172,7 @@ func TestListPhotosIntegration(t *testing.T) {
 	expectedEvent := "AASA 2020"
 	expectedPhotos := "DSC01330.jpg"
 
-	photos, err := s3Service.ListPhotos(expectedYear, expectedEvent)
+	photos, err := s3Service.ListPhotos(context.Background(), expectedYear, expectedEvent)
 	assert.NoError(t, err)
 
 	// checking if photos is not empty

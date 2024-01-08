@@ -12,13 +12,13 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 )
 
-func (s *service) GetYears() ([]string, error) {
+func (s *service) GetYears(ctx context.Context) ([]string, error) {
 	startTime := time.Now()
 	bucket := os.Getenv("S3_BUCKET_NAME")
 	prefix := "photoshoots/"
 
 	// call to list
-	output, err := s.s3Client.ListObjectsV2(context.TODO(), &s3.ListObjectsV2Input{
+	output, err := s.s3Client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
 		Bucket:    aws.String(bucket),
 		Prefix:    aws.String(prefix),
 		Delimiter: aws.String("/"),
@@ -40,12 +40,12 @@ func (s *service) GetYears() ([]string, error) {
 	return years, nil
 }
 
-func (s *service) GetEvents(year string) ([]string, error) {
+func (s *service) GetEvents(ctx context.Context, year string) ([]string, error) {
 	startTime := time.Now()
 	bucket := os.Getenv("S3_BUCKET_NAME")
 	prefix := fmt.Sprintf("photoshoots/%s/", year)
 
-	output, err := s.s3Client.ListObjectsV2(context.TODO(), &s3.ListObjectsV2Input{
+	output, err := s.s3Client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
 		Bucket:    aws.String(bucket),
 		Prefix:    aws.String(prefix),
 		Delimiter: aws.String("/"),
@@ -67,12 +67,12 @@ func (s *service) GetEvents(year string) ([]string, error) {
 	return events, nil
 }
 
-func (s *service) ListPhotos(year, event string) ([]string, error) {
+func (s *service) ListPhotos(ctx context.Context, year, event string) ([]string, error) {
 	startTime := time.Now()
 	bucket := os.Getenv("S3_BUCKET_NAME")
 	prefix := fmt.Sprintf("photoshoots/%s/%s/", year, event)
 
-	output, err := s.s3Client.ListObjectsV2(context.TODO(), &s3.ListObjectsV2Input{
+	output, err := s.s3Client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
 		Bucket:    aws.String(bucket),
 		Prefix:    aws.String(prefix),
 		Delimiter: aws.String("/"),

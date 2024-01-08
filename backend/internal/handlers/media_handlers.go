@@ -15,7 +15,7 @@ type HandlerDependencies struct {
 
 func (deps *HandlerDependencies) GetYearsHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		years, err := deps.S3Service.GetYears()
+		years, err := deps.S3Service.GetYears(r.Context())
 		if err != nil {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			loggers.Error.Printf("Error getting years: %v", err)
@@ -31,7 +31,7 @@ func (deps *HandlerDependencies) GetEventsHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		year := chi.URLParam(r, "year")
 		loggers.Debug.Printf("year: %v", year)
-		events, err := deps.S3Service.GetEvents(year)
+		events, err := deps.S3Service.GetEvents(r.Context(), year)
 		if err != nil {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			loggers.Error.Printf("Error getting events: %v", err)
@@ -48,7 +48,7 @@ func (deps *HandlerDependencies) ListPhotosHandler() http.HandlerFunc {
 		year := chi.URLParam(r, "year")
 		event := chi.URLParam(r, "event")
 		loggers.Debug.Printf("year: %v, event: %v", year, event)
-		photos, err := deps.S3Service.ListPhotos(year, event)
+		photos, err := deps.S3Service.ListPhotos(r.Context(), year, event)
 		if err != nil {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			loggers.Error.Printf("Error getting photos: %v", err)

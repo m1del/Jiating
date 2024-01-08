@@ -14,9 +14,9 @@ import (
 
 // Service interface
 type Service interface {
-	GetYears() ([]string, error)
-	GetEvents(year string) ([]string, error)
-	ListPhotos(year, event string) ([]string, error)
+	GetYears(ctx context.Context) ([]string, error)
+	GetEvents(ctx context.Context, year string) ([]string, error)
+	ListPhotos(ctx context.Context, year, event string) ([]string, error)
 	GetPhotos(ctx context.Context, year, event string) ([]string, error)
 	GetPresignedURL(bucket, key string, lifetimeSecs int64) (string, error)
 }
