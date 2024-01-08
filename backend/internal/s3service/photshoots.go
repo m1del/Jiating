@@ -6,12 +6,14 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go/aws"
 )
 
 func (s *service) GetYears() ([]string, error) {
+	startTime := time.Now()
 	bucket := os.Getenv("S3_BUCKET_NAME")
 	prefix := "photoshoots/"
 
@@ -32,10 +34,14 @@ func (s *service) GetYears() ([]string, error) {
 		years = append(years, year)
 	}
 
+	elapsedTime := time.Since(startTime)
+	log.Printf("GetYears took %s", elapsedTime)
+
 	return years, nil
 }
 
 func (s *service) GetEvents(year string) ([]string, error) {
+	startTime := time.Now()
 	bucket := os.Getenv("S3_BUCKET_NAME")
 	prefix := fmt.Sprintf("photoshoots/%s/", year)
 
@@ -55,10 +61,14 @@ func (s *service) GetEvents(year string) ([]string, error) {
 		events = append(events, event)
 	}
 
+	elapsedTime := time.Since(startTime)
+	log.Printf("GetEvents took %s", elapsedTime)
+
 	return events, nil
 }
 
 func (s *service) ListPhotos(year, event string) ([]string, error) {
+	startTime := time.Now()
 	bucket := os.Getenv("S3_BUCKET_NAME")
 	prefix := fmt.Sprintf("photoshoots/%s/%s/", year, event)
 
@@ -77,10 +87,14 @@ func (s *service) ListPhotos(year, event string) ([]string, error) {
 		photos = append(photos, photo)
 	}
 
+	elapsedTime := time.Since(startTime)
+	log.Printf("ListPhotos took %s", elapsedTime)
+
 	return photos, nil
 }
 
 func (s *service) GetPhotos(ctx context.Context, year, event string) ([]string, error) {
+	startTime := time.Now()
 	bucket := os.Getenv("S3_BUCKET_NAME")
 	prefix := fmt.Sprintf("photoshoots/%s/%s/", year, event)
 
@@ -103,6 +117,9 @@ func (s *service) GetPhotos(ctx context.Context, year, event string) ([]string, 
 
 		photoURLs = append(photoURLs, request.URL)
 	}
+
+	elapsedTime := time.Since(startTime)
+	log.Printf("GetPhotos took %s", elapsedTime)
 
 	return photoURLs, nil
 }
