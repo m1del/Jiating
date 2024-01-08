@@ -1,3 +1,6 @@
-import PhotoShootGallery from './PhotoshootGallery';
+import EventNavigation from './EventNavigation';
+import PhotoGallery from './PhotoGallery';
+import YearNavigation from './YearNavigation';
 
-export { PhotoShootGallery };
+export { EventNavigation, PhotoGallery, YearNavigation };
+
