@@ -1,17 +1,12 @@
 package handlers
 
 import (
-	"backend/internal/s3service"
 	"backend/loggers"
 	"encoding/json"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 )
-
-type HandlerDependencies struct {
-	S3Service s3service.Service
-}
 
 func (deps *HandlerDependencies) GetYearsHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

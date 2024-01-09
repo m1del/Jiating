@@ -14,10 +14,17 @@ import (
 
 // Service interface
 type Service interface {
+	// photoshoots
 	GetYears(ctx context.Context) ([]string, error)
 	GetEvents(ctx context.Context, year string) ([]string, error)
 	ListPhotos(ctx context.Context, year, event string) ([]string, error)
 	GetPhotos(ctx context.Context, year, event string) ([]string, error)
+
+	// events
+	GeneratePresignedUploadURL(eventID, filename string, lifetimeSecs int64) (string, error)
+	DevGeneratePresignedUploadURL(eventID, filename string, lifetimeSecs int64) (string, error)
+
+	// generic
 	GetPresignedURL(bucket, key string, lifetimeSecs int64) (string, error)
 }
 
@@ -29,6 +36,8 @@ type S3ClientAPI interface {
 // PresignerAPI defines the methods used from the presigner.
 type PresignerAPI interface {
 	GetObject(bucketName string, objectKey string, lifetimeSecs int64) (*v4.PresignedHTTPRequest, error)
+	PutObject(bucketName string, objectKey string, lifetimeSecs int64) (*v4.PresignedHTTPRequest, error)
+	DeleteObject(bucketName string, objectKey string) (*v4.PresignedHTTPRequest, error)
 }
 
 // service struct

@@ -11,6 +11,8 @@ function Home() {
         <HomeHeading />
         <FloatBar />
 
+        <GoogleLoginButton />
+
         <Hero />
       </div>
     </div>
