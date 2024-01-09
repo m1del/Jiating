@@ -242,3 +242,48 @@ func TestGetPhotosIntegration(t *testing.T) {
 		assert.Contains(t, photo, "https://")
 	}
 }
+
+func TestGenerateUploadURL(t *testing.T) {
+	mockS3Client := new(MockS3Client)
+	mockPresigner := new(MockPresigner)
+
+	s3Service := s3service.NewMockService(mockS3Client, mockPresigner)
+
+	eventID := "123"
+	filename := "photo.jpg"
+	bucket := os.Getenv("S3_BUCKET_NAME")
+	objectKey := "events/123/photo.jpg"
+	lifetimeSecs := int64(900)
+
+	expectedURL := "https://presigned.url/photo.jpg"
+
+	// mock presigner response
+	mockPresigner.On("PutObject", bucket, objectKey, lifetimeSecs).Return(&v4.PresignedHTTPRequest{URL: expectedURL}, nil)
+
+	// call function to test
+	url, err := s3Service.GenerateUploadURL(eventID, filename, lifetimeSecs)
+	assert.NoError(t, err)
+	assert.Equal(t, expectedURL, url)
+
+	mockPresigner.AssertExpectations(t)
+}
+
+func TestGenerateUploadURLIntegration(t *testing.T) {
+	if os.Getenv("RUN_INTEGRATION_TESTS") != "true" {
+		t.Skip("Skipping integration test")
+	}
+
+	s3Service := s3service.NewService()
+
+	expectedEventID := "123"
+	expectedFilename := "photo.jpg"
+	expectedLifetimeSecs := int64(900)
+
+	url, err := s3Service.GenerateUploadURL(expectedEventID, expectedFilename, expectedLifetimeSecs)
+	assert.NoError(t, err)
+
+	// checking if url is not empty
+	assert.NotEmpty(t, url)
+	// checking values
+	assert.Contains(t, url, "https://")
+}
