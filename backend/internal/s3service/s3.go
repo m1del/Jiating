@@ -21,8 +21,8 @@ type Service interface {
 	GetPhotos(ctx context.Context, year, event string) ([]string, error)
 
 	// events
-	GenerateUploadURL(eventID, filename string, lifetimeSecs int64) (string, error)
-	DevGenerateUploadURL(eventID, filename string, lifetimeSecs int64) (string, error)
+	GeneratePresignedUploadURL(eventID, filename string, lifetimeSecs int64) (string, error)
+	DevGeneratePresignedUploadURL(eventID, filename string, lifetimeSecs int64) (string, error)
 
 	// generic
 	GetPresignedURL(bucket, key string, lifetimeSecs int64) (string, error)

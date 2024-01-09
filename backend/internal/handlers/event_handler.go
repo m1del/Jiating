@@ -83,13 +83,13 @@ func GetEventHandler(db database.Service) http.HandlerFunc {
 	}
 }
 
-func (deps *HandlerDependencies) UploadEventImageHandler() http.HandlerFunc {
+func (deps *HandlerDependencies) GetPresignedUploadURLHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// parse event id and image file from request
 		event := chi.URLParam(r, "event")
 		file := chi.URLParam(r, "file")
 
-		url, err := deps.S3Service.GenerateUploadURL(event, file, 900)
+		url, err := deps.S3Service.GeneratePresignedUploadURL(event, file, 900)
 		if err != nil {
 			loggers.Error.Printf("Error generating upload url: %v", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -103,13 +103,13 @@ func (deps *HandlerDependencies) UploadEventImageHandler() http.HandlerFunc {
 	}
 }
 
-func (deps *HandlerDependencies) DevUploadEventImageHandler() http.HandlerFunc {
+func (deps *HandlerDependencies) DevGetPresignedUploadURLHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// parse event id and image file from request
 		event := chi.URLParam(r, "event")
 		file := chi.URLParam(r, "file")
 
-		url, err := deps.S3Service.DevGenerateUploadURL(event, file, 900)
+		url, err := deps.S3Service.DevGeneratePresignedUploadURL(event, file, 900)
 		if err != nil {
 			loggers.Error.Printf("Error generating upload url: %v", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
