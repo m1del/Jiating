@@ -205,7 +205,7 @@ func TestCreateAdminSuccess(t *testing.T) {
 	mock.ExpectExec("INSERT INTO admins").WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), admin.Name, admin.Email, admin.Position, admin.Status).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	err = s.CreateAdmin(admin)
+	_, err = s.CreateAdmin(admin)
 
 	assert.NoError(t, err)
 
@@ -234,7 +234,7 @@ func TestCreateAdminFailure(t *testing.T) {
 	mock.ExpectExec("INSERT INTO admins").WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), admin.Name, admin.Email, admin.Position, admin.Status).
 		WillReturnError(fmt.Errorf("sql error"))
 
-	err = s.CreateAdmin(admin)
+	_, err = s.CreateAdmin(admin)
 
 	assert.Error(t, err)
 
