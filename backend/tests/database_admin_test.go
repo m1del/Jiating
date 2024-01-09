@@ -3,6 +3,7 @@ package tests
 import (
 	"backend/internal/database"
 	"backend/internal/models"
+	"fmt"
 	"testing"
 	"time"
 
@@ -151,6 +152,64 @@ func TestGetAdminByEmail(t *testing.T) {
 	assert.Equal(t, testAdmin, *admin)
 
 	// check if all expectations were met
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestCreateAdminSuccess(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	s := database.New(db)
+
+	// Mock data
+	admin := models.Admin{
+		Name:     "john",
+		Email:    "john@mail.com",
+		Position: "idiot",
+		Status:   "Active",
+	}
+
+	mock.ExpectExec("INSERT INTO admins").WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), admin.Name, admin.Email, admin.Position, admin.Status).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	err = s.CreateAdmin(admin)
+
+	assert.NoError(t, err)
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestCreateAdminFailure(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	s := database.New(db)
+
+	// Mock data
+	admin := models.Admin{
+		Name:     "tuan",
+		Email:    "tuan@mail.com",
+		Position: "dev",
+		Status:   "Inactive",
+	}
+
+	mock.ExpectExec("INSERT INTO admins").WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), admin.Name, admin.Email, admin.Position, admin.Status).
+		WillReturnError(fmt.Errorf("sql error"))
+
+	err = s.CreateAdmin(admin)
+
+	assert.Error(t, err)
+
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("There were unfulfilled expectations: %s", err)
 	}
