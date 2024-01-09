@@ -10,6 +10,8 @@ function Home() {
       <div className="flex flex-col items-center">
         <HomeHeading />
 
+        <GoogleLoginButton />
+
         <Hero />
       </div>
     </div>

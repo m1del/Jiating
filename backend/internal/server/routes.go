@@ -15,6 +15,9 @@ import (
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
+	// initalize chi router
+	r := chi.NewRouter()
+
 	// enable CORS
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5173"}, // react dev server
@@ -22,59 +25,76 @@ func (s *Server) RegisterRoutes() http.Handler {
 		AllowedHeaders:   []string{"Content-Type", "Authorization"},
 	})
 
+	// apply CORS middleware globally
+	r.Use(func(next http.Handler) http.Handler {
+		return c.Handler(next)
+	})
+	r.Use(middleware.Logger)
+
 	// configure handler dependencies
 	s3service := s3service.NewService()
 	deps := &handlers.HandlerDependencies{
 		S3Service: s3service,
 	}
 
-	// initalize chi router
-	r := chi.NewRouter()
-	r.Use(middleware.Logger)
-
 	// public routes
 	r.Get("/", s.HelloWorldHandler)
 	r.Get("/health", s.healthHandler)
 
-	r.Get("/auth/{provider}/callback", handlers.GetAuthCallbackHandler())
-	r.Get("/logout/{provider}", handlers.LogoutHandler())
-	r.Get("/auth/{provider}", handlers.BeginAuthHandler())
+	// authentication Routes
+	r.Route("/auth", func(r chi.Router) {
+		r.Get("/{provider}/callback", handlers.GetAuthCallbackHandler())
+		r.Get("/logout/{provider}", handlers.LogoutHandler())
+		r.Get("/{provider}", handlers.BeginAuthHandler())
+	})
 
-	//media
-	r.Get("/api/get/photoshoot-years", deps.GetYearsHandler())
-	r.Get("/api/get/photoshoot-events/{year}", deps.GetEventsHandler())
-	r.Get("/api/get/photoshoot-list/{year}/{event}", deps.ListPhotosHandler())
-	r.Get("/api/get/photoshoot-photos/{year}/{event}", deps.GetPhotosHandler())
+	// api routes
+	r.Route("/api", func(r chi.Router) {
+		// admin routes
+		r.Route("/admin", func(r chi.Router) {
+			// todo: add auth middleware after testing
+			r.With().Get("/get-all", handlers.GetAllAdminsHandler(s.db))
+			r.With().Get("/get-all-not-founder", handlers.GetAllAdminsExceptFounderHandler(s.db))
+			r.With().Post("/create", handlers.CreateAdminHandler(s.db))
+			r.With().Post("/associate-with-event", handlers.AssociateAdminWithEventHandler(s.db))
+			r.With().Post("/delete/{adminID}", handlers.DeleteAdminByIDHandler(s.db))
+			r.With().Get("/get/{adminID}", handlers.GetAdminByIDHandler(s.db))
+			r.With().Post("/update", handlers.UpdateAdminHandler(s.db))
+		})
 
-	// email
-	r.With(RateLimitMiddleware).Post("/api/send-email", handlers.ContactFormSubmissionHandler())
+		// event routes
+		r.Route("/event", func(r chi.Router) {
+			// todo add auth middleware after testing
+			// admin only functions
+			r.With().Post("/update/{eventID}", handlers.UpdateEventByIDHandler(s.db))
+			r.With().Post("/create", handlers.CreateEventHandler(s.db))
 
-	// admin routes
-	adminRouter := chi.NewRouter()
-	adminRouter.Use(auth.AuthMiddleware)
-	adminRouter.Get("/dashboard", handlers.AdminDashboardHandler())      // handles admin dashboard
-	adminRouter.Get("/list", handlers.ListAdminHandler(s.db))            // handles admin list
-	adminRouter.Post("/create-admin", handlers.CreateAdminHandler(s.db)) // handles admin creation
+			// public event functions
+			r.Get("/get-authors/{eventID}", handlers.GetAuthorsByEventID(s.db))
+			r.Get("/get/{eventID}", handlers.GetEventByIDHandler(s.db))
+			r.Get("/get-last-seven", handlers.GetLastSevenPublishedEventsHandler(s.db))
 
-	// event routes
-	adminRouter.Post("/create-event", handlers.EventFormSubmitHandler(s.db))            // handles event creation
+			//event s3 routes for images
+			r.Post("/upload/{event}/{file}", deps.DevGetPresignedUploadURLHandler())
+		})
 
-	adminRouter.Get("/get-event", handlers.GetEventHandler(s.db)) // handles event retrieval
+		// media photo routes
+		r.Route("/photoshoot", func(r chi.Router) {
+			r.Get("/years", deps.GetYearsHandler())
+			r.Get("/events/{year}", deps.GetEventsHandler())
+			r.Get("/list/{year}/{event}", deps.ListPhotosHandler())
+			r.Get("/photos/{year}/{event}", deps.GetPhotosHandler())
+		})
 
+		// email routes
+		r.With(RateLimitMiddleware).Post("/send-email", handlers.ContactFormSubmissionHandler())
 
+		// session related routes
+		r.Get("/session-info", s.sessionInfoHandler)
 
-	// mount admin routes under /admin
-	r.Mount("/admin", adminRouter)
+	})
 
-	// route to get session info
-	r.Get("/api/session-info", s.sessionInfoHandler)
-
-	// database routes
-
-	// apply cors middleware to all routes
-	corsHandler := c.Handler(r)
-
-	return corsHandler
+	return r
 }
 
 var limiter = rate.NewLimiter(1, 2)
