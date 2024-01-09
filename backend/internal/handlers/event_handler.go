@@ -2,13 +2,14 @@ package handlers
 
 import (
 	"backend/internal/database"
-	"database/sql"
 	"backend/internal/models"
 	"backend/loggers"
+	"database/sql"
 	"encoding/json"
 	"net/http"
-)
 
+	"github.com/go-chi/chi/v5"
+)
 
 func EventFormSubmitHandler(db database.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -82,3 +83,22 @@ func GetEventHandler(db database.Service) http.HandlerFunc {
 	}
 }
 
+func (deps *HandlerDependencies) UploadEventImageHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// parse event id and image file from request
+		eventID := chi.URLParam(r, "eventID")
+		file := chi.URLParam(r, "file")
+
+		url, err := deps.S3Service.GenerateUploadURL(eventID, file, 900)
+		if err != nil {
+			loggers.Error.Printf("Error generating upload url: %v", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		// return presigned url
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]string{"url": url})
+	}
+}
