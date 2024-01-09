@@ -58,6 +58,7 @@ func New() Service {
 	}
 
 	// initialize tables
+	loggers.Debug.Println("initializing tables...")
 	if err := initTables(db); err != nil {
 		loggers.Error.Fatalf("error initializing tables: %v", err)
 	}
@@ -85,16 +86,16 @@ func initTables(db *sql.DB) error {
 		loggers.Error.Fatalf("error creating admins table: %v", err)
 	}
 
-	if err := createImageTable(db); err != nil {
-		loggers.Error.Fatalf("error creating images table: %v", err)
-	}
-
 	if err := createEventTable(db); err != nil {
 		loggers.Error.Fatalf("error creating events table: %v", err)
 	}
 
 	if err := createEventAuthorTable(db); err != nil {
 		loggers.Error.Fatalf("error creating event authors table: %v", err)
+	}
+
+	if err := createImageTable(db); err != nil {
+		loggers.Error.Fatalf("error creating images table: %v", err)
 	}
 
 	return nil

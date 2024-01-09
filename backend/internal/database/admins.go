@@ -30,12 +30,11 @@ func createAdminTable(db *sql.DB) error {
 		return err
 	}
 
-	// insert default (permanent) admin
+	// insert default (permanent) admin with current timestamp for created_at and updated_at
 	const insertAdmin = `
-	INSERT INTO admins (name, email, position, status)
-	VALUES (Jiating, jiating.lion.dragon@gmail.com, Founder, permanent)
-	ON CONFLICT (email) DO NOTHING;
-	`
+    INSERT INTO admins (name, email, position, status, created_at, updated_at)
+    VALUES ('Jiating', 'jiating.lion.dragon@gmail.com', 'Founder', 'permanent', NOW(), NOW())
+    ON CONFLICT (email) DO NOTHING;`
 
 	_, err = db.Exec(insertAdmin)
 	if err != nil {
