@@ -67,7 +67,7 @@ func TestCreateEvent(t *testing.T) {
 
 	mock.ExpectCommit()
 
-	err = s.CreateEvent(event, adminIDs)
+	_, err = s.CreateEvent(event, adminIDs)
 
 	// Assert there was no error and all expectations were met
 	assert.NoError(t, err)

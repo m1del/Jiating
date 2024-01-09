@@ -66,7 +66,8 @@ func CreateEventHandler(s database.Service) http.HandlerFunc {
 		}
 
 		// call database service
-		if err := s.CreateEvent(newEvent, req.AuthorIDs); err != nil {
+		eventID, err := s.CreateEvent(newEvent, req.AuthorIDs)
+		if err != nil {
 			loggers.Error.Printf("Error creating event: %v", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
@@ -75,7 +76,7 @@ func CreateEventHandler(s database.Service) http.HandlerFunc {
 		// success response, return event ID
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(map[string]string{"id": newEvent.ID})
+		json.NewEncoder(w).Encode(map[string]string{"id": eventID})
 	}
 }
 

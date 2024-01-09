@@ -44,7 +44,9 @@ func (s *service) AddImageToEvent(image models.EventImage, eventID string) error
 }
 
 func (s *service) AddImageToEventTx(tx *sql.Tx, image models.EventImage, eventID string) error {
-	const query = `INSERT INTO images (image_url, is_display, event_id) VALUES ($1, $2, $3)`
+	const query = `INSERT INTO images (
+		image_url, is_display, event_id, created_at, updated_at) 
+		VALUES ($1, $2, $3, NOW(), NOW())`
 	_, err := tx.Exec(query, image.ImageURL, image.IsDisplay, eventID)
 	if err != nil {
 		loggers.Error.Printf("Error adding image to event: %v", err)

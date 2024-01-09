@@ -55,6 +55,8 @@ func (s *service) GetAuthorsByEventID(eventID string) ([]models.Admin, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
+	loggers.Debug.Printf("Getting author by eventID: %v", eventID)
+
 	const query = `
     SELECT a.id, a.created_at, a.updated_at, a.deleted_at, a.name, a.email, a.position, a.status
     FROM admins a
@@ -86,7 +88,7 @@ func (s *service) GetAuthorsByEventID(eventID string) ([]models.Admin, error) {
 	return authors, nil
 }
 
-func (s *service) CreateEvent(event models.Event, adminIDs []string) error {
+func (s *service) CreateEvent(event models.Event, adminIDs []string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
@@ -94,14 +96,14 @@ func (s *service) CreateEvent(event models.Event, adminIDs []string) error {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		loggers.Error.Printf("Error starting transaction: %v", err)
-		return err
+		return "", err
 	}
 
 	// insert the event
 	const insertEventQuery = `
 	INSERT INTO events (
-		event_name, date, description, content, is_draft, published_at
-	) VALUES ($1, $2, $3, $4, $5, $6) 
+		event_name, date, description, content, is_draft, published_at, created_at, updated_at
+	) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW()) 
 	RETURNING id`
 	var eventID string
 	err = tx.QueryRowContext(ctx, insertEventQuery, event.EventName, event.Date, event.Description,
@@ -109,7 +111,7 @@ func (s *service) CreateEvent(event models.Event, adminIDs []string) error {
 	if err != nil {
 		tx.Rollback()
 		loggers.Error.Printf("Error inserting event: %v", err)
-		return err
+		return "", err
 	}
 
 	// associate each admin with the event
@@ -119,7 +121,7 @@ func (s *service) CreateEvent(event models.Event, adminIDs []string) error {
 		if err != nil {
 			tx.Rollback()
 			loggers.Error.Printf("Error associating admin with event: %v", err)
-			return err
+			return "nil", err
 		}
 	}
 
@@ -128,7 +130,7 @@ func (s *service) CreateEvent(event models.Event, adminIDs []string) error {
 		if err := s.AddImageToEventTx(tx, img, eventID); err != nil {
 			tx.Rollback()
 			loggers.Error.Printf("Error adding image to event: %v", err)
-			return err
+			return "", err
 		}
 	}
 
@@ -137,17 +139,17 @@ func (s *service) CreateEvent(event models.Event, adminIDs []string) error {
 		if err := s.SetDisplayImageForEventTx(tx, event.Images[0].ID, eventID); err != nil {
 			tx.Rollback()
 			loggers.Error.Printf("Error setting display image for event: %v", err)
-			return err
+			return "", err
 		}
 	}
 
 	// commit the transaction
 	if err = tx.Commit(); err != nil {
 		loggers.Error.Printf("Error committing transaction: %v", err)
-		return err
+		return "", err
 	}
 
-	return nil
+	return eventID, nil
 }
 
 func (s *service) UpdateEventByID(eventID string, req models.UpdateEventRequest) error {

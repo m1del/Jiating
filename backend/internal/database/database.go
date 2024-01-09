@@ -29,7 +29,7 @@ type Service interface {
 
 	// event operations
 	GetAuthorsByEventID(eventID string) ([]models.Admin, error)
-	CreateEvent(event models.Event, adminIDs []string) error
+	CreateEvent(event models.Event, adminIDs []string) (string, error)
 	UpdateEvent(event models.Event, editorAdminID string, newImages []models.EventImage, removedImageIDs []string, newDisplayImageID string) error
 	UpdateEventByID(eventID string, req models.UpdateEventRequest) error
 	GetEventByID(eventID string) (*models.Event, error)
