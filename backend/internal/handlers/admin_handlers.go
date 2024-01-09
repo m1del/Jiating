@@ -90,16 +90,17 @@ func CreateAdminHandler(s database.Service) http.HandlerFunc {
 		}
 
 		// use database service to create admin
-		err = s.CreateAdmin(admin)
+		adminID, err := s.CreateAdmin(admin)
 		if err != nil {
 			loggers.Error.Printf("Error creating admin: %v", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
 
-		// success response
+		// success response and return id
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte("Admin created successfully"))
+		json.NewEncoder(w).Encode(map[string]string{"id": adminID})
 	}
 }
 
