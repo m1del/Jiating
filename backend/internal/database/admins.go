@@ -111,24 +111,26 @@ func (s *service) GetAllAdminsExceptFounder() ([]models.Admin, error) {
 	return admins, nil
 }
 
-func (s *service) CreateAdmin(admin models.Admin) error {
+func (s *service) CreateAdmin(admin models.Admin) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
+	var id string
 	const query = `INSERT INTO admins (
         created_at, updated_at, name, email, position, status
-    ) VALUES ($1, $2, $3, $4, $5, $6)`
+    ) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`
 
-	_, err := s.db.ExecContext(
+	err := s.db.QueryRowContext(
 		ctx, query, time.Now(), time.Now(), admin.Name, admin.Email,
 		admin.Position, admin.Status,
-	)
+	).Scan(&id)
+
 	if err != nil {
 		loggers.Error.Printf("Error creating admin: %v", err)
-		return err
+		return "", err
 	}
 
-	return nil
+	return id, nil
 }
 
 func (s *service) AssociateAdminWithEvent(adminID, eventID string) error {
