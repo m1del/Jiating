@@ -4,6 +4,7 @@ import (
 	"time"
 )
 
+// Database models
 type Admin struct {
 	ID        string        `json:"id"`                   // primary key, UUID
 	CreatedAt time.Time     `json:"created_at"`           // time of creation
@@ -51,4 +52,14 @@ type UpdateEventRequest struct {
 	RemovedImageIDs []string               `json:"removed_image_ids"`
 	NewDisplayImage string                 `json:"new_display_image_id"`
 	EditorAdminID   string                 `json:"editor_admin_id"`
+}
+
+type CreateEventRequest struct {
+	EventName   string       `json:"event_name"`
+	Date        string       `json:"date"`
+	Description string       `json:"description"`
+	Content     string       `json:"content"`
+	IsDraft     bool         `json:"is_draft"`
+	Images      []EventImage `json:"images"`
+	AuthorIDs   []string     `json:"author_ids"`
 }
