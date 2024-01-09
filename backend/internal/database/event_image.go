@@ -124,6 +124,12 @@ func (s *service) SetDisplayImageForEvent(imageID, eventID string) error {
 }
 
 func (s *service) SetDisplayImageForEventTx(tx *sql.Tx, imageID, eventID string) error {
+
+	// do nothing if imageID is empty
+	if imageID == "" {
+		return nil
+	}
+
 	// reset isDisplay for all images of this event
 	const resetQuery = `UPDATE images SET is_display = false WHERE event_id = $1`
 	if _, err := tx.Exec(resetQuery, eventID); err != nil {

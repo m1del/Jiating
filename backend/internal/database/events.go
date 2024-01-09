@@ -55,8 +55,6 @@ func (s *service) GetAuthorsByEventID(eventID string) ([]models.Admin, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
-	loggers.Debug.Printf("Getting author by eventID: %v", eventID)
-
 	const query = `
     SELECT a.id, a.created_at, a.updated_at, a.deleted_at, a.name, a.email, a.position, a.status
     FROM admins a

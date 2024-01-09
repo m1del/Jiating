@@ -235,3 +235,20 @@ func (s *service) UpdateAdmin(admin models.Admin) error {
 
 	return nil
 }
+
+func (s *service) GetAdminCount() (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
+	const query = `SELECT COUNT(*) FROM admins`
+	row := s.db.QueryRowContext(ctx, query)
+
+	var count int
+	err := row.Scan(&count)
+	if err != nil {
+		loggers.Error.Printf("Error getting admin count: %v", err)
+		return 0, err
+	}
+
+	return count, nil
+}
