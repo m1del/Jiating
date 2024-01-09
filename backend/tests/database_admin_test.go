@@ -157,6 +157,34 @@ func TestGetAdminByEmail(t *testing.T) {
 	}
 }
 
+func TestGetAdminByEmailQueryError(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	s := database.New(db)
+
+	adminEmail := "error@example.com"
+
+	// Simulate a database error during querying
+	mock.ExpectQuery("SELECT id, created_at, updated_at, deleted_at, name, email, position, status FROM admins WHERE email = \\$1").
+		WithArgs(adminEmail).WillReturnError(fmt.Errorf("database error"))
+
+	// Call the function under test
+	admin, err := s.GetAdminByEmail(adminEmail)
+
+	// Assertions
+	assert.Error(t, err)
+	assert.Nil(t, admin)
+
+	// Check if all expectations were met
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
+
 func TestCreateAdminSuccess(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -282,6 +310,161 @@ func TestDeleteAdminByIDFailure(t *testing.T) {
 	err = s.DeleteAdminByID(adminID)
 
 	assert.Error(t, err)
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestGetAdminByIDSuccess(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	s := database.New(db)
+
+	adminID := "some-uuid"
+	adminData := sqlmock.NewRows([]string{"id", "created_at", "updated_at", "deleted_at", "name", "email", "position", "status"}).
+		AddRow(adminID, time.Now(), time.Now(), nil, "John Doe", "john@example.com", "Manager", "Active")
+
+	mock.ExpectQuery("SELECT id, created_at, updated_at, deleted_at, name, email, position, status FROM admins WHERE id = \\$1").
+		WithArgs(adminID).WillReturnRows(adminData)
+
+	admin, err := s.GetAdminByID(adminID)
+
+	// assertions
+	assert.NoError(t, err)
+	assert.NotNil(t, admin)
+	assert.Equal(t, adminID, admin.ID)
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestGetAdminByIDNotFound(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	s := database.New(db)
+
+	adminID := "some-uuid"
+
+	mock.ExpectQuery("SELECT id, created_at, updated_at, deleted_at, name, email, position, status FROM admins WHERE id = \\$1").
+		WithArgs(adminID).WillReturnRows(sqlmock.NewRows(nil))
+
+	admin, err := s.GetAdminByID(adminID)
+
+	// assertions
+	assert.Error(t, err)
+	assert.Nil(t, admin)
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestUpdateAdminSuccess(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	s := database.New(db)
+
+	admin := models.Admin{
+		ID:       "some-uuid",
+		Name:     "John Doe",
+		Email:    "john@example.com",
+		Position: "Manager",
+		Status:   "Active",
+	}
+
+	// Mock successful execution of the update query
+	mock.ExpectExec("UPDATE admins SET name = \\$1, email = \\$2, position = \\$3, status = \\$4, updated_at = \\$5 WHERE id = \\$6").
+		WithArgs(admin.Name, admin.Email, admin.Position, admin.Status, sqlmock.AnyArg(), admin.ID).
+		WillReturnResult(sqlmock.NewResult(0, 1))
+
+	// Call the function under test
+	err = s.UpdateAdmin(admin)
+
+	// Assertions
+	assert.NoError(t, err)
+
+	// Check if all expectations were met
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestUpdateAdminNotFound(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	s := database.New(db)
+
+	admin := models.Admin{
+		ID:       "non-existing-uuid",
+		Name:     "Jane Doe",
+		Email:    "jane@example.com",
+		Position: "Developer",
+		Status:   "Inactive",
+	}
+
+	// Mock the update query with no rows affected
+	mock.ExpectExec("UPDATE admins SET name = \\$1, email = \\$2, position = \\$3, status = \\$4, updated_at = \\$5 WHERE id = \\$6").
+		WithArgs(admin.Name, admin.Email, admin.Position, admin.Status, sqlmock.AnyArg(), admin.ID).
+		WillReturnResult(sqlmock.NewResult(0, 0))
+
+	// Call the function under test
+	err = s.UpdateAdmin(admin)
+
+	// Assertions
+	assert.NoError(t, err) // Note: The function itself does not return an error if no rows are affected
+
+	// Check if all expectations were met
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestUpdateAdminQueryError(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	s := database.New(db)
+
+	admin := models.Admin{
+		ID:       "some-uuid",
+		Name:     "John Doe",
+		Email:    "john@example.com",
+		Position: "Manager",
+		Status:   "Active",
+	}
+
+	// Simulate a database error during the update
+	mock.ExpectExec("UPDATE admins SET name = \\$1, email = \\$2, position = \\$3, status = \\$4, updated_at = \\$5 WHERE id = \\$6").
+		WithArgs(admin.Name, admin.Email, admin.Position, admin.Status, sqlmock.AnyArg(), admin.ID).
+		WillReturnError(fmt.Errorf("database error"))
+
+	// Call the function under test
+	err = s.UpdateAdmin(admin)
+
+	// Assertions
+	assert.Error(t, err)
+
+	// Check if all expectations were met
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("There were unfulfilled expectations: %s", err)
 	}
