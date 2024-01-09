@@ -43,6 +43,16 @@ func (s *service) AddImageToEvent(image models.EventImage, eventID string) error
 	return nil
 }
 
+func (s *service) AddImageToEventTx(tx *sql.Tx, image models.EventImage, eventID string) error {
+	const query = `INSERT INTO images (image_url, is_display, event_id) VALUES ($1, $2, $3)`
+	_, err := tx.Exec(query, image.ImageURL, image.IsDisplay, eventID)
+	if err != nil {
+		loggers.Error.Printf("Error adding image to event: %v", err)
+		return err
+	}
+	return nil
+}
+
 func (s *service) RemoveImageFromEvent(imageID string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
@@ -53,6 +63,19 @@ func (s *service) RemoveImageFromEvent(imageID string) error {
 
 	_, err := s.db.ExecContext(ctx, query, imageID)
 	if err != nil {
+		loggers.Error.Printf("Error removing image from event: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+func (s *service) RemoveImageFromEventTx(tx *sql.Tx, imageID string) error {
+	const query = `DELETE FROM images WHERE id = $1`
+
+	// todo: delete image from s3
+
+	if _, err := tx.Exec(query, imageID); err != nil {
 		loggers.Error.Printf("Error removing image from event: %v", err)
 		return err
 	}
@@ -92,6 +115,24 @@ func (s *service) SetDisplayImageForEvent(imageID, eventID string) error {
 	// commit the transaction
 	if err = tx.Commit(); err != nil {
 		loggers.Error.Printf("Error committing transaction: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+func (s *service) SetDisplayImageForEventTx(tx *sql.Tx, imageID, eventID string) error {
+	// reset isDisplay for all images of this event
+	const resetQuery = `UPDATE images SET is_display = false WHERE event_id = $1`
+	if _, err := tx.Exec(resetQuery, eventID); err != nil {
+		loggers.Error.Printf("Error resetting display images: %v", err)
+		return err
+	}
+
+	// set isDisplay to true for the chosen image
+	const updateQuery = `UPDATE images SET is_display = true WHERE id = $1`
+	if _, err := tx.Exec(updateQuery, imageID); err != nil {
+		loggers.Error.Printf("Error setting display image: %v", err)
 		return err
 	}
 
