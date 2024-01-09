@@ -97,9 +97,11 @@ func (s *service) CreateEvent(event models.Event, adminIDs []string) error {
 	}
 
 	// insert the event
-	const insertEventQuery = `INSERT INTO events (
-		event_name, date, description, content, is_draft, published_at) VALUES ($1, $2, $3, $4, $5, $6
-		) RETURNING id`
+	const insertEventQuery = `
+	INSERT INTO events (
+		event_name, date, description, content, is_draft, published_at
+	) VALUES ($1, $2, $3, $4, $5, $6) 
+	RETURNING id`
 	var eventID string
 	err = tx.QueryRowContext(ctx, insertEventQuery, event.EventName, event.Date, event.Description,
 		event.Content, event.IsDraft, event.PublishedAt).Scan(&eventID)
