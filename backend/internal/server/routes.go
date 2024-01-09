@@ -52,6 +52,11 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Route("/api", func(r chi.Router) {
 		// admin routes
 		r.Route("/admins", func(r chi.Router) {
+			r.With(auth.AuthMiddleware).Get("/all-admins", handlers.GetAllAdminsHandler(s.db))
+			r.With(auth.AuthMiddleware).Get("/all-admins-except-founder", handlers.GetAllAdminsExceptFounderHandler(s.db))
+			r.With(auth.AuthMiddleware).Post("/create-admin", handlers.CreateAdminHandler(s.db))
+			r.With(auth.AuthMiddleware).Post("/delete-admin", handlers.DeleteAdminByIDHandler(s.db))
+			r.With(auth.AuthMiddleware).Post("/update-admin", handlers.UpdateAdminHandler(s.db))
 		})
 
 		// event routes
