@@ -15,11 +15,27 @@ import (
 
 type Service interface {
 	Health() map[string]string
-	GetAllAdmins() ([]*models.Admin, error)
+
+	// admin operations
+	GetAllAdmins() ([]models.Admin, error)
+	GetAdminByID(adminID string) (*models.Admin, error)
+	GetAllAdminsExceptFounder() ([]models.Admin, error)
 	CreateAdmin(admin models.Admin) error
-	CreateEvent(event models.Event) error
-	UpdateEvent(event models.Event) error
-	GetEventByID(id string) (*models.Event, error)
+	DeleteAdmin(adminID string) error
+	UpdateAdmin(admin models.Admin) error
+	AssociateAdminWithEvent(adminID string, eventID string) error
+
+	// event operations
+	GetAuthorsByEventID(eventID string) ([]models.Admin, error)
+	CreateEvent(event models.Event, adminIDs []string) error
+	UpdateEvent(event models.Event, editorAdminID string) error
+	GetEventByID(eventID string) (*models.Event, error)
+	GetLastSevenPublishedEvents() ([]models.Event, error)
+
+	// image operations
+	AddImageToEvent(image models.EventImage, eventID string) error
+	RemoveImageFromEvent(imageID string) error
+	SetDisplayImageForEvent(imageID string, eventID string) error
 }
 
 type service struct {
