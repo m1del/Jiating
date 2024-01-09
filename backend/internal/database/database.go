@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/DATA-DOG/go-sqlmock"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -29,6 +30,7 @@ type Service interface {
 	GetAuthorsByEventID(eventID string) ([]models.Admin, error)
 	CreateEvent(event models.Event, adminIDs []string) error
 	UpdateEvent(event models.Event, editorAdminID string) error
+	UpdateEventByID(eventID string, updatedData map[string]interface{}, editorAdminID string) error
 	GetEventByID(eventID string) (*models.Event, error)
 	GetLastSevenPublishedEvents() ([]models.Event, error)
 
@@ -50,35 +52,36 @@ var (
 	host     = os.Getenv("DB_HOST")
 )
 
-func New() Service {
-	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", username, password, host, port, database)
-	db, err := sql.Open("pgx", connStr)
-	if err != nil {
-		loggers.Error.Fatalf("error connecting to the database: %v", err)
+// Modified New function to accept *sql.DB as a parameter
+func New(db *sql.DB) Service {
+	if db == nil {
+		// Create a real database connection if db is nil
+		connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", username, password, host, port, database)
+		var err error
+		db, err = sql.Open("pgx", connStr)
+		if err != nil {
+			loggers.Error.Fatalf("error connecting to the database: %v", err)
+		}
+
+		// Initialize tables
+		loggers.Debug.Println("initializing tables...")
+		if err := initTables(db); err != nil {
+			loggers.Error.Fatalf("error initializing tables: %v", err)
+		}
 	}
 
-	// initialize tables
-	loggers.Debug.Println("initializing tables...")
-	if err := initTables(db); err != nil {
-		loggers.Error.Fatalf("error initializing tables: %v", err)
-	}
-
-	s := &service{db: db}
-	return s
+	return &service{db: db}
 }
 
-func (s *service) Health() map[string]string {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-
-	err := s.db.PingContext(ctx)
+// NewMock function for testing
+func NewMock() (Service, sqlmock.Sqlmock, error) {
+	db, mock, err := sqlmock.New()
 	if err != nil {
-		loggers.Error.Fatalf(fmt.Sprintf("db down: %v", err))
+		return nil, nil, err
 	}
 
-	return map[string]string{
-		"message": "It's healthy",
-	}
+	service := New(db)
+	return service, mock, nil
 }
 
 func initTables(db *sql.DB) error {
@@ -99,4 +102,18 @@ func initTables(db *sql.DB) error {
 	}
 
 	return nil
+}
+
+func (s *service) Health() map[string]string {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
+	err := s.db.PingContext(ctx)
+	if err != nil {
+		loggers.Error.Fatalf(fmt.Sprintf("db down: %v", err))
+	}
+
+	return map[string]string{
+		"message": "It's healthy",
+	}
 }
