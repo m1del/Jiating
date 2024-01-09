@@ -51,7 +51,7 @@ func EventFormSubmitHandler(db database.Service) http.HandlerFunc {
 func GetEventHandler(db database.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Get the "id" query parameter from the request
-		id := r.URL.Query().Get("id")
+		id := chi.URLParam(r, "id")
 		if id == "" {
 			http.Error(w, "ID parameter is required", http.StatusBadRequest)
 			return
@@ -86,10 +86,30 @@ func GetEventHandler(db database.Service) http.HandlerFunc {
 func (deps *HandlerDependencies) UploadEventImageHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// parse event id and image file from request
-		eventID := chi.URLParam(r, "eventID")
+		event := chi.URLParam(r, "event")
 		file := chi.URLParam(r, "file")
 
-		url, err := deps.S3Service.GenerateUploadURL(eventID, file, 900)
+		url, err := deps.S3Service.GenerateUploadURL(event, file, 900)
+		if err != nil {
+			loggers.Error.Printf("Error generating upload url: %v", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		// return presigned url
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]string{"url": url})
+	}
+}
+
+func (deps *HandlerDependencies) DevUploadEventImageHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// parse event id and image file from request
+		event := chi.URLParam(r, "event")
+		file := chi.URLParam(r, "file")
+
+		url, err := deps.S3Service.DevGenerateUploadURL(event, file, 900)
 		if err != nil {
 			loggers.Error.Printf("Error generating upload url: %v", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
