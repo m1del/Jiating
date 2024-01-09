@@ -21,7 +21,6 @@ func AdminDashboardHandler() http.HandlerFunc {
 			return
 		}
 		loggers.Debug.Printf("User: %v\n", user)
-
 	}
 }
 
@@ -47,6 +46,7 @@ func GetAllAdminsHandler(s database.Service) http.HandlerFunc {
 		_, err = w.Write(jsonResp)
 		if err != nil {
 			loggers.Error.Printf("Error writing response: %v", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		}
 	}
 }
@@ -73,6 +73,7 @@ func GetAllAdminsExceptFounderHandler(s database.Service) http.HandlerFunc {
 		_, err = w.Write(jsonResp)
 		if err != nil {
 			loggers.Error.Printf("Error writing response: %v", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		}
 	}
 }
@@ -173,6 +174,7 @@ func GetAdminByIDHandler(s database.Service) http.HandlerFunc {
 		_, err = w.Write(jsonResp)
 		if err != nil {
 			loggers.Error.Printf("Error writing response: %v", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		}
 	}
 }
