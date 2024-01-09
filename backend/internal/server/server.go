@@ -10,6 +10,7 @@ import (
 	"backend/internal/database"
 	"backend/internal/s3service"
 	"backend/loggers"
+	"backend/misc"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	_ "github.com/joho/godotenv/autoload"
@@ -43,6 +44,22 @@ func NewServer() *http.Server {
 		port:     port,
 		db:       database.New(nil),
 		s3Client: s3Client,
+	}
+
+	// seed the database
+	if os.Getenv("ENV") == "dev" {
+		// check if the database has already been seeded
+		count, err := NewServer.db.GetAdminCount()
+		if err != nil {
+			loggers.Error.Fatalf("Error getting admin count: %v", err)
+		}
+		if count == 1 {
+			loggers.Info.Println("Seeding the database...")
+			err = misc.Seed(NewServer.db, 10, 30, 10)
+			if err != nil {
+				loggers.Error.Fatalf("Error seeding the database: %v", err)
+			}
+		}
 	}
 
 	loggers.Info.Println("Registering routes...")

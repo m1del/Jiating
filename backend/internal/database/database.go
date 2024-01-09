@@ -26,6 +26,7 @@ type Service interface {
 	DeleteAdminByID(adminID string) error
 	UpdateAdmin(admin models.Admin) error
 	AssociateAdminWithEvent(adminID string, eventID string) error
+	GetAdminCount() (int, error)
 
 	// event operations
 	GetAuthorsByEventID(eventID string) ([]models.Admin, error)
