@@ -36,9 +36,19 @@ type EventAuthor struct {
 }
 
 type EventImage struct {
-	ID        uint      `json:"id"`         // primary key
+	ID        string    `json:"id"`         // primary key, UUID
 	CreatedAt time.Time `json:"created_at"` // time of creation
 	UpdatedAt time.Time `json:"updated_at"` // time of last update
 	ImageURL  string    `json:"image_url"`  // url of the image (s3)
 	IsDisplay bool      `json:"is_display"` // if the image is the display image for the event
+}
+
+// http requests
+
+type UpdateEventRequest struct {
+	UpdatedData     map[string]interface{} `json:"updated_data"`
+	NewImages       []EventImage           `json:"new_images"`
+	RemovedImageIDs []string               `json:"removed_image_ids"`
+	NewDisplayImage string                 `json:"new_display_image_id"`
+	EditorAdminID   string                 `json:"editor_admin_id"`
 }
