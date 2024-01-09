@@ -21,7 +21,7 @@ type Service interface {
 	GetAdminByID(adminID string) (*models.Admin, error)
 	GetAllAdminsExceptFounder() ([]models.Admin, error)
 	CreateAdmin(admin models.Admin) error
-	DeleteAdmin(adminID string) error
+	DeleteAdminByID(adminID string) error
 	UpdateAdmin(admin models.Admin) error
 	AssociateAdminWithEvent(adminID string, eventID string) error
 
