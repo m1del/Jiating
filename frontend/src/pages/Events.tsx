@@ -2,9 +2,14 @@ import React from 'react';
 import EventGrid from '../components/events/EventGrid';
 function Events() {
   return (
-    <div className="mx-auto max-w-[1920px] ">
+    <div className="container mx-auto w-full ">
       <div className="flex flex-col items-center">
-        <h2 className="items-center text-3xl text-cyan-600">Events</h2>
+        <div className="w-full rounded-md bg-gray-700 p-6 text-white shadow-md">
+          <h1 className="mb-2 text-4xl font-bold">Recent Events</h1>
+          <p className="text-xl">
+            Here are some articles written about some recent events!
+          </p>
+        </div>
         <EventGrid />
       </div>
     </div>
