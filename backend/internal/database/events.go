@@ -5,6 +5,7 @@ import (
 	"backend/loggers"
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 )
 
@@ -54,6 +55,8 @@ func (s *service) GetAuthorsByEventID(eventID string) ([]models.Admin, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
+	loggers.Debug.Printf("Getting author by eventID: %v", eventID)
+
 	const query = `
     SELECT a.id, a.created_at, a.updated_at, a.deleted_at, a.name, a.email, a.position, a.status
     FROM admins a
@@ -85,7 +88,71 @@ func (s *service) GetAuthorsByEventID(eventID string) ([]models.Admin, error) {
 	return authors, nil
 }
 
-func (s *service) CreateEvent(event models.Event, adminIDs []string) error {
+func (s *service) CreateEvent(event models.Event, adminIDs []string) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
+	// start a transaction
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		loggers.Error.Printf("Error starting transaction: %v", err)
+		return "", err
+	}
+
+	// insert the event
+	const insertEventQuery = `
+	INSERT INTO events (
+		event_name, date, description, content, is_draft, published_at, created_at, updated_at
+	) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW()) 
+	RETURNING id`
+	var eventID string
+	err = tx.QueryRowContext(ctx, insertEventQuery, event.EventName, event.Date, event.Description,
+		event.Content, event.IsDraft, event.PublishedAt).Scan(&eventID)
+	if err != nil {
+		tx.Rollback()
+		loggers.Error.Printf("Error inserting event: %v", err)
+		return "", err
+	}
+
+	// associate each admin with the event
+	for _, adminID := range adminIDs {
+		_, err = tx.ExecContext(ctx, `INSERT INTO event_authors (admin_id, event_id) VALUES ($1, $2)`,
+			adminID, eventID)
+		if err != nil {
+			tx.Rollback()
+			loggers.Error.Printf("Error associating admin with event: %v", err)
+			return "nil", err
+		}
+	}
+
+	// inserting images
+	for _, img := range event.Images {
+		if err := s.AddImageToEventTx(tx, img, eventID); err != nil {
+			tx.Rollback()
+			loggers.Error.Printf("Error adding image to event: %v", err)
+			return "", err
+		}
+	}
+
+	// set the first image as display image by default (if images are present)
+	if len(event.Images) > 0 {
+		if err := s.SetDisplayImageForEventTx(tx, event.Images[0].ID, eventID); err != nil {
+			tx.Rollback()
+			loggers.Error.Printf("Error setting display image for event: %v", err)
+			return "", err
+		}
+	}
+
+	// commit the transaction
+	if err = tx.Commit(); err != nil {
+		loggers.Error.Printf("Error committing transaction: %v", err)
+		return "", err
+	}
+
+	return eventID, nil
+}
+
+func (s *service) UpdateEventByID(eventID string, req models.UpdateEventRequest) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
@@ -96,32 +163,47 @@ func (s *service) CreateEvent(event models.Event, adminIDs []string) error {
 		return err
 	}
 
-	// insert the event
-	const insertEventQuery = `INSERT INTO events (
-		event_name, date, description, content, is_draft, published_at) VALUES ($1, $2, $3, $4, $5, $6
-		) RETURNING id`
-	var eventID string
-	err = tx.QueryRowContext(ctx, insertEventQuery, event.EventName, event.Date, event.Description,
-		event.Content, event.IsDraft, event.PublishedAt).Scan(&eventID)
-	if err != nil {
+	// build and execute the dynamic update query for the event
+	if err := s.UpdateDynamicEventFields(tx, eventID, req.UpdatedData); err != nil {
 		tx.Rollback()
-		loggers.Error.Printf("Error inserting event: %v", err)
 		return err
 	}
 
-	// associate each admin with the event
-	for _, adminID := range adminIDs {
-		_, err = tx.ExecContext(ctx, `INSERT INTO event_authors (admin_id, event_id) VALUES ($1, $2)`,
-			adminID, eventID)
-		if err != nil {
+	// add new images
+	for _, img := range req.NewImages {
+		if err := s.AddImageToEventTx(tx, img, eventID); err != nil {
 			tx.Rollback()
-			loggers.Error.Printf("Error associating admin with event: %v", err)
+			loggers.Error.Printf("Error adding image to event: %v", err)
 			return err
 		}
 	}
 
+	// remove images
+	for _, imgID := range req.RemovedImageIDs {
+		if err := s.RemoveImageFromEventTx(tx, imgID); err != nil {
+			tx.Rollback()
+			loggers.Error.Printf("Error removing image from event: %v", err)
+			return err
+		}
+	}
+
+	// set new display image if provided
+	if req.NewDisplayImage != "" {
+		if err := s.SetDisplayImageForEventTx(tx, req.NewDisplayImage, eventID); err != nil {
+			tx.Rollback()
+			loggers.Error.Printf("Error setting display image: %v", err)
+			return err
+		}
+	}
+
+	// check and update the authorship
+	if err := s.UpdateEventAuthorship(tx, eventID, req.EditorAdminID); err != nil {
+		tx.Rollback()
+		return err
+	}
+
 	// commit the transaction
-	if err = tx.Commit(); err != nil {
+	if err := tx.Commit(); err != nil {
 		loggers.Error.Printf("Error committing transaction: %v", err)
 		return err
 	}
@@ -129,7 +211,53 @@ func (s *service) CreateEvent(event models.Event, adminIDs []string) error {
 	return nil
 }
 
-func (s *service) UpdateEvent(event models.Event, editorAdminID string) error {
+// update event helper functions
+func (s *service) UpdateDynamicEventFields(tx *sql.Tx, eventID string, updatedData map[string]interface{}) error {
+	updateQuery := "UPDATE events SET "
+	var args []interface{}
+	argID := 1
+
+	for key, value := range updatedData {
+		updateQuery += fmt.Sprintf("%s = $%d, ", key, argID)
+		args = append(args, value)
+		argID++
+	}
+
+	updateQuery += fmt.Sprintf("updated_at = $%d WHERE id = $%d", argID, argID+1)
+	args = append(args, time.Now(), eventID)
+
+	_, err := tx.Exec(updateQuery, args...)
+	if err != nil {
+		loggers.Error.Printf("Error updating event fields: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+func (s *service) UpdateEventAuthorship(tx *sql.Tx, eventID, editorAdminID string) error {
+	// check if this admin is already an author of the event
+	const checkAuthorQuery = `SELECT EXISTS (SELECT 1 FROM event_authors WHERE admin_id = $1 AND event_id = $2)`
+	var exists bool
+	if err := tx.QueryRow(checkAuthorQuery, editorAdminID, eventID).Scan(&exists); err != nil {
+		loggers.Error.Printf("Error checking for existing author: %v", err)
+		return err
+	}
+
+	// ff not already an author, add them
+	if !exists {
+		const addAuthorQuery = `INSERT INTO event_authors (admin_id, event_id) VALUES ($1, $2)`
+		if _, err := tx.Exec(addAuthorQuery, editorAdminID, eventID); err != nil {
+			loggers.Error.Printf("Error adding new event author: %v", err)
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (s *service) UpdateEvent(event models.Event, editorAdminID string, newImages []models.EventImage, removedImageIDs []string, newDisplayImageID string) error {
+	//Note: this function is not used in the current implementation bc i cant figure it out lol
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
@@ -147,6 +275,33 @@ func (s *service) UpdateEvent(event models.Event, editorAdminID string) error {
 		tx.Rollback()
 		loggers.Error.Printf("Error updating event: %v", err)
 		return err
+	}
+
+	// add new images
+	for _, img := range newImages {
+		if err := s.AddImageToEventTx(tx, img, event.ID); err != nil {
+			tx.Rollback()
+			loggers.Error.Printf("Error adding image to event: %v", err)
+			return err
+		}
+	}
+
+	// remove images
+	for _, imgID := range removedImageIDs {
+		if err := s.RemoveImageFromEvent(imgID); err != nil {
+			tx.Rollback()
+			loggers.Error.Printf("Error removing image from event: %v", err)
+			return err
+		}
+	}
+
+	// set new display image if provided
+	if newDisplayImageID != "" {
+		if err := s.SetDisplayImageForEventTx(tx, newDisplayImageID, event.ID); err != nil {
+			tx.Rollback()
+			loggers.Error.Printf("Error setting display image: %v", err)
+			return err
+		}
 	}
 
 	// check if this admin is already an author of the event

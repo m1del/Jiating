@@ -41,7 +41,7 @@ func NewServer() *http.Server {
 	loggers.Info.Println("Connecting to the database...")
 	NewServer := &Server{
 		port:     port,
-		db:       database.New(),
+		db:       database.New(nil),
 		s3Client: s3Client,
 	}
 

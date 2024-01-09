@@ -111,24 +111,26 @@ func (s *service) GetAllAdminsExceptFounder() ([]models.Admin, error) {
 	return admins, nil
 }
 
-func (s *service) CreateAdmin(admin models.Admin) error {
+func (s *service) CreateAdmin(admin models.Admin) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
+	var id string
 	const query = `INSERT INTO admins (
         created_at, updated_at, name, email, position, status
-    ) VALUES ($1, $2, $3, $4, $5, $6)`
+    ) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`
 
-	_, err := s.db.ExecContext(
+	err := s.db.QueryRowContext(
 		ctx, query, time.Now(), time.Now(), admin.Name, admin.Email,
 		admin.Position, admin.Status,
-	)
+	).Scan(&id)
+
 	if err != nil {
 		loggers.Error.Printf("Error creating admin: %v", err)
-		return err
+		return "", err
 	}
 
-	return nil
+	return id, nil
 }
 
 func (s *service) AssociateAdminWithEvent(adminID, eventID string) error {
@@ -146,7 +148,7 @@ func (s *service) AssociateAdminWithEvent(adminID, eventID string) error {
 	return nil
 }
 
-func (s *service) DeleteAdmin(adminID string) error {
+func (s *service) DeleteAdminByID(adminID string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
@@ -183,6 +185,26 @@ func (s *service) GetAdminByID(adminID string) (*models.Admin, error) {
 	SELECT id, created_at, updated_at, deleted_at, name, email, position, status 
 	FROM admins WHERE id = $1`
 	row := s.db.QueryRowContext(ctx, query, adminID)
+
+	var admin models.Admin
+	err := row.Scan(&admin.ID, &admin.CreatedAt, &admin.UpdatedAt,
+		&admin.DeletedAt, &admin.Name, &admin.Email, &admin.Position, &admin.Status)
+	if err != nil {
+		loggers.Error.Printf("Error getting admin: %v", err)
+		return nil, err
+	}
+
+	return &admin, nil
+}
+
+func (s *service) GetAdminByEmail(adminEmail string) (*models.Admin, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
+	const query = `
+	SELECT id, created_at, updated_at, deleted_at, name, email, position, status 
+	FROM admins WHERE email = $1`
+	row := s.db.QueryRowContext(ctx, query, adminEmail)
 
 	var admin models.Admin
 	err := row.Scan(&admin.ID, &admin.CreatedAt, &admin.UpdatedAt,

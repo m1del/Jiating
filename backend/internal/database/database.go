@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/DATA-DOG/go-sqlmock"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -19,18 +20,24 @@ type Service interface {
 	// admin operations
 	GetAllAdmins() ([]models.Admin, error)
 	GetAdminByID(adminID string) (*models.Admin, error)
+	GetAdminByEmail(adminEmail string) (*models.Admin, error)
 	GetAllAdminsExceptFounder() ([]models.Admin, error)
-	CreateAdmin(admin models.Admin) error
-	DeleteAdmin(adminID string) error
+	CreateAdmin(admin models.Admin) (string, error)
+	DeleteAdminByID(adminID string) error
 	UpdateAdmin(admin models.Admin) error
 	AssociateAdminWithEvent(adminID string, eventID string) error
 
 	// event operations
 	GetAuthorsByEventID(eventID string) ([]models.Admin, error)
-	CreateEvent(event models.Event, adminIDs []string) error
-	UpdateEvent(event models.Event, editorAdminID string) error
+	CreateEvent(event models.Event, adminIDs []string) (string, error)
+	UpdateEvent(event models.Event, editorAdminID string, newImages []models.EventImage, removedImageIDs []string, newDisplayImageID string) error
+	UpdateEventByID(eventID string, req models.UpdateEventRequest) error
 	GetEventByID(eventID string) (*models.Event, error)
 	GetLastSevenPublishedEvents() ([]models.Event, error)
+
+	// event helpers
+	UpdateDynamicEventFields(tx *sql.Tx, eventID string, updatedData map[string]interface{}) error
+	UpdateEventAuthorship(tx *sql.Tx, eventID, editorAdminID string) error
 
 	// image operations
 	AddImageToEvent(image models.EventImage, eventID string) error
@@ -50,35 +57,35 @@ var (
 	host     = os.Getenv("DB_HOST")
 )
 
-func New() Service {
-	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", username, password, host, port, database)
-	db, err := sql.Open("pgx", connStr)
-	if err != nil {
-		loggers.Error.Fatalf("error connecting to the database: %v", err)
+func New(db *sql.DB) Service {
+	if db == nil {
+		// Create a real database connection if db is nil
+		connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", username, password, host, port, database)
+		var err error
+		db, err = sql.Open("pgx", connStr)
+		if err != nil {
+			loggers.Error.Fatalf("error connecting to the database: %v", err)
+		}
+
+		// Initialize tables
+		loggers.Debug.Println("initializing tables...")
+		if err := initTables(db); err != nil {
+			loggers.Error.Fatalf("error initializing tables: %v", err)
+		}
 	}
 
-	// initialize tables
-	loggers.Debug.Println("initializing tables...")
-	if err := initTables(db); err != nil {
-		loggers.Error.Fatalf("error initializing tables: %v", err)
-	}
-
-	s := &service{db: db}
-	return s
+	return &service{db: db}
 }
 
-func (s *service) Health() map[string]string {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-
-	err := s.db.PingContext(ctx)
+// NewMock function for testing
+func NewMock() (Service, sqlmock.Sqlmock, error) {
+	db, mock, err := sqlmock.New()
 	if err != nil {
-		loggers.Error.Fatalf(fmt.Sprintf("db down: %v", err))
+		return nil, nil, err
 	}
 
-	return map[string]string{
-		"message": "It's healthy",
-	}
+	service := New(db)
+	return service, mock, nil
 }
 
 func initTables(db *sql.DB) error {
@@ -99,4 +106,18 @@ func initTables(db *sql.DB) error {
 	}
 
 	return nil
+}
+
+func (s *service) Health() map[string]string {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
+	err := s.db.PingContext(ctx)
+	if err != nil {
+		loggers.Error.Fatalf(fmt.Sprintf("db down: %v", err))
+	}
+
+	return map[string]string{
+		"message": "It's healthy",
+	}
 }
