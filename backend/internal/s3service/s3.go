@@ -14,10 +14,17 @@ import (
 
 // Service interface
 type Service interface {
+	// photoshoots
 	GetYears(ctx context.Context) ([]string, error)
 	GetEvents(ctx context.Context, year string) ([]string, error)
 	ListPhotos(ctx context.Context, year, event string) ([]string, error)
 	GetPhotos(ctx context.Context, year, event string) ([]string, error)
+
+	// events
+	GenerateUploadURL(eventID, filename string, lifetimeSecs int64) (string, error)
+	DevGenerateUploadURL(eventID, filename string, lifetimeSecs int64) (string, error)
+
+	// generic
 	GetPresignedURL(bucket, key string, lifetimeSecs int64) (string, error)
 }
 
