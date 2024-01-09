@@ -7,10 +7,10 @@ import (
 	"time"
 )
 
-func (s *service) GenerateUploadURL(eventID, filename string, lifetimeSecs int64) (string, error) {
+func (s *service) GenerateUploadURL(event, filename string, lifetimeSecs int64) (string, error) {
 	startTime := time.Now()
 	bucket := os.Getenv("S3_BUCKET_NAME")
-	prefix := fmt.Sprintf("events/%s/%s", eventID, filename)
+	prefix := fmt.Sprintf("events/%s/%s", event, filename)
 
 	req, err := s.presigner.PutObject(bucket, prefix, lifetimeSecs)
 	if err != nil {
@@ -23,10 +23,10 @@ func (s *service) GenerateUploadURL(eventID, filename string, lifetimeSecs int64
 	return req.URL, nil
 }
 
-func (s *service) DevGenerateUploadURL(eventID, filename string, lifetimeSecs int64) (string, error) {
+func (s *service) DevGenerateUploadURL(event, filename string, lifetimeSecs int64) (string, error) {
 	startTime := time.Now()
 	bucket := os.Getenv("S3_BUCKET_NAME")
-	prefix := fmt.Sprintf("testing/%s/%s", eventID, filename)
+	prefix := fmt.Sprintf("testing/%s/%s", event, filename)
 
 	req, err := s.presigner.PutObject(bucket, prefix, lifetimeSecs)
 	if err != nil {
