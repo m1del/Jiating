@@ -30,10 +30,14 @@ type Service interface {
 	// event operations
 	GetAuthorsByEventID(eventID string) ([]models.Admin, error)
 	CreateEvent(event models.Event, adminIDs []string) error
-	UpdateEvent(event models.Event, editorAdminID string) error
-	UpdateEventByID(eventID string, updatedData map[string]interface{}, editorAdminID string) error
+	UpdateEvent(event models.Event, editorAdminID string, newImages []models.EventImage, removedImageIDs []string, newDisplayImageID string) error
+	UpdateEventByID(eventID string, req models.UpdateEventRequest) error
 	GetEventByID(eventID string) (*models.Event, error)
 	GetLastSevenPublishedEvents() ([]models.Event, error)
+
+	// event helpers
+	UpdateDynamicEventFields(tx *sql.Tx, eventID string, updatedData map[string]interface{}) error
+	UpdateEventAuthorship(tx *sql.Tx, eventID, editorAdminID string) error
 
 	// image operations
 	AddImageToEvent(image models.EventImage, eventID string) error
