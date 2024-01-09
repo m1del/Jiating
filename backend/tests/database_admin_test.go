@@ -73,6 +73,46 @@ func TestGetAllAdmins(t *testing.T) {
 	}
 }
 
+func TestDefaultAdminExists(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	s := database.New(db)
+
+	expectedAdmin := models.Admin{
+		Name:     "Jiating",
+		Email:    "jiating.lion.dragon@gmail.com",
+		Position: "Founder",
+		Status:   "permanent",
+	}
+
+	rows := sqlmock.NewRows([]string{"id", "created_at", "updated_at", "deleted_at", "name", "email", "position", "status"}).
+		AddRow("some-uuid", time.Now(), time.Now(), nil,
+			expectedAdmin.Name, expectedAdmin.Email, expectedAdmin.Position, expectedAdmin.Status)
+
+	mock.ExpectQuery("^SELECT (.+) FROM admins WHERE email = \\$1$").
+		WithArgs(expectedAdmin.Email).
+		WillReturnRows(rows)
+
+	admin, err := s.GetAdminByEmail(expectedAdmin.Email)
+
+	// assertions
+	assert.NoError(t, err)
+	assert.NotNil(t, admin)
+	assert.Equal(t, expectedAdmin.Email, admin.Email)
+	assert.Equal(t, expectedAdmin.Name, admin.Name)
+	assert.Equal(t, expectedAdmin.Position, admin.Position)
+	assert.Equal(t, expectedAdmin.Status, admin.Status)
+
+	// check if all expectations were met
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
+
 func TestGetAdminByEmail(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -109,46 +149,6 @@ func TestGetAdminByEmail(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, admin)
 	assert.Equal(t, testAdmin, *admin)
-
-	// check if all expectations were met
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("There were unfulfilled expectations: %s", err)
-	}
-}
-
-func TestDefaultAdminExists(t *testing.T) {
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("An error '%s' was not expected when opening a stub database connection", err)
-	}
-	defer db.Close()
-
-	s := database.New(db)
-
-	expectedAdmin := models.Admin{
-		Name:     "Jiating",
-		Email:    "jiating.lion.dragon@gmail.com",
-		Position: "Founder",
-		Status:   "permanent",
-	}
-
-	rows := sqlmock.NewRows([]string{"id", "created_at", "updated_at", "deleted_at", "name", "email", "position", "status"}).
-		AddRow("some-uuid", time.Now(), time.Now(), nil,
-			expectedAdmin.Name, expectedAdmin.Email, expectedAdmin.Position, expectedAdmin.Status)
-
-	mock.ExpectQuery("^SELECT (.+) FROM admins WHERE email = \\$1$").
-		WithArgs(expectedAdmin.Email).
-		WillReturnRows(rows)
-
-	admin, err := s.GetAdminByEmail(expectedAdmin.Email)
-
-	// assertions
-	assert.NoError(t, err)
-	assert.NotNil(t, admin)
-	assert.Equal(t, expectedAdmin.Email, admin.Email)
-	assert.Equal(t, expectedAdmin.Name, admin.Name)
-	assert.Equal(t, expectedAdmin.Position, admin.Position)
-	assert.Equal(t, expectedAdmin.Status, admin.Status)
 
 	// check if all expectations were met
 	if err := mock.ExpectationsWereMet(); err != nil {
