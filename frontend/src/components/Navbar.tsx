@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { IoClose, IoMenu } from "react-icons/io5";
+import { IoClose, IoMenu } from 'react-icons/io5';
 import { Link, useNavigate } from 'react-router-dom';
 import { logo } from '../assets';
 import { navLinks } from '../constants';
@@ -64,7 +64,7 @@ function Navbar({ isSticky }) {
           </p>
         </Link>
 
-        <ul className="hidden list-none flex-row gap-10 sm:flex">
+        <ul className="hidden list-none flex-row gap-10 md:flex">
           {navLinks.map((link) => (
             <li
               key={link.title}
@@ -78,11 +78,17 @@ function Navbar({ isSticky }) {
         </ul>
 
         {/*Mobile nav*/}
-        <div className="flex flex-1 items-center justify-end sm:hidden">
+        <div className="flex flex-1 items-center justify-end md:hidden">
           {toggle ? (
-            <IoClose className="h-8 w-8 cursor-pointer text-white" onClick={() => setToggle(!toggle)} />
+            <IoClose
+              className="h-8 w-8 cursor-pointer text-white"
+              onClick={() => setToggle(!toggle)}
+            />
           ) : (
-            <IoMenu className="h-8 w-8 cursor-pointer text-white" onClick={() => setToggle(!toggle)} />
+            <IoMenu
+              className="h-8 w-8 cursor-pointer text-white"
+              onClick={() => setToggle(!toggle)}
+            />
           )}
           <div
             className={`${!toggle ? 'hidden' : 'flex'} 

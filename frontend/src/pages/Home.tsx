@@ -9,7 +9,6 @@ function Home() {
     <div className="mx-auto max-w-[1920px]">
       <div className="flex flex-col items-center">
         <HomeHeading />
-        <FloatBar />
 
         <Hero />
       </div>
