@@ -17,17 +17,17 @@ type Admin struct {
 }
 
 type Event struct {
-	ID          string        `json:"id"`           // primary key, UUID
-	CreatedAt   time.Time     `json:"created_at"`   // time of creation
-	UpdatedAt   time.Time     `json:"updated_at"`   // time of last update
-	EventName   string        `json:"event_name"`   // name of the event
-	Date        string        `json:"date"`         // date of the event
-	Description string        `json:"description"`  // description of the event
-	Content     string        `json:"content"`      // for text content, ig/yt embed links
-	IsDraft     bool          `json:"is_draft"`     // if the event is a draft
-	PublishedAt *time.Time    `json:"published_at"` // time of publication, nil if draft
-	Images      []EventImage  `json:"images"`       // images associated with the event
-	Authors     []EventAuthor `json:"authors"`      // authors associated with the event
+	ID          string       `json:"id"`           // primary key, UUID
+	CreatedAt   time.Time    `json:"created_at"`   // time of creation
+	UpdatedAt   time.Time    `json:"updated_at"`   // time of last update
+	EventName   string       `json:"event_name"`   // name of the event
+	Date        string       `json:"date"`         // date of the event
+	Description string       `json:"description"`  // description of the event
+	Content     string       `json:"content"`      // for text content, ig/yt embed links
+	IsDraft     bool         `json:"is_draft"`     // if the event is a draft
+	PublishedAt *time.Time   `json:"published_at"` // time of publication, nil if draft
+	Images      []EventImage `json:"images"`       // images associated with the event
+	Authors     []Admin      `json:"authors"`      // authors associated with the event
 }
 
 type EventAuthor struct {
