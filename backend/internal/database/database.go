@@ -42,16 +42,8 @@ func New() Service {
 	}
 
 	// initialize tables
-	if err := createAdminTable(db); err != nil {
-		loggers.Error.Fatalf("error creating admins table: %v", err)
-	}
-
-	if err := createImageTable(db); err != nil {
-		loggers.Error.Fatalf("error creating images table: %v", err)
-	}
-
-	if err := createEventTable(db); err != nil {
-		loggers.Error.Fatalf("error creating events table: %v", err)
+	if err := initTables(db); err != nil {
+		loggers.Error.Fatalf("error initializing tables: %v", err)
 	}
 
 	s := &service{db: db}
@@ -70,4 +62,24 @@ func (s *service) Health() map[string]string {
 	return map[string]string{
 		"message": "It's healthy",
 	}
+}
+
+func initTables(db *sql.DB) error {
+	if err := createAdminTable(db); err != nil {
+		loggers.Error.Fatalf("error creating admins table: %v", err)
+	}
+
+	if err := createImageTable(db); err != nil {
+		loggers.Error.Fatalf("error creating images table: %v", err)
+	}
+
+	if err := createEventTable(db); err != nil {
+		loggers.Error.Fatalf("error creating events table: %v", err)
+	}
+
+	if err := createEventAuthorTable(db); err != nil {
+		loggers.Error.Fatalf("error creating event authors table: %v", err)
+	}
+
+	return nil
 }

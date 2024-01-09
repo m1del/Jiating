@@ -9,19 +9,21 @@ import (
 )
 
 func createAdminTable(db *sql.DB) error {
-	createTableSQL := `
+	createAdminTableSQL := `
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
     CREATE TABLE IF NOT EXISTS admins (
-        id SERIAL PRIMARY KEY,
-        created_at TIMESTAMP NOT NULL,
-        updated_at TIMESTAMP NOT NULL,
-        deleted_at TIMESTAMP NULL,
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+        updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+        deleted_at TIMESTAMP WITH TIME ZONE,
         name VARCHAR(255) NOT NULL,
-        email VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL UNIQUE,
         position VARCHAR(255) NOT NULL,
         status VARCHAR(50) NOT NULL
     );`
 
-	_, err := db.Exec(createTableSQL)
+	_, err := db.Exec(createAdminTableSQL)
 	if err != nil {
 		loggers.Error.Printf("Error creating admin table: %v", err)
 		return err

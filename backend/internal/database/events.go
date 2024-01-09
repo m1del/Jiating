@@ -9,24 +9,41 @@ import (
 )
 
 func createEventTable(db *sql.DB) error {
-	createTableSQL := `
+	createEventTableSQL := `
     CREATE TABLE IF NOT EXISTS events (
-        id VARCHAR(36) PRIMARY KEY,
-        created_at TIMESTAMP NOT NULL,
-        updated_at TIMESTAMP NOT NULL,
-		admin_id INT REFERENCES admins(id),
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+        updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
         event_name VARCHAR(255) NOT NULL,
-		date VARCHAR(10) NOT NULL,
-		description TEXT,
-		content TEXT, 
+        date VARCHAR(255) NOT NULL,
+        description TEXT NOT NULL,
+        content TEXT NOT NULL,
         is_draft BOOLEAN NOT NULL,
-		published_at TIMESTAMP NULL,
-		image_id INT REFERENCES images(id)
+        published_at TIMESTAMP WITH TIME ZONE
     );`
 
-	_, err := db.Exec(createTableSQL)
+	_, err := db.Exec(createEventTableSQL)
 	if err != nil {
 		loggers.Error.Printf("Error creating event table: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+func createEventAuthorTable(db *sql.DB) error {
+	createEventAuthorTableSQL := `
+    CREATE TABLE IF NOT EXISTS event_authors (
+        admin_id UUID NOT NULL,
+        event_id UUID NOT NULL,
+        PRIMARY KEY (admin_id, event_id),
+        FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE CASCADE,
+        FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
+    );`
+
+	_, err := db.Exec(createEventAuthorTableSQL)
+	if err != nil {
+		loggers.Error.Printf("Error creating event_author table: %v", err)
 		return err
 	}
 
