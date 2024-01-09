@@ -22,7 +22,7 @@ type Service interface {
 	GetAdminByID(adminID string) (*models.Admin, error)
 	GetAdminByEmail(adminEmail string) (*models.Admin, error)
 	GetAllAdminsExceptFounder() ([]models.Admin, error)
-	CreateAdmin(admin models.Admin) error
+	CreateAdmin(admin models.Admin) (string, error)
 	DeleteAdminByID(adminID string) error
 	UpdateAdmin(admin models.Admin) error
 	AssociateAdminWithEvent(adminID string, eventID string) error
