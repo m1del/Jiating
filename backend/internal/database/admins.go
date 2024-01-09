@@ -146,7 +146,7 @@ func (s *service) AssociateAdminWithEvent(adminID, eventID string) error {
 	return nil
 }
 
-func (s *service) DeleteAdmin(adminID string) error {
+func (s *service) DeleteAdminByID(adminID string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
