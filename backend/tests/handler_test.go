@@ -60,6 +60,16 @@ func (m *MockPresigner) GetObject(bucketName string, objectKey string, lifetimeS
 	return args.Get(0).(*v4.PresignedHTTPRequest), args.Error(1)
 }
 
+func (m *MockPresigner) PutObject(bucketName string, objectKey string, lifetimeSecs int64) (*v4.PresignedHTTPRequest, error) {
+	args := m.Called(bucketName, objectKey, lifetimeSecs)
+	return args.Get(0).(*v4.PresignedHTTPRequest), args.Error(1)
+}
+
+func (m *MockPresigner) DeleteObject(bucketName string, objectKey string) (*v4.PresignedHTTPRequest, error) {
+	args := m.Called(bucketName, objectKey)
+	return args.Get(0).(*v4.PresignedHTTPRequest), args.Error(1)
+}
+
 func TestGetYears(t *testing.T) {
 	mockS3Client := new(MockS3Client)
 	mockPresigner := new(MockPresigner)
