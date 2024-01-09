@@ -214,3 +214,75 @@ func TestCreateAdminFailure(t *testing.T) {
 		t.Errorf("There were unfulfilled expectations: %s", err)
 	}
 }
+
+func TestDeleteAdminByIDSuccess(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	s := database.New(db)
+
+	adminID := "some-uuid"
+	statusRows := sqlmock.NewRows([]string{"status"}).AddRow("Active")
+
+	// mock query to check admin status
+	mock.ExpectQuery("SELECT status FROM admins WHERE id = \\$1").WithArgs(adminID).WillReturnRows(statusRows)
+
+	// mock successful execution of the delete query
+	mock.ExpectExec("DELETE FROM admins WHERE id = \\$1").WithArgs(adminID).WillReturnResult(sqlmock.NewResult(1, 1))
+
+	// call the function under test
+	err = s.DeleteAdminByID(adminID)
+
+	assert.NoError(t, err)
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestDeleteAdminByIDPermanent(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	s := database.New(db)
+
+	adminID := "some-uuid"
+	statusRows := sqlmock.NewRows([]string{"status"}).AddRow("permanent")
+
+	mock.ExpectQuery("SELECT status FROM admins WHERE id = \\$1").WithArgs(adminID).WillReturnRows(statusRows)
+	err = s.DeleteAdminByID(adminID)
+
+	assert.Error(t, err)
+	assert.EqualError(t, err, "cannot delete a permanent admin")
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestDeleteAdminByIDFailure(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("An error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	s := database.New(db)
+
+	adminID := "some-uuid"
+	statusRows := sqlmock.NewRows([]string{"status"}).AddRow("Active")
+
+	mock.ExpectQuery("SELECT status FROM admins WHERE id = \\$1").WithArgs(adminID).WillReturnRows(statusRows)
+	mock.ExpectExec("DELETE FROM admins WHERE id = \\$1").WithArgs(adminID).WillReturnError(fmt.Errorf("database error"))
+
+	err = s.DeleteAdminByID(adminID)
+
+	assert.Error(t, err)
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There were unfulfilled expectations: %s", err)
+	}
+}
