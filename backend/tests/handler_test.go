@@ -261,7 +261,7 @@ func TestGenerateUploadURL(t *testing.T) {
 	mockPresigner.On("PutObject", bucket, objectKey, lifetimeSecs).Return(&v4.PresignedHTTPRequest{URL: expectedURL}, nil)
 
 	// call function to test
-	url, err := s3Service.GenerateUploadURL(eventID, filename, lifetimeSecs)
+	url, err := s3Service.GeneratePresignedUploadURL(eventID, filename, lifetimeSecs)
 	assert.NoError(t, err)
 	assert.Equal(t, expectedURL, url)
 
@@ -279,7 +279,7 @@ func TestGenerateUploadURLIntegration(t *testing.T) {
 	expectedFilename := "photo.jpg"
 	expectedLifetimeSecs := int64(900)
 
-	url, err := s3Service.GenerateUploadURL(expectedEventID, expectedFilename, expectedLifetimeSecs)
+	url, err := s3Service.GeneratePresignedUploadURL(expectedEventID, expectedFilename, expectedLifetimeSecs)
 	assert.NoError(t, err)
 
 	// checking if url is not empty
