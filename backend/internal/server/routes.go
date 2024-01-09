@@ -51,22 +51,34 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// api routes
 	r.Route("/api", func(r chi.Router) {
 		// admin routes
-		r.Route("/admins", func(r chi.Router) {
-			r.With(auth.AuthMiddleware).Get("/all-admins", handlers.GetAllAdminsHandler(s.db))
-			r.With(auth.AuthMiddleware).Get("/all-admins-not-founder", handlers.GetAllAdminsExceptFounderHandler(s.db))
-			r.With(auth.AuthMiddleware).Post("/create-admin", handlers.CreateAdminHandler(s.db))
-			r.With(auth.AuthMiddleware).Post("/associate-admin-with-event", handlers.AssociateAdminWithEventHandler(s.db))
-			r.With(auth.AuthMiddleware).Post("/delete-admin/{adminID}", handlers.DeleteAdminByIDHandler(s.db))
-			r.With(auth.AuthMiddleware).Get("/get-admin/{adminID}", handlers.GetAdminByIDHandler(s.db))
-			r.With(auth.AuthMiddleware).Post("/update-admin", handlers.UpdateAdminHandler(s.db))
+		r.Route("/admin", func(r chi.Router) {
+			// todo: add auth middleware after testing
+			r.With().Get("/get-all", handlers.GetAllAdminsHandler(s.db))
+			r.With().Get("/get-all-not-founder", handlers.GetAllAdminsExceptFounderHandler(s.db))
+			r.With().Post("/create", handlers.CreateAdminHandler(s.db))
+			r.With().Post("/associate-with-event", handlers.AssociateAdminWithEventHandler(s.db))
+			r.With().Post("/delete/{adminID}", handlers.DeleteAdminByIDHandler(s.db))
+			r.With().Get("/get/{adminID}", handlers.GetAdminByIDHandler(s.db))
+			r.With().Post("/update", handlers.UpdateAdminHandler(s.db))
 		})
 
 		// event routes
-		r.Route("/events", func(r chi.Router) {
+		r.Route("/event", func(r chi.Router) {
+			// todo add auth middleware after testing
+			// admin only functions
+			r.With().Post("/update/{eventID}", handlers.UpdateEventByIDHandler(s.db))
+			r.With().Post("/create", handlers.CreateEventHandler(s.db))
+
+			// public event functions
+			r.Get("/get-authors/{eventID}", handlers.GetAuthorsByEventID(s.db))
+			r.Get("/get/{eventID}", handlers.GetEventByIDHandler(s.db))
+			r.Get("/get-last-seven", handlers.GetLastSevenPublishedEventsHandler(s.db))
+
+			//event s3 routes for images
 			r.Post("/upload/{event}/{file}", deps.DevGetPresignedUploadURLHandler())
 		})
 
-		// meida photo routes
+		// media photo routes
 		r.Route("/photoshoot", func(r chi.Router) {
 			r.Get("/years", deps.GetYearsHandler())
 			r.Get("/events/{year}", deps.GetEventsHandler())
