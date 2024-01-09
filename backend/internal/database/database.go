@@ -20,6 +20,7 @@ type Service interface {
 	// admin operations
 	GetAllAdmins() ([]models.Admin, error)
 	GetAdminByID(adminID string) (*models.Admin, error)
+	GetAdminByEmail(adminEmail string) (*models.Admin, error)
 	GetAllAdminsExceptFounder() ([]models.Admin, error)
 	CreateAdmin(admin models.Admin) error
 	DeleteAdminByID(adminID string) error
@@ -52,7 +53,6 @@ var (
 	host     = os.Getenv("DB_HOST")
 )
 
-// Modified New function to accept *sql.DB as a parameter
 func New(db *sql.DB) Service {
 	if db == nil {
 		// Create a real database connection if db is nil

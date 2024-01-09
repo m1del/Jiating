@@ -195,6 +195,26 @@ func (s *service) GetAdminByID(adminID string) (*models.Admin, error) {
 	return &admin, nil
 }
 
+func (s *service) GetAdminByEmail(adminEmail string) (*models.Admin, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
+	const query = `
+	SELECT id, created_at, updated_at, deleted_at, name, email, position, status 
+	FROM admins WHERE email = $1`
+	row := s.db.QueryRowContext(ctx, query, adminEmail)
+
+	var admin models.Admin
+	err := row.Scan(&admin.ID, &admin.CreatedAt, &admin.UpdatedAt,
+		&admin.DeletedAt, &admin.Name, &admin.Email, &admin.Position, &admin.Status)
+	if err != nil {
+		loggers.Error.Printf("Error getting admin: %v", err)
+		return nil, err
+	}
+
+	return &admin, nil
+}
+
 func (s *service) UpdateAdmin(admin models.Admin) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
