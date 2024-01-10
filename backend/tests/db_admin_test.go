@@ -202,12 +202,18 @@ func TestCreateAdminSuccess(t *testing.T) {
 		Status:   "Active",
 	}
 
-	mock.ExpectExec("INSERT INTO admins").WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), admin.Name, admin.Email, admin.Position, admin.Status).
-		WillReturnResult(sqlmock.NewResult(1, 1))
+	expectedID := "some-uuid"
 
-	_, err = s.CreateAdmin(admin)
+	rows := sqlmock.NewRows([]string{"id"}).AddRow(expectedID)
+	mock.ExpectQuery("INSERT INTO admins").WithArgs(
+		sqlmock.AnyArg(), sqlmock.AnyArg(), admin.Name, admin.Email,
+		admin.Position, admin.Status).
+		WillReturnRows(rows)
+
+	id, err := s.CreateAdmin(admin)
 
 	assert.NoError(t, err)
+	assert.Equal(t, expectedID, id, "Expected ID does not match returned ID")
 
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("There were unfulfilled expectations: %s", err)
@@ -223,7 +229,6 @@ func TestCreateAdminFailure(t *testing.T) {
 
 	s := database.New(db)
 
-	// Mock data
 	admin := models.Admin{
 		Name:     "tuan",
 		Email:    "tuan@mail.com",
@@ -231,12 +236,17 @@ func TestCreateAdminFailure(t *testing.T) {
 		Status:   "Inactive",
 	}
 
-	mock.ExpectExec("INSERT INTO admins").WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), admin.Name, admin.Email, admin.Position, admin.Status).
+	// Sset up the mock to expect a QueryRow and return an error
+	mock.ExpectQuery(
+		"INSERT INTO admins").WithArgs(
+		sqlmock.AnyArg(), sqlmock.AnyArg(), admin.Name, admin.Email,
+		admin.Position, admin.Status).
 		WillReturnError(fmt.Errorf("sql error"))
 
-	_, err = s.CreateAdmin(admin)
+	id, err := s.CreateAdmin(admin)
 
 	assert.Error(t, err)
+	assert.Empty(t, id, "Expected ID to be empty when an error occurs")
 
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("There were unfulfilled expectations: %s", err)

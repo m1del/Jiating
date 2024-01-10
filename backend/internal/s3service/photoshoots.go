@@ -1,6 +1,7 @@
 package s3service
 
 import (
+	"backend/loggers"
 	"context"
 	"fmt"
 	"log"
@@ -15,7 +16,7 @@ import (
 // GetYears returns a list of years representing the available photoshoots in the S3 bucket.
 // It retrieves the list of objects from the S3 bucket with the specified prefix and extracts the years from the common prefixes.
 // The years are returned as a slice of strings, or error if the operation failed.
-func (s *service) GetYears(ctx context.Context) ([]string, error) {
+func (s *service) GetPhotoshootYears(ctx context.Context) ([]string, error) {
 	startTime := time.Now()
 	bucket := os.Getenv("S3_BUCKET_NAME")
 	prefix := "photoshoots/"
@@ -38,15 +39,14 @@ func (s *service) GetYears(ctx context.Context) ([]string, error) {
 	}
 
 	elapsedTime := time.Since(startTime)
-	log.Printf("GetYears took %s", elapsedTime)
-
+	loggers.Performance.Printf("GetYears took %s", elapsedTime)
 	return years, nil
 }
 
 // GetEvents retrieves a list of events for a given year from the S3 bucket.
 // It takes a context.Context and a year string as input parameters.
 // It returns a slice of strings representing the events and an error if any.
-func (s *service) GetEvents(ctx context.Context, year string) ([]string, error) {
+func (s *service) GetPhotoshootEvents(ctx context.Context, year string) ([]string, error) {
 	startTime := time.Now()
 	bucket := os.Getenv("S3_BUCKET_NAME")
 	prefix := fmt.Sprintf("photoshoots/%s/", year)
@@ -76,7 +76,7 @@ func (s *service) GetEvents(ctx context.Context, year string) ([]string, error) 
 // ListPhotos retrieves a list of photos from the S3 bucket for a specific year and event.
 // It takes a context.Context, year, and event as parameters.
 // It returns a slice of strings containing the photo names and an error if any.
-func (s *service) ListPhotos(ctx context.Context, year, event string) ([]string, error) {
+func (s *service) ListPhotoshootPhotos(ctx context.Context, year, event string) ([]string, error) {
 	startTime := time.Now()
 	bucket := os.Getenv("S3_BUCKET_NAME")
 	prefix := fmt.Sprintf("photoshoots/%s/%s/", year, event)
@@ -97,15 +97,14 @@ func (s *service) ListPhotos(ctx context.Context, year, event string) ([]string,
 	}
 
 	elapsedTime := time.Since(startTime)
-	log.Printf("ListPhotos took %s", elapsedTime)
-
+	loggers.Performance.Printf("ListPhotos took %s", elapsedTime)
 	return photos, nil
 }
 
 // GetPhotos retrieves the URLs of photos from the specified S3 bucket for a given year and event.
 // It takes a context.Context, year, and event as input parameters.
 // It returns a slice of strings containing the photo URLs and an error if any.
-func (s *service) GetPhotos(ctx context.Context, year, event string) ([]string, error) {
+func (s *service) GetPhotoshootPhotos(ctx context.Context, year, event string) ([]string, error) {
 	startTime := time.Now()
 	bucket := os.Getenv("S3_BUCKET_NAME")
 	prefix := fmt.Sprintf("photoshoots/%s/%s/", year, event)
@@ -131,7 +130,6 @@ func (s *service) GetPhotos(ctx context.Context, year, event string) ([]string, 
 	}
 
 	elapsedTime := time.Since(startTime)
-	log.Printf("GetPhotos took %s", elapsedTime)
-
+	loggers.Performance.Printf("GetPhotos took %s", elapsedTime)
 	return photoURLs, nil
 }
