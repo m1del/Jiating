@@ -179,7 +179,7 @@ func (deps *HandlerDependencies) GetPresignedUploadURLHandler() http.HandlerFunc
 		event := chi.URLParam(r, "event")
 		file := chi.URLParam(r, "file")
 
-		url, err := deps.S3Service.GeneratePresignedUploadURL(event, file, 900)
+		url, err := deps.S3Service.GenerateEventImageUploadURL(event, file, 900)
 		if err != nil {
 			loggers.Error.Printf("Error generating upload url: %v", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -199,7 +199,7 @@ func (deps *HandlerDependencies) DevGetPresignedUploadURLHandler() http.HandlerF
 		event := chi.URLParam(r, "event")
 		file := chi.URLParam(r, "file")
 
-		url, err := deps.S3Service.DevGeneratePresignedUploadURL(event, file, 900)
+		url, err := deps.S3Service.DevGenerateEventImageUploadURL(event, file, 900)
 		if err != nil {
 			loggers.Error.Printf("Error generating upload url: %v", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)

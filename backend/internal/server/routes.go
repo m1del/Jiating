@@ -80,10 +80,10 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 		// media photo routes
 		r.Route("/photoshoot", func(r chi.Router) {
-			r.Get("/years", deps.GetYearsHandler())
-			r.Get("/events/{year}", deps.GetEventsHandler())
-			r.Get("/list/{year}/{event}", deps.ListPhotosHandler())
-			r.Get("/photos/{year}/{event}", deps.GetPhotosHandler())
+			r.Get("/years", deps.GetPhotoshootYearsHandler())
+			r.Get("/events/{year}", deps.GetPhotoshootEventsHandler())
+			r.Get("/list/{year}/{event}", deps.ListPhotoshootPhotosHandler())
+			r.Get("/photos/{year}/{event}", deps.GetPhotshootPhotosHandler())
 		})
 
 		// email routes
