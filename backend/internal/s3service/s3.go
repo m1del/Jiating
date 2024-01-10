@@ -15,14 +15,14 @@ import (
 // Service interface
 type Service interface {
 	// photoshoots
-	GetYears(ctx context.Context) ([]string, error)
-	GetEvents(ctx context.Context, year string) ([]string, error)
-	ListPhotos(ctx context.Context, year, event string) ([]string, error)
-	GetPhotos(ctx context.Context, year, event string) ([]string, error)
+	GetPhotoshootYears(ctx context.Context) ([]string, error)
+	GetPhotoshootEvents(ctx context.Context, year string) ([]string, error)
+	ListPhotoshootPhotos(ctx context.Context, year, event string) ([]string, error)
+	GetPhotoshootPhotos(ctx context.Context, year, event string) ([]string, error)
 
-	// events
-	GeneratePresignedUploadURL(eventID, filename string, lifetimeSecs int64) (string, error)
-	DevGeneratePresignedUploadURL(eventID, filename string, lifetimeSecs int64) (string, error)
+	// events image upload using presigned urls
+	GenerateEventImageUploadURL(eventID, filename string, lifetimeSecs int64) (string, error)
+	DevGenerateEventImageUploadURL(eventID, filename string, lifetimeSecs int64) (string, error)
 
 	// generic
 	GetPresignedURL(bucket, key string, lifetimeSecs int64) (string, error)

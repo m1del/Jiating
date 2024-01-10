@@ -8,9 +8,9 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func (deps *HandlerDependencies) GetYearsHandler() http.HandlerFunc {
+func (deps *HandlerDependencies) GetPhotoshootYearsHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		years, err := deps.S3Service.GetYears(r.Context())
+		years, err := deps.S3Service.GetPhotoshootYears(r.Context())
 		if err != nil {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			loggers.Error.Printf("Error getting years: %v", err)
@@ -22,11 +22,11 @@ func (deps *HandlerDependencies) GetYearsHandler() http.HandlerFunc {
 	}
 }
 
-func (deps *HandlerDependencies) GetEventsHandler() http.HandlerFunc {
+func (deps *HandlerDependencies) GetPhotoshootEventsHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		year := chi.URLParam(r, "year")
 		loggers.Debug.Printf("year: %v", year)
-		events, err := deps.S3Service.GetEvents(r.Context(), year)
+		events, err := deps.S3Service.GetPhotoshootEvents(r.Context(), year)
 		if err != nil {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			loggers.Error.Printf("Error getting events: %v", err)
@@ -38,12 +38,12 @@ func (deps *HandlerDependencies) GetEventsHandler() http.HandlerFunc {
 	}
 }
 
-func (deps *HandlerDependencies) ListPhotosHandler() http.HandlerFunc {
+func (deps *HandlerDependencies) ListPhotoshootPhotosHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		year := chi.URLParam(r, "year")
 		event := chi.URLParam(r, "event")
 		loggers.Debug.Printf("year: %v, event: %v", year, event)
-		photos, err := deps.S3Service.ListPhotos(r.Context(), year, event)
+		photos, err := deps.S3Service.ListPhotoshootPhotos(r.Context(), year, event)
 		if err != nil {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			loggers.Error.Printf("Error getting photos: %v", err)
@@ -55,12 +55,12 @@ func (deps *HandlerDependencies) ListPhotosHandler() http.HandlerFunc {
 	}
 }
 
-func (deps *HandlerDependencies) GetPhotosHandler() http.HandlerFunc {
+func (deps *HandlerDependencies) GetPhotshootPhotosHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		year := chi.URLParam(r, "year")
 		event := chi.URLParam(r, "event")
 		loggers.Debug.Printf("year: %v, event: %v", year, event)
-		photos, err := deps.S3Service.GetPhotos(r.Context(), year, event)
+		photos, err := deps.S3Service.GetPhotoshootPhotos(r.Context(), year, event)
 		if err != nil {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			loggers.Error.Printf("Error getting photos: %v", err)

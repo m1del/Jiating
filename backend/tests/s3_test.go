@@ -43,7 +43,7 @@ func (m *MockPresigner) DeleteObject(bucketName string, objectKey string) (*v4.P
 	return args.Get(0).(*v4.PresignedHTTPRequest), args.Error(1)
 }
 
-func TestGetYears(t *testing.T) {
+func TestGetPhotoshootYears(t *testing.T) {
 	mockS3Client := new(MockS3Client)
 	mockPresigner := new(MockPresigner)
 
@@ -59,7 +59,7 @@ func TestGetYears(t *testing.T) {
 		},
 	}, nil)
 
-	years, err := s3Service.GetYears(context.Background())
+	years, err := s3Service.GetPhotoshootYears(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, expectedYears, years)
 
@@ -67,14 +67,14 @@ func TestGetYears(t *testing.T) {
 }
 
 // integration test
-func TestGetYearsIntegration(t *testing.T) {
+func TestGetPhotoshootYearsIntegration(t *testing.T) {
 	if os.Getenv("RUN_INTEGRATION_TESTS") != "true" {
 		t.Skip("Skipping integration test")
 	}
 
 	s3Service := s3service.NewService()
 
-	years, err := s3Service.GetYears(context.Background())
+	years, err := s3Service.GetPhotoshootYears(context.Background())
 	assert.NoError(t, err)
 
 	// checking if years is not empty
@@ -83,7 +83,7 @@ func TestGetYearsIntegration(t *testing.T) {
 	assert.Contains(t, years, "2020-2021")
 }
 
-func TestGetEvents(t *testing.T) {
+func TestGetPhotoshootEvents(t *testing.T) {
 	mockS3Client := new(MockS3Client)
 	mockPresigner := new(MockPresigner)
 
@@ -98,14 +98,14 @@ func TestGetEvents(t *testing.T) {
 	}, nil)
 
 	// call function to test
-	events, err := s3Service.GetEvents(context.Background(), "2020-2021")
+	events, err := s3Service.GetPhotoshootEvents(context.Background(), "2020-2021")
 	assert.NoError(t, err)
 	assert.Equal(t, []string{"Event1", "Event2"}, events)
 
 	mockS3Client.AssertExpectations(t)
 }
 
-func TestGetEventsIntegration(t *testing.T) {
+func TestGetPhotoshootEventsIntegration(t *testing.T) {
 	if os.Getenv("RUN_INTEGRATION_TESTS") != "true" {
 		t.Skip("Skipping integration test")
 	}
@@ -115,7 +115,7 @@ func TestGetEventsIntegration(t *testing.T) {
 	expectedYear := "2020-2021"
 	expectedEvents := []string{"AASA 2020", "CNY 2021"}
 
-	events, err := s3Service.GetEvents(context.Background(), expectedYear)
+	events, err := s3Service.GetPhotoshootEvents(context.Background(), expectedYear)
 	assert.NoError(t, err)
 
 	// checking if events is not empty
@@ -124,7 +124,7 @@ func TestGetEventsIntegration(t *testing.T) {
 	assert.Equal(t, expectedEvents, events)
 }
 
-func TestListPhotos(t *testing.T) {
+func TestListPhotoshootPhotos(t *testing.T) {
 	mockS3Client := new(MockS3Client)
 	mockPresigner := new(MockPresigner)
 
@@ -137,14 +137,14 @@ func TestListPhotos(t *testing.T) {
 		},
 	}, nil)
 
-	photos, err := s3Service.ListPhotos(context.Background(), "2020-2021", "Event1")
+	photos, err := s3Service.ListPhotoshootPhotos(context.Background(), "2020-2021", "Event1")
 	assert.NoError(t, err)
 	assert.Equal(t, []string{"photo1.jpg", "photo2.jpg"}, photos)
 
 	mockS3Client.AssertExpectations(t)
 }
 
-func TestListPhotosIntegration(t *testing.T) {
+func TestListPhotoshootPhotosIntegration(t *testing.T) {
 	if os.Getenv("RUN_INTEGRATION_TESTS") != "true" {
 		t.Skip("Skipping integration test")
 	}
@@ -155,7 +155,7 @@ func TestListPhotosIntegration(t *testing.T) {
 	expectedEvent := "AASA 2020"
 	expectedPhotos := "DSC01330.jpg"
 
-	photos, err := s3Service.ListPhotos(context.Background(), expectedYear, expectedEvent)
+	photos, err := s3Service.ListPhotoshootPhotos(context.Background(), expectedYear, expectedEvent)
 	assert.NoError(t, err)
 
 	// checking if photos is not empty
@@ -164,7 +164,7 @@ func TestListPhotosIntegration(t *testing.T) {
 	assert.Contains(t, photos, expectedPhotos)
 }
 
-func TestGetPhotos(t *testing.T) {
+func TestGetPhotoshootPhotos(t *testing.T) {
 	mockS3Client := new(MockS3Client)
 	mockPresigner := new(MockPresigner)
 
@@ -187,7 +187,7 @@ func TestGetPhotos(t *testing.T) {
 	mockPresigner.On("GetObject", bucket, "photoshoots/2020-2021/AASA 2020/DSC01331.jpg", int64(900)).Return(&v4.PresignedHTTPRequest{URL: "https://presigned.url/DSC01331.jpg"}, nil)
 
 	// call function to test
-	urls, err := s3Service.GetPhotos(context.Background(), year, event)
+	urls, err := s3Service.GetPhotoshootPhotos(context.Background(), year, event)
 	assert.NoError(t, err)
 	assert.Equal(t, []string{"https://presigned.url/DSC01330.jpg", "https://presigned.url/DSC01331.jpg"}, urls)
 
@@ -195,7 +195,7 @@ func TestGetPhotos(t *testing.T) {
 	mockPresigner.AssertExpectations(t)
 }
 
-func TestGetPhotosIntegration(t *testing.T) {
+func TestGetPhotoshootPhotosIntegration(t *testing.T) {
 	if os.Getenv("RUN_INTEGRATION_TESTS") != "true" {
 		t.Skip("Skipping integration test")
 	}
@@ -205,7 +205,7 @@ func TestGetPhotosIntegration(t *testing.T) {
 	expectedYear := "2020-2021"
 	expectedEvent := "AASA 2020"
 
-	photos, err := s3Service.GetPhotos(context.Background(), expectedYear, expectedEvent)
+	photos, err := s3Service.GetPhotoshootPhotos(context.Background(), expectedYear, expectedEvent)
 	assert.NoError(t, err)
 
 	// checking if photos is not empty
@@ -216,7 +216,7 @@ func TestGetPhotosIntegration(t *testing.T) {
 	}
 }
 
-func TestGenerateUploadURL(t *testing.T) {
+func TestGenerateEventImageUploadURL(t *testing.T) {
 	mockS3Client := new(MockS3Client)
 	mockPresigner := new(MockPresigner)
 
@@ -234,14 +234,14 @@ func TestGenerateUploadURL(t *testing.T) {
 	mockPresigner.On("PutObject", bucket, objectKey, lifetimeSecs).Return(&v4.PresignedHTTPRequest{URL: expectedURL}, nil)
 
 	// call function to test
-	url, err := s3Service.GeneratePresignedUploadURL(eventID, filename, lifetimeSecs)
+	url, err := s3Service.GenerateEventImageUploadURL(eventID, filename, lifetimeSecs)
 	assert.NoError(t, err)
 	assert.Equal(t, expectedURL, url)
 
 	mockPresigner.AssertExpectations(t)
 }
 
-func TestGenerateUploadURLIntegration(t *testing.T) {
+func TestGenerateEventImageUploadURLIntegration(t *testing.T) {
 	if os.Getenv("RUN_INTEGRATION_TESTS") != "true" {
 		t.Skip("Skipping integration test")
 	}
@@ -252,7 +252,7 @@ func TestGenerateUploadURLIntegration(t *testing.T) {
 	expectedFilename := "photo.jpg"
 	expectedLifetimeSecs := int64(900)
 
-	url, err := s3Service.GeneratePresignedUploadURL(expectedEventID, expectedFilename, expectedLifetimeSecs)
+	url, err := s3Service.GenerateEventImageUploadURL(expectedEventID, expectedFilename, expectedLifetimeSecs)
 	assert.NoError(t, err)
 
 	// checking if url is not empty
