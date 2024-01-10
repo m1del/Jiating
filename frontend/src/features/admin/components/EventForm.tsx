@@ -8,13 +8,9 @@ import React, {
 import CheckAuth from '../CheckAuth';
 import { useAuth } from '../../../context/AuthContext';
 // import { v4 as uuidv4 } from 'uuid';
-import {
-  CreateEventRequest,
-  UpdateEventRequest,
-  EventData,
-  EventImage,
-} from '../../../components/events/EventModel';
+import { EventData, EventImage } from '../../../components/events/EventModel';
 import GetEvents from '../../../components/events/GetEvents';
+import { getAdminByEmail, createEvent, updateEvent } from '../../api/EventsAPI';
 
 export default function PostForm() {
   const { authUser, setAuthUser, setIsLoggedin } = useAuth();
@@ -43,7 +39,7 @@ export default function PostForm() {
   //Check auth and get google auth information
 
   const submitRef = useRef<HTMLFormElement>(null);
-  // const imageRef = useRef<HTMLInputElement>(null);
+  const imageRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = useCallback(async () => {
     // text Fields Validation
@@ -64,21 +60,7 @@ export default function PostForm() {
 
     let adminID = '';
     try {
-      const adminEmail = authUser?.email;
-      const resp = await fetch(
-        `http://localhost:3000/api/admin/get-by-email/${adminEmail}`,
-        {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-        },
-      );
-      if (!resp.ok) {
-        throw new Error('Failed to get admin info');
-      } else {
-        const adminData = await resp.json();
-        adminID = adminData.id;
-      }
+      adminID = await getAdminByEmail(authUser?.email);
     } catch (err) {
       console.log(err);
     }
@@ -87,69 +69,33 @@ export default function PostForm() {
 
     // If no id, then event is new, call create event request to add to db
     if (formData.id === '') {
+      let eventID = '';
       try {
-        const createData: CreateEventRequest = {
-          event_name: formData.event_name,
-          date: formData.date,
-          description: formData.description,
-          content: formData.content,
-          is_draft: formData.is_draft,
-          images: formData.images,
-          author_ids: [adminID],
-        };
-
-        const resp = await fetch('http://localhost:3000/api/event/create', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify(createData),
-        });
-        if (!resp.ok) {
-          throw new Error('Failed to send post');
-        }
-        const responseData = await resp.json();
-        window.location.href = `/admin/get-event?id=${responseData.id}`;
+        eventID = await createEvent(formData, adminID);
+        setFormData((prevData) => ({
+          ...prevData,
+          ['id']: eventID,
+        }));
       } catch (err) {
-        console.error(err);
+        console.log(err);
       }
+
+      console.log(eventID);
+
+      window.location.href = `/admin/get-event?id=${eventID}`;
     } else {
       //Otherwise, event exists, call update event to update entry in db
       try {
-        const updateData: UpdateEventRequest = {
-          updated_data: {
-            event_name: formData.event_name,
-            date: formData.date,
-            description: formData.description,
-            content: formData.content,
-            is_draft: formData.is_draft,
-          },
-          new_images: formData.images,
-          removed_image_ids: oldImages.map((image) => image.id),
-          new_display_image_id: '',
-          editor_admin_id: adminID,
-        };
-
-        console.log(updateData);
-
-        const resp = await fetch(
-          `http://localhost:3000/api/event/update/${formData.id}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify(updateData),
-          },
-        );
+        const resp = await updateEvent(formData, adminID, oldImages);
         if (!resp.ok) {
           throw new Error('Failed to send post');
-        } else {
-          window.location.href = `/admin/get-event?id=${formData.id}`;
         }
       } catch (err) {
         console.error(err);
       }
+      window.location.href = `/admin/get-event?id=${formData.id}`;
     }
-  }, [formData]);
+  }, [formData, oldImages]);
 
   useEffect(() => {
     if (firstLoad) {
@@ -263,6 +209,7 @@ export default function PostForm() {
             />
           </span>
           <input
+            ref={imageRef}
             type="file"
             name="image"
             accept="image/png, image/jpeg"
