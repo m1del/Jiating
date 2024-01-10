@@ -10,7 +10,7 @@ const GetEvents = (setEventData: SetEventData) => {
   if (eventID === null) return;
 
   const fetchData = async () => {
-    const getterUrl = `http://localhost:3000/admin/get-event?id=${eventID}`;
+    const getterUrl = `http://localhost:3000/api/event/get/${eventID}`;
     try {
       const resp = await fetch(getterUrl, {
         method: 'GET',
