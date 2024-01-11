@@ -40,6 +40,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     authUser,
     setAuthUser,
     isAuthenticated,
+    setIsAuthenticated,
     checkAuthentication,
   };
 
