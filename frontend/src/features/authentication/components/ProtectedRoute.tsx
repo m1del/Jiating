@@ -1,36 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
+import { useAuth } from '../../../context/useAuth';
 
-const ProtectedRoute: React.FC<React.PropsWithChildren<{}>> = ({ children }) => {
+type ProtectedRouteProps = { // bruh typescript is so annoying
+    children: React.ReactNode;
+};
+
+const ProtectedRoute = ({children}: ProtectedRouteProps) => {
+    const { isAuthenticated, checkAuthentication } = useAuth();
     const [isLoading, setIsLoading] = useState(true);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     useEffect(() => {
-        fetch('http://localhost:3000/auth/session-info', { credentials: 'include' })
-            .then(res => {
-                if (res.ok) {
-                    return res.json();
-                } else {
-                    throw new Error('Not Authenticated');
-                }
-            })
-            .then(data => {
-                setIsAuthenticated(data.authenticated);
-                setIsLoading(false);
-            })
-            .catch(error => {
-                console.error("Authentication error: ", error);
-                setIsLoading(false);
-            });
-    }, []);
+        const verifyAuth = async () => {
+            await checkAuthentication();
+            setIsLoading(false);
+        };
+        verifyAuth();
+    }, [checkAuthentication]);
 
     if (isLoading) {
         return <div>Loading...</div>;
     }
 
-    // If the user is authenticated, return the protected component
-    // Else, redirect the user to the home lol TODO: add need to login message in a page?
-    return isAuthenticated ? children : <Navigate to="/" />;
+    return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
 };
 
 export default ProtectedRoute;
