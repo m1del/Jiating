@@ -9,7 +9,7 @@ function GoogleLogoutButton() {
     const handleLogout = () => {
         try {
             // redirect to backend logout route
-            window.location.href = 'http://localhost:3000/logout/google';
+            window.location.href = 'http://localhost:3000/auth/logout/google';
             // update auth context
             setAuthUser(null);
             setIsLoggedin(false);

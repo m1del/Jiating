@@ -18,9 +18,25 @@ const (
 	IsProd = false
 )
 
-var Store *sessions.CookieStore
+type Service interface {
+	GetAuthCallbackHandler() http.HandlerFunc
+	LogoutHandler() http.HandlerFunc
+	BeginAuthHandler() http.HandlerFunc
+	AuthMiddleware(next http.Handler) http.Handler
+	SessionInfoHandler() http.HandlerFunc
+}
 
-func NewAuth() {
+type service struct {
+	store *sessions.CookieStore // used this one instead
+}
+
+func NewService(store *sessions.CookieStore) Service {
+	return &service{
+		store: store,
+	}
+}
+
+func NewAuth() Service {
 	err := godotenv.Load()
 	if err != nil {
 		loggers.Error.Fatal("Error loading .env file")
@@ -41,20 +57,20 @@ func NewAuth() {
 
 	gothic.Store = store
 
-	// assign store to export
-	Store = store
-
 	goth.UseProviders(
 		google.New(googleClientID, googleClientSecret, "http://localhost:3000/auth/google/callback",
 			"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"),
 	)
+
+	service := NewService(store)
+	return service
 }
 
-func AuthMiddleware(next http.Handler) http.Handler {
+func (s *service) AuthMiddleware(next http.Handler) http.Handler {
 	loggers.Debug.Println("AuthMiddleware called")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		loggers.Debug.Println("Retrieving session...")
-		session, err := Store.Get(r, "session-name")
+		session, err := s.store.Get(r, "session-name")
 		if err != nil || session.Values["userID"] == nil {
 			loggers.Debug.Println("User not logged in")
 

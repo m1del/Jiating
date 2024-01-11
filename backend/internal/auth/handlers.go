@@ -1,16 +1,16 @@
-package handlers
+package auth
 
 import (
-	"backend/internal/auth"
 	"backend/loggers"
 	"context"
+	"encoding/json"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/markbates/goth/gothic"
 )
 
-func GetAuthCallbackHandler() http.HandlerFunc {
+func (s *service) GetAuthCallbackHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		provider := chi.URLParam(r, "provider")
 
@@ -31,7 +31,7 @@ func GetAuthCallbackHandler() http.HandlerFunc {
 
 		// create session or retrive existing
 		loggers.Debug.Println("Retreiving session...")
-		session, err := auth.Store.Get(r, "session-name")
+		session, err := s.store.Get(r, "session-name")
 		if err != nil {
 			loggers.Error.Printf("error retrieving session: %v", err)
 			http.Redirect(w, r, "/login-error", http.StatusSeeOther)
@@ -56,7 +56,7 @@ func GetAuthCallbackHandler() http.HandlerFunc {
 	}
 }
 
-func LogoutHandler() http.HandlerFunc {
+func (s *service) LogoutHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// clearing OAuth data
 		loggers.Debug.Println("Clearing OAuth data...")
@@ -65,7 +65,7 @@ func LogoutHandler() http.HandlerFunc {
 		gothic.Logout(w, r)
 
 		// next, clear application session data
-		session, err := auth.Store.Get(r, "session-name")
+		session, err := s.store.Get(r, "session-name")
 		if err == nil {
 			loggers.Debug.Println("Clearing application session data...")
 
@@ -85,12 +85,35 @@ func LogoutHandler() http.HandlerFunc {
 	}
 }
 
-func BeginAuthHandler() http.HandlerFunc {
+func (s *service) BeginAuthHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		provider := chi.URLParam(r, "provider")
 
 		r = r.WithContext(context.WithValue(context.Background(), "provider", provider))
 
 		gothic.BeginAuthHandler(w, r)
+	}
+}
+
+func (s *service) SessionInfoHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// check if user is authenticated
+		session, err := s.store.Get(r, "session-name")
+		if err != nil || session.Values["userID"] == nil {
+			// user is not authenticated
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]interface{}{"authenticated": false})
+			return
+		}
+
+		// respond with user info
+		userInfo := map[string]interface{}{
+			"authenticated": true,
+			"userID":        session.Values["userID"],
+			"name":          session.Values["name"],
+			"email":         session.Values["email"],
+			"avatar_url":    session.Values["avatar_url"],
+		}
+		json.NewEncoder(w).Encode(userInfo)
 	}
 }

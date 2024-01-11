@@ -1,7 +1,6 @@
 package server
 
 import (
-	"backend/internal/auth"
 	"backend/internal/handlers"
 	"backend/internal/s3service"
 	"encoding/json"
@@ -43,9 +42,9 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	// authentication Routes
 	r.Route("/auth", func(r chi.Router) {
-		r.Get("/{provider}/callback", handlers.GetAuthCallbackHandler())
-		r.Get("/logout/{provider}", handlers.LogoutHandler())
-		r.Get("/{provider}", handlers.BeginAuthHandler())
+		r.Get("/{provider}/callback", s.authService.GetAuthCallbackHandler())
+		r.Get("/logout/{provider}", s.authService.LogoutHandler())
+		r.Get("/{provider}", s.authService.BeginAuthHandler())
 	})
 
 	// api routes
@@ -90,7 +89,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 		r.With(RateLimitMiddleware).Post("/send-email", handlers.ContactFormSubmissionHandler())
 
 		// session related routes
-		r.Get("/session-info", s.sessionInfoHandler)
+		r.Get("/session-info", s.authService.SessionInfoHandler())
 
 	})
 
@@ -124,25 +123,4 @@ func (s *Server) HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
 func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 	jsonResp, _ := json.Marshal(s.db.Health())
 	_, _ = w.Write(jsonResp)
-}
-
-func (s *Server) sessionInfoHandler(w http.ResponseWriter, r *http.Request) {
-	// check if user is authenticated
-	session, err := auth.Store.Get(r, "session-name")
-	if err != nil || session.Values["userID"] == nil {
-		// user is not authenticated
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]interface{}{"authenticated": false})
-		return
-	}
-
-	// respond with user info
-	userInfo := map[string]interface{}{
-		"authenticated": true,
-		"userID":        session.Values["userID"],
-		"name":          session.Values["name"],
-		"email":         session.Values["email"],
-		"avatar_url":    session.Values["avatar_url"],
-	}
-	json.NewEncoder(w).Encode(userInfo)
 }
