@@ -47,7 +47,11 @@ func NewServer() *http.Server {
 	dbClient := database.New(nil) // Error is handled in database.New
 
 	loggers.Info.Println("Initializing auth service...")
-	authService := auth.NewAuth()
+	authConfig, err := auth.LoadAuthConfig(dbClient)
+	if err != nil {
+		loggers.Error.Fatalf("Error creating auth config: %v", err)
+	}
+	authService := auth.NewAuth(authConfig)
 
 	loggers.Info.Println("Connecting to the database...")
 	NewServer := &Server{

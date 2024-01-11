@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"backend/internal/database"
 	"backend/loggers"
 	"net/http"
 	"os"
@@ -18,6 +19,13 @@ const (
 	IsProd = false
 )
 
+type AuthConfig struct {
+	Store        *sessions.CookieStore
+	DB           database.Service
+	ClientID     string
+	ClientSecret string
+}
+
 // SOLID: Interface Segregation Principle :)
 type Service interface {
 	GetAuthCallbackHandler() http.HandlerFunc
@@ -29,15 +37,31 @@ type Service interface {
 
 type service struct {
 	store *sessions.CookieStore
+	db    database.Service
 }
 
-func NewService(store *sessions.CookieStore) Service {
-	return &service{
-		store: store,
+func NewAuth(config *AuthConfig) Service {
+	service := &service{
+		store: config.Store,
+		db:    config.DB,
 	}
+
+	setUpGoth(config.ClientID, config.ClientSecret)
+	return service
+
 }
 
-func NewAuth() Service {
+func setUpGoth(clientID, clientSecret string) {
+	goth.UseProviders(
+		google.New(
+			clientID, clientSecret, "http://localhost:3000/auth/google/callback",
+			"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile",
+		),
+	)
+}
+
+func LoadAuthConfig(db database.Service) (*AuthConfig, error) {
+	loggers.Debug.Println("Loading auth config...")
 	err := godotenv.Load()
 	if err != nil {
 		loggers.Error.Fatal("Error loading .env file")
@@ -49,20 +73,21 @@ func NewAuth() Service {
 		loggers.Error.Fatal("Missing Google Client ID or Client Secret")
 	}
 
+	// setup cookie store
 	store := sessions.NewCookieStore([]byte(key))
 	store.MaxAge(MaxAge)
 
+	// setup cookie options
 	store.Options.Path = "/"
 	store.Options.HttpOnly = true // HttpOnly should always be enabled
 	store.Options.Secure = IsProd
 
 	gothic.Store = store
 
-	goth.UseProviders(
-		google.New(googleClientID, googleClientSecret, "http://localhost:3000/auth/google/callback",
-			"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"),
-	)
-
-	service := NewService(store)
-	return service
+	return &AuthConfig{
+		Store:        store,
+		DB:           db,
+		ClientID:     googleClientID,
+		ClientSecret: googleClientSecret,
+	}, nil
 }
