@@ -8,7 +8,7 @@ export type UserType = {
 export type AuthContextType = {
   authUser: UserType | null;
   setAuthUser: (user: UserType | null) => void;
-  isAuthenticated: boolean;
+  isAuthenticated: boolean | undefined;
   setIsAuthenticated: (isAuthenticated: boolean) => void;
   checkAuthentication: () => Promise<void>;
 };

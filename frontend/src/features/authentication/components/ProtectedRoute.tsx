@@ -1,28 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../../context/useAuth';
 
-type ProtectedRouteProps = { // bruh typescript is so annoying
+type ProtectedRouteProps = {
     children: React.ReactNode;
 };
+const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+  const { isAuthenticated } = useAuth();
 
-const ProtectedRoute = ({children}: ProtectedRouteProps) => {
-    const { isAuthenticated, checkAuthentication } = useAuth();
-    const [isLoading, setIsLoading] = useState(true);
+  if (isAuthenticated === undefined) {
+    // auth status is unknown, show loading TODO: add loading spinner
+    return <div>Loading...</div>;
+  }
 
-    useEffect(() => {
-        const verifyAuth = async () => {
-            await checkAuthentication();
-            setIsLoading(false);
-        };
-        verifyAuth();
-    }, [checkAuthentication]);
-
-    if (isLoading) {
-        return <div>Loading...</div>;
-    }
-
-    return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+  if (!isAuthenticated) {
+    // not authenticated, redirect to login //TODO nothing exists on this route, (how do we want to handle this?)
+    return <Navigate to="/login" />;
+  }
+  // authenticated, render the protected content
+  return <>{children}</>;
 };
+
 
 export default ProtectedRoute;

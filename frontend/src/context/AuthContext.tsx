@@ -6,7 +6,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [authUser, setAuthUser] = useState<UserType | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | undefined>(undefined);
 
   const checkAuthentication = useCallback(async () => {
     try {
