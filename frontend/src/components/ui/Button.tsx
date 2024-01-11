@@ -1,9 +1,24 @@
-import React from 'react'
+import React from 'react';
+import { styles } from '../../styles';
 
-export default function Button() {
+type ButtonProps = {
+  buttonText: string;
+  onClick?: () => void;
+  type?: "button" | "submit";
+  additionalClasses?: string;
+};
+
+const Button: React.FC<ButtonProps> = ({
+  buttonText,
+  onClick = () => {},
+  type = "button",
+  additionalClasses = ""
+}) => {
   return (
-    <div>
-      
-    </div>
-  )
-}
+    <button type={type} className={`${styles.button} ${additionalClasses}`} onClick={onClick}>
+      {buttonText}
+    </button>
+  );
+};
+
+export default Button;

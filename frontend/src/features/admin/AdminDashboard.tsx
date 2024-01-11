@@ -1,7 +1,8 @@
 // components/AdminDashboard.tsx
 import { Navigate } from 'react-router-dom';
+import { Button } from '../../components';
 import { useAuth } from '../../context/useAuth';
-import { GoogleLogoutButton } from '../authentication';
+import { logoutGoogleUser } from '../../services/authService';
 import {
   AdminList,
   CreateAdmin,
@@ -30,7 +31,11 @@ const AdminDashboard = () => {
       <CreateEventButton />
 
       <div className="mt-5">
-        <GoogleLogoutButton />
+        <Button 
+          buttonText="Logout"
+          onClick={() => logoutGoogleUser()}
+          additionalClasses="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+        />
       </div>
     </div>
   );

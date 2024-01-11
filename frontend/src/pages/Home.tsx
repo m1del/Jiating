@@ -1,8 +1,7 @@
-import React from 'react';
-import FloatBar from '../components/home/FloatBar';
+import { Button } from '../components';
 import Hero from '../components/home/Hero';
 import HomeHeading from '../components/home/HomeHeading';
-import { GoogleLoginButton } from '../features/authentication';
+import { loginGoogleUser } from '../services/authService';
 
 function Home() {
   return (
@@ -10,7 +9,10 @@ function Home() {
       <div className="flex flex-col items-center">
         <HomeHeading />
 
-        <GoogleLoginButton />
+        <Button
+          buttonText="Login with Google"
+          onClick={() => loginGoogleUser()}
+        />
 
         <Hero />
       </div>

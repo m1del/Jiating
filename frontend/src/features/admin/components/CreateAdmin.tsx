@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
+import { Button } from '../../../components';
 import { styles } from '../../../styles';
-import Button from './Button';
 
 type Admin = {
   name: string;
