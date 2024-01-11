@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   FaDiscord,
   FaFacebookF,
@@ -8,7 +7,6 @@ import {
 } from 'react-icons/fa';
 import { MdOutlineEmail, MdOutlineLocationOn } from 'react-icons/md';
 import { teamLogoBW } from '../assets';
-import { GoogleLoginButton } from '../features/authentication';
 import { styles } from '../styles';
 
 const Footer = () => (
