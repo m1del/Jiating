@@ -1,5 +1,5 @@
 // AuthContext.tsx
-import React, { createContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useEffect, useState } from 'react';
 import { AuthContextType, AuthProviderProps, UserType } from '../types/authTypes';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -8,7 +8,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [authUser, setAuthUser] = useState<UserType | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const checkAuthentication = async () => {
+  const checkAuthentication = useCallback(async () => {
     try {
       const response = await fetch('http://localhost:3000/auth/session-info', { credentials: 'include' });
       if (!response.ok) throw new Error('Not Authenticated');
@@ -30,11 +30,11 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsAuthenticated(false);
       // Handle error appropriately
     }
-  };
+  }, []); // empty array means this function will only be created once
 
   useEffect(() => {
     checkAuthentication();
-  }, []);
+  }, [checkAuthentication]);
 
   const value = {
     authUser,
