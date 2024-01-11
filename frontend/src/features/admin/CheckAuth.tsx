@@ -4,7 +4,7 @@ type SetAuthUser = (user: UserInfo.UserType) => void;
 type SetIsLoggedIn = (loggedIn: boolean) => void;
 
 const CheckAuth = (setAuthUser: SetAuthUser, setIsLoggedin: SetIsLoggedIn) => {
-  fetch('http://localhost:3000/api/session-info', { credentials: 'include' })
+  fetch('http://localhost:3000/auth/session-info', { credentials: 'include' })
     .then((res) => {
       if (res.ok) {
         return res.json();

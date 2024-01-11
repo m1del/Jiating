@@ -6,7 +6,7 @@ const ProtectedRoute: React.FC<React.PropsWithChildren<{}>> = ({ children }) => 
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     useEffect(() => {
-        fetch('http://localhost:3000/api/session-info', { credentials: 'include' })
+        fetch('http://localhost:3000/auth/session-info', { credentials: 'include' })
             .then(res => {
                 if (res.ok) {
                     return res.json();
