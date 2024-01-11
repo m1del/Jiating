@@ -19,9 +19,11 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	// enable CORS
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:5173"}, // react dev server
-		AllowCredentials: true,
+		AllowedOrigins:   []string{"http://localhost:5173"}, // React dev server
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Content-Type", "Authorization"},
+		AllowCredentials: true,
+		MaxAge:           300, // Maximum value not required but can be set
 	})
 
 	// apply CORS middleware globally
@@ -59,7 +61,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 			r.With().Get("/get-all-not-founder", handlers.GetAllAdminsExceptFounderHandler(s.db))
 			r.With().Post("/create", handlers.CreateAdminHandler(s.db))
 			r.With().Post("/associate-with-event", handlers.AssociateAdminWithEventHandler(s.db))
-			r.With().Post("/delete/{adminID}", handlers.DeleteAdminByIDHandler(s.db))
+			r.With().Delete("/delete-by-id/{adminID}", handlers.DeleteAdminByIDHandler(s.db))
+			r.With().Delete("/delete-by-email/{adminEmail}", handlers.DeleteAdminByEmailHandler(s.db))
 			r.With().Get("/get/{adminID}", handlers.GetAdminByIDHandler(s.db))
 			r.With().Get("/get-by-email/{adminEmail}", handlers.GetAdminByEmailHandler(s.db))
 			r.With().Post("/update", handlers.UpdateAdminHandler(s.db))
