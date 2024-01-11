@@ -9,14 +9,14 @@ export default function Event() {
     id: '',
     created_at: null,
     updated_at: null,
-    admin_id: 1,
     event_name: '',
     date: '',
     description: '',
     content: '',
     is_draft: false,
     published_at: null,
-    image_id: 0,
+    images: [],
+    authors: [],
   });
 
   useEffect(() => {

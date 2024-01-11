@@ -180,6 +180,35 @@ func GetAdminByIDHandler(s database.Service) http.HandlerFunc {
 	}
 }
 
+func GetAdminByEmailHandler(s database.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// extract admin email from url
+		adminEmail := chi.URLParam(r, "adminEmail")
+		admin, err := s.GetAdminByEmail(adminEmail)
+		if err != nil {
+			loggers.Error.Printf("Error getting admin by email: %v", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		// convert from Go data structure to JSON
+		jsonResp, err := json.Marshal(admin)
+		if err != nil {
+			loggers.Error.Printf("Error handling JSON marshal: %v", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, err = w.Write(jsonResp)
+		if err != nil {
+			loggers.Error.Printf("Error writing response: %v", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		}
+	}
+}
+
 func UpdateAdminHandler(s database.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// decode json body into admin struct
