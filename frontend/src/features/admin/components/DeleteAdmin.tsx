@@ -32,9 +32,6 @@ function DeleteAdmin() {
     try {
       const response = await fetch(`http://localhost:3000/api/admin/delete-by-email/${encodedEmail}`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         credentials: 'include',
       });
 
