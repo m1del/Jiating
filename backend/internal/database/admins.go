@@ -177,6 +177,35 @@ func (s *service) DeleteAdminByID(adminID string) error {
 	return nil
 }
 
+func (s *service) DeleteAdminByEmail(adminEmail string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+
+	// check if the admin is permanent
+	var status string
+	const getStatusQuery = `SELECT status FROM admins WHERE email = $1`
+	err := s.db.QueryRowContext(ctx, getStatusQuery, adminEmail).Scan(&status)
+	if err != nil {
+		loggers.Error.Printf("Error retrieving admin status: %v", err)
+		return err
+	}
+
+	if status == "permanent" {
+		// return an error or handle the attempt to delete the permanent admin
+		return fmt.Errorf("cannot delete a permanent admin")
+	}
+
+	// proceed with deletion logic if not permanent
+	const deleteAdminQuery = `DELETE FROM admins WHERE email = $1`
+	_, err = s.db.ExecContext(ctx, deleteAdminQuery, adminEmail)
+	if err != nil {
+		loggers.Error.Printf("Error deleting admin: %v", err)
+		return err
+	}
+
+	return nil
+}
+
 func (s *service) GetAdminByID(adminID string) (*models.Admin, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
