@@ -1,8 +1,7 @@
 // components/AdminDashboard.tsx
-import { useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../../context/useAuth';
 import { GoogleLogoutButton } from '../authentication';
-import CheckAuth from './CheckAuth';
 import {
   AdminList,
   CreateAdmin,
@@ -12,11 +11,11 @@ import {
 } from './components';
 
 const AdminDashboard = () => {
-  const { authUser, setAuthUser, setIsLoggedin } = useAuth();
+  const { authUser, isAuthenticated} = useAuth();
 
-  useEffect(() => {
-    CheckAuth(setAuthUser, setIsLoggedin);
-  }, [setAuthUser, setIsLoggedin]);
+  if (!isAuthenticated) {
+    return <Navigate to="/login" />;
+  }
 
   return (
     <div className="flex flex-col items-center justify-center rounded-lg bg-gray-100 p-10 shadow-md">

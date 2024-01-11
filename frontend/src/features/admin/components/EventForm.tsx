@@ -1,19 +1,17 @@
 import React, {
   FormEvent,
-  useState,
-  useRef,
-  useEffect,
   useCallback,
+  useEffect,
+  useRef,
+  useState,
 } from 'react';
-import CheckAuth from '../CheckAuth';
-import { useAuth } from '../../../context/AuthContext';
-// import { v4 as uuidv4 } from 'uuid';
-import { EventData, EventImage } from '../../../components/events/EventModel';
 import GetEvents from '../../../components/events/GetEvents';
-import { getAdminByEmail, createEvent, updateEvent } from '../../api/EventsAPI';
+import { useAuth } from '../../../context/useAuth'; // import { v4 as uuidv4 } from 'uuid';
+import { createEvent, getAdminByEmail, updateEvent } from '../../../services/eventService';
+import { EventData, EventImage } from '../../../types/eventTypes';
 
 export default function PostForm() {
-  const { authUser, setAuthUser, setIsLoggedin } = useAuth();
+  const { authUser } = useAuth();
 
   const [formData, setFormData] = useState<EventData>({
     id: '',
@@ -95,12 +93,11 @@ export default function PostForm() {
       }
       window.location.href = `/admin/get-event?id=${formData.id}`;
     }
-  }, [formData, oldImages]);
+  }, [authUser?.email, formData, oldImages]);
 
   useEffect(() => {
     if (firstLoad) {
       // Want to make sure we don't check auth and get events on every render
-      CheckAuth(setAuthUser, setIsLoggedin);
       GetEvents(setFormData);
       setOldImages(formData.images);
       setFirstLoad(false);
@@ -114,8 +111,6 @@ export default function PostForm() {
       setFormSubmit(false);
     }
   }, [
-    setAuthUser,
-    setIsLoggedin,
     firstLoad,
     formData,
     formUpdate,
