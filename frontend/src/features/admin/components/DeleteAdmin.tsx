@@ -1,0 +1,65 @@
+import React, { useState } from 'react';
+import Button from './Button';
+
+function DeleteAdmin() {
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+
+    // Clear warning message
+    if (error) {
+      setError('');
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  // Check if email is provided
+  if (!email) {
+    setError('Email is required');
+    return;
+  }
+
+  const encodedEmail = encodeURIComponent(email);
+
+  try {
+    const response = await fetch(`http://localhost:3000/api/admin/delete-by-email/${encodedEmail}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    console.log('Admin deleted successfully');
+  } catch (error) {
+    console.error('Error deleting admin:', error);
+    setError('Failed to delete admin. Please try again.');
+  }
+};
+
+
+  return (
+    <form onSubmit={handleSubmit} className="m-8 flex flex-col space-y-4">
+      <input
+        type="email"
+        name="email"
+        placeholder="Admin's Email"
+        value={email}
+        onChange={handleChange}
+        className={`rounded border p-2 ${error ? 'border-red-500' : ''}`}
+      />
+      {error && <p className="text-red-500">{error}</p>}
+
+      <Button buttonText="Delete Admin" type="submit" additionalClasses="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" />
+    </form>
+  );
+}
+
+export default DeleteAdmin;
