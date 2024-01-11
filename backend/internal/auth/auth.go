@@ -19,6 +19,7 @@ const (
 	IsProd = false
 )
 
+// only need one clientID and clientSecret for now since we're only using Google
 type AuthConfig struct {
 	Store        *sessions.CookieStore
 	DB           database.Service
@@ -41,6 +42,10 @@ type service struct {
 }
 
 func NewAuth(config *AuthConfig) Service {
+	if config == nil {
+		loggers.Error.Fatal("Missing auth config")
+	}
+
 	service := &service{
 		store: config.Store,
 		db:    config.DB,
@@ -61,7 +66,6 @@ func setUpGoth(clientID, clientSecret string) {
 }
 
 func LoadAuthConfig(db database.Service) (*AuthConfig, error) {
-	loggers.Debug.Println("Loading auth config...")
 	err := godotenv.Load()
 	if err != nil {
 		loggers.Error.Fatal("Error loading .env file")
@@ -82,6 +86,7 @@ func LoadAuthConfig(db database.Service) (*AuthConfig, error) {
 	store.Options.HttpOnly = true // HttpOnly should always be enabled
 	store.Options.Secure = IsProd
 
+	// setup gothic
 	gothic.Store = store
 
 	return &AuthConfig{

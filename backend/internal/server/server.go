@@ -35,7 +35,7 @@ func NewServer() *http.Server {
 		port = 8080
 	}
 
-	// =========== Server setup =========== //
+	// =========== Server requirements =========== //
 
 	loggers.Info.Println("Initializing S3 client...")
 	s3Client, err := newS3Client()
@@ -53,7 +53,7 @@ func NewServer() *http.Server {
 	}
 	authService := auth.NewAuth(authConfig)
 
-	loggers.Info.Println("Connecting to the database...")
+	// =========== Server setup =========== //
 	NewServer := &Server{
 		port:     port,
 		db:       dbClient,
