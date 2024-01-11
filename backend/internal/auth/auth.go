@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"backend/internal/database"
 	"backend/loggers"
 	"net/http"
 	"os"
@@ -18,9 +19,53 @@ const (
 	IsProd = false
 )
 
-var Store *sessions.CookieStore
+// only need one clientID and clientSecret for now since we're only using Google
+type AuthConfig struct {
+	Store        *sessions.CookieStore
+	DB           database.Service
+	ClientID     string
+	ClientSecret string
+}
 
-func NewAuth() {
+// SOLID: Interface Segregation Principle :)
+type Service interface {
+	GetAuthCallbackHandler() http.HandlerFunc
+	LogoutHandler() http.HandlerFunc
+	BeginAuthHandler() http.HandlerFunc
+	AuthMiddleware(next http.Handler) http.Handler
+	SessionInfoHandler() http.HandlerFunc
+}
+
+type service struct {
+	store *sessions.CookieStore
+	db    database.Service
+}
+
+func NewAuth(config *AuthConfig) Service {
+	if config == nil {
+		loggers.Error.Fatal("Missing auth config")
+	}
+
+	service := &service{
+		store: config.Store,
+		db:    config.DB,
+	}
+
+	setUpGoth(config.ClientID, config.ClientSecret)
+	return service
+
+}
+
+func setUpGoth(clientID, clientSecret string) {
+	goth.UseProviders(
+		google.New(
+			clientID, clientSecret, "http://localhost:3000/auth/google/callback",
+			"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile",
+		),
+	)
+}
+
+func LoadAuthConfig(db database.Service) (*AuthConfig, error) {
 	err := godotenv.Load()
 	if err != nil {
 		loggers.Error.Fatal("Error loading .env file")
@@ -32,45 +77,22 @@ func NewAuth() {
 		loggers.Error.Fatal("Missing Google Client ID or Client Secret")
 	}
 
+	// setup cookie store
 	store := sessions.NewCookieStore([]byte(key))
 	store.MaxAge(MaxAge)
 
+	// setup cookie options
 	store.Options.Path = "/"
 	store.Options.HttpOnly = true // HttpOnly should always be enabled
 	store.Options.Secure = IsProd
 
+	// setup gothic
 	gothic.Store = store
 
-	// assign store to export
-	Store = store
-
-	goth.UseProviders(
-		google.New(googleClientID, googleClientSecret, "http://localhost:3000/auth/google/callback",
-			"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"),
-	)
-}
-
-func AuthMiddleware(next http.Handler) http.Handler {
-	loggers.Debug.Println("AuthMiddleware called")
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		loggers.Debug.Println("Retrieving session...")
-		session, err := Store.Get(r, "session-name")
-		if err != nil || session.Values["userID"] == nil {
-			loggers.Debug.Println("User not logged in")
-
-			// Check if the request is an AJAX request
-			if r.Header.Get("X-Requested-With") == "XMLHttpRequest" {
-				loggers.Debug.Println("AJAX request detected, sending unauthorized status")
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
-				return
-			}
-
-			// For non-AJAX requests, redirect to login
-			loggers.Debug.Println("Redirecting to login page...")
-			http.Redirect(w, r, "/auth/google", http.StatusSeeOther)
-			return
-		}
-		// User is authenticated; proceed with the request
-		next.ServeHTTP(w, r)
-	})
+	return &AuthConfig{
+		Store:        store,
+		DB:           db,
+		ClientID:     googleClientID,
+		ClientSecret: googleClientSecret,
+	}, nil
 }

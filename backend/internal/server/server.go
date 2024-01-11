@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"backend/internal/auth"
 	"backend/internal/database"
 	"backend/internal/s3service"
 	"backend/loggers"
@@ -20,6 +21,7 @@ type Server struct {
 	port     int
 	db       database.Service
 	s3Client *s3.Client
+	auth     auth.Service
 }
 
 func NewServer() *http.Server {
@@ -33,17 +35,30 @@ func NewServer() *http.Server {
 		port = 8080
 	}
 
+	// =========== Server requirements =========== //
+
 	loggers.Info.Println("Initializing S3 client...")
 	s3Client, err := newS3Client()
 	if err != nil {
 		loggers.Error.Fatalf("failed to create S3 client: %v", err)
 	}
 
-	loggers.Info.Println("Connecting to the database...")
+	loggers.Info.Println("Initializing database...")
+	dbClient := database.New(nil) // Error is handled in database.New
+
+	loggers.Info.Println("Initializing auth service...")
+	authConfig, err := auth.LoadAuthConfig(dbClient)
+	if err != nil {
+		loggers.Error.Fatalf("Error creating auth config: %v", err)
+	}
+	authService := auth.NewAuth(authConfig)
+
+	// =========== Server setup =========== //
 	NewServer := &Server{
 		port:     port,
-		db:       database.New(nil),
+		db:       dbClient,
 		s3Client: s3Client,
+		auth:     authService,
 	}
 
 	// seed the database
