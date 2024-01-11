@@ -9,7 +9,7 @@ const AdminList = () => {
 
   const fetchAdmins = () => {
     setIsLoading(true);
-    fetch('http://localhost:3000/admin/list', {
+    fetch('http://localhost:3000/api/admin/get-all', {
       credentials: 'include',
     })
       .then((response) => {
@@ -21,6 +21,7 @@ const AdminList = () => {
       .then((data) => {
         setAdmins(data);
         setIsLoaded(true);
+        setError(null);
       })
       .catch((err) => {
         setError(err.message);

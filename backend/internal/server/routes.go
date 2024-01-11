@@ -58,6 +58,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 			r.With().Post("/associate-with-event", handlers.AssociateAdminWithEventHandler(s.db))
 			r.With().Post("/delete/{adminID}", handlers.DeleteAdminByIDHandler(s.db))
 			r.With().Get("/get/{adminID}", handlers.GetAdminByIDHandler(s.db))
+			r.With().Get("/get-by-email/{adminEmail}", handlers.GetAdminByEmailHandler(s.db))
 			r.With().Post("/update", handlers.UpdateAdminHandler(s.db))
 		})
 
