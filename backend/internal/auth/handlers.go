@@ -3,6 +3,7 @@ package auth
 import (
 	"backend/loggers"
 	"context"
+	"database/sql"
 	"encoding/json"
 	"net/http"
 
@@ -11,10 +12,12 @@ import (
 )
 
 func (s *service) GetAuthCallbackHandler() http.HandlerFunc {
+
+	// TODO: make login error page(s)
 	return func(w http.ResponseWriter, r *http.Request) {
 		provider := chi.URLParam(r, "provider")
 
-		// add provider to the existing context, not overwrite it
+		// add provider to the existing context
 		loggers.Debug.Printf("Adding provider %s to context", provider)
 		newCtx := context.WithValue(r.Context(), "provider", provider)
 		r = r.WithContext(newCtx)
@@ -22,36 +25,57 @@ func (s *service) GetAuthCallbackHandler() http.HandlerFunc {
 		loggers.Debug.Println("Getting user from gothic...")
 		user, err := gothic.CompleteUserAuth(w, r)
 		if err != nil {
-			// log the error for internal tracking
-			loggers.Error.Printf("error completing auth: %v", err)
-			// redirect the user to a login error page or display an error message
+			loggers.Error.Printf("Error completing auth: %v", err)
 			http.Redirect(w, r, "/login-error", http.StatusSeeOther)
 			return
 		}
 
-		// create session or retrive existing
-		loggers.Debug.Println("Retreiving session...")
+		// check if authenticated user is an admin in the database
+		admin, err := s.db.GetAdminByEmail(user.Email)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				loggers.Debug.Printf("No admin found with email %v", user.Email)
+				// dandle non-admin user, redirect appropriately
+				http.Redirect(w, r, "/login-unauthorized", http.StatusSeeOther)
+				return
+			} else {
+				loggers.Error.Printf("Error getting admin: %v", err)
+				http.Redirect(w, r, "/login-error", http.StatusSeeOther)
+				return
+			}
+		}
+
+		loggers.Debug.Printf("Admin found: %v", admin)
+
+		// retrieve or create session
+		loggers.Debug.Println("Retrieving session...")
 		session, err := s.store.Get(r, "session-name")
 		if err != nil {
-			loggers.Error.Printf("error retrieving session: %v", err)
+			loggers.Error.Printf("Error retrieving session: %v", err)
 			http.Redirect(w, r, "/login-error", http.StatusSeeOther)
 			return
 		}
 
-		// store user data in session
+		// store user and admin data in session
+
+		// google info
 		session.Values["userID"] = user.UserID
 		session.Values["email"] = user.Email
 		session.Values["name"] = user.Name
 		session.Values["avatar_url"] = user.AvatarURL
 
+		// postgres info
+		session.Values["adminID"] = admin.ID
+		session.Values["adminPosition"] = admin.Position
+
 		// save session
 		if err := session.Save(r, w); err != nil {
-			loggers.Error.Printf("error saving session: %v", err)
+			loggers.Error.Printf("Error saving session: %v", err)
 			http.Redirect(w, r, "/login-error", http.StatusSeeOther)
 			return
 		}
 
-		// redirect to a post-login page, such as the admin dashboard or home page
+		// redirect to admin dashboard or another appropriate page
 		http.Redirect(w, r, "http://localhost:5173/admin/dashboard", http.StatusFound)
 	}
 }

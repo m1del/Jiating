@@ -62,7 +62,8 @@ func New(db *sql.DB) Service {
 	if db == nil {
 		// Create a real database connection if db is nil
 		connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", username, password, host, port, database)
-		db, err := sql.Open("pgx", connStr)
+		var err error
+		db, err = sql.Open("pgx", connStr)
 		if err != nil {
 			loggers.Error.Fatalf("error connecting to the database: %v", err)
 		}

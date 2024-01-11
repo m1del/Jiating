@@ -210,6 +210,10 @@ func (s *service) GetAdminByEmail(adminEmail string) (*models.Admin, error) {
 	err := row.Scan(&admin.ID, &admin.CreatedAt, &admin.UpdatedAt,
 		&admin.DeletedAt, &admin.Name, &admin.Email, &admin.Position, &admin.Status)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			loggers.Error.Printf("No admin found with email %v", adminEmail)
+			return nil, err
+		}
 		loggers.Error.Printf("Error getting admin: %v", err)
 		return nil, err
 	}
