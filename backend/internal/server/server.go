@@ -18,10 +18,10 @@ import (
 )
 
 type Server struct {
-	port        int
-	db          database.Service
-	s3Client    *s3.Client
-	authService auth.Service
+	port     int
+	db       database.Service
+	s3Client *s3.Client
+	auth     auth.Service
 }
 
 func NewServer() *http.Server {
@@ -51,10 +51,10 @@ func NewServer() *http.Server {
 
 	loggers.Info.Println("Connecting to the database...")
 	NewServer := &Server{
-		port:        port,
-		db:          dbClient,
-		s3Client:    s3Client,
-		authService: authService,
+		port:     port,
+		db:       dbClient,
+		s3Client: s3Client,
+		auth:     authService,
 	}
 
 	// seed the database

@@ -42,9 +42,12 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	// authentication Routes
 	r.Route("/auth", func(r chi.Router) {
-		r.Get("/{provider}/callback", s.authService.GetAuthCallbackHandler())
-		r.Get("/logout/{provider}", s.authService.LogoutHandler())
-		r.Get("/{provider}", s.authService.BeginAuthHandler())
+		r.Get("/{provider}/callback", s.auth.GetAuthCallbackHandler())
+		r.Get("/logout/{provider}", s.auth.LogoutHandler())
+		r.Get("/{provider}", s.auth.BeginAuthHandler())
+
+		// session related routes
+		r.Get("/session-info", s.auth.SessionInfoHandler())
 	})
 
 	// api routes
@@ -88,10 +91,6 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 		// email routes
 		r.With(RateLimitMiddleware).Post("/send-email", handlers.ContactFormSubmissionHandler())
-
-		// session related routes
-		r.Get("/session-info", s.authService.SessionInfoHandler())
-
 	})
 
 	return r
