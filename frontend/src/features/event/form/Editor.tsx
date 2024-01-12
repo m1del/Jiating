@@ -49,10 +49,8 @@ const Editor = () => {
 
 
     return (
-        <div className="flex justify-center items-center h-screen bg-gray-100">
-            <div className="editor-container p-4 bg-white shadow-lg rounded-lg max-w-4xl w-full">
-                <div ref={quillRef} className="h-96" />
-            </div>
+        <div className="p-4 bg-white shadow-lg rounded-lg max-w-4xl w-full">
+            <div ref={quillRef} className="h-96" />
         </div>
     )
 }
