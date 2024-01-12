@@ -15,12 +15,15 @@ func createEventTable(db *sql.DB) error {
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
         created_at TIMESTAMP WITH TIME ZONE NOT NULL,
         updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
-        event_name VARCHAR(255) NOT NULL,
+        event_title VARCHAR(255) NOT NULL,
+		meta_title VARCHAR(255) NOT NULL,
+		slug  VARCHAR(255) NOT NULL UNIQUE,
         date TIMESTAMP WITH TIME ZONE NOT NULL,
-        description TEXT NOT NULL,
+        description VARCHAR(2000) NOT NULL,
         content TEXT NOT NULL,
         is_draft BOOLEAN NOT NULL,
-        published_at TIMESTAMP WITH TIME ZONE
+        published_at TIMESTAMP WITH TIME ZONE,
+		INDEX(slug)
     );`
 
 	_, err := db.Exec(createEventTableSQL)
@@ -38,7 +41,7 @@ func createEventAuthorTable(db *sql.DB) error {
         admin_id UUID NOT NULL,
         event_id UUID NOT NULL,
         PRIMARY KEY (admin_id, event_id),
-        FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE CASCADE,
+        FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE NO ACTION,
         FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
     );`
 
@@ -86,7 +89,7 @@ func (s *service) GetAuthorsByEventID(eventID string) ([]models.Admin, error) {
 	return authors, nil
 }
 
-func (s *service) CreateEvent(event models.Event, adminIDs []string) (string, error) {
+func (s *service) CreateEvent(event models.Event, adminIDs []string, displayImageID string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
@@ -136,16 +139,25 @@ func (s *service) CreateEvent(event models.Event, adminIDs []string) (string, er
 			loggers.Error.Printf("Error adding image to event: %v", err)
 			return "", err
 		}
-	}
 
-	// set the first image as display image by default (if images are present)
-	if len(event.Images) > 0 {
-		if err := s.SetDisplayImageForEventTx(tx, event.Images[0].ID, eventID); err != nil {
-			tx.Rollback()
-			loggers.Error.Printf("Error setting display image for event: %v", err)
-			return "", err
+		// modification to have client manually set the display image
+		if img.ID == displayImageID {
+			if err := s.SetDisplayImageForEventTx(tx, img.ID, eventID); err != nil {
+				tx.Rollback()
+				loggers.Error.Printf("Error setting display image for event: %v", err)
+				return "", err
+			}
 		}
 	}
+
+	// // set the first image as display image by default (if images are present)
+	// if len(event.Images) > 0 {
+	// 	if err := s.SetDisplayImageForEventTx(tx, event.Images[0].ID, eventID); err != nil {
+	// 		tx.Rollback()
+	// 		loggers.Error.Printf("Error setting display image for event: %v", err)
+	// 		return "", err
+	// 	}
+	// }
 
 	// commit the transaction
 	if err = tx.Commit(); err != nil {
