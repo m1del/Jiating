@@ -26,7 +26,7 @@ type Event struct {
 	Description string       `json:"description"`  // description of the event
 	Content     string       `json:"content"`      // for text content, ig/yt embed links
 	IsDraft     bool         `json:"is_draft"`     // if the event is a draft
-	PublishedAt time.Time    `json:"published_at"` // time of publication, nil if draft
+	PublishedAt *time.Time   `json:"published_at"` // time of publication, nil if draft
 	Images      []EventImage `json:"images"`       // images associated with the event
 	Authors     []Admin      `json:"authors"`      // authors associated with the event
 }
@@ -62,5 +62,5 @@ type CreateEventRequest struct {
 	IsDraft     bool         `json:"is_draft"`
 	Images      []EventImage `json:"images"`
 	AuthorIDs   []string     `json:"author_ids"`
-	PublishedAt time.Time    `json:"published_at"`
+	PublishedAt *time.Time   `json:"published_at"`
 }

@@ -4,6 +4,7 @@ import (
 	"backend/internal/database"
 	"backend/internal/models"
 	"testing"
+	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
@@ -20,7 +21,7 @@ func TestCreateEvent(t *testing.T) {
 	// sample event and admin IDs
 	event := models.Event{
 		EventName:   "Sample Event",
-		Date:        "2024-01-10",
+		Date:        time.Now(),
 		Description: "This is a sample event",
 		Content:     "Event content here",
 		IsDraft:     false,

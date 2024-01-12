@@ -56,12 +56,12 @@ func Seed(dbService database.Service, numAdmins, numEvents, maxImagesPerEvent in
 func createRandomEventRequest(adminIDs []string, maxImagesPerEvent int) models.CreateEventRequest {
 
 	isDraft := rand.Intn(2) == 0 // 50% chance of being a draft
-	var published_at time.Time
+	var published_at *time.Time
 
 	// a draft event has no published_at, otherwise it needds one
 	if !isDraft {
 		date := randomDate()
-		published_at = date
+		published_at = &date
 	}
 
 	return models.CreateEventRequest{
