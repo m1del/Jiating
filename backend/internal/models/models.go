@@ -41,7 +41,7 @@ type EventImage struct {
 	CreatedAt time.Time `json:"created_at"` // time of creation, no deleted_at because deletion is permanent
 	UpdatedAt time.Time `json:"updated_at"` // time of last update
 	ImageURL  string    `json:"image_url"`  // url of the image (s3), presigned url (?)
-	IsDisplay bool      `json:"is_display"` // if the image is the display image for the event
+	IsDisplay bool      `json:"is_display"` // if the image is the display image for the event, only one image can be display
 }
 
 // http requests
