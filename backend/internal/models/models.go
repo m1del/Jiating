@@ -21,7 +21,9 @@ type Event struct {
 	ID          string       `json:"id"`           // primary key, UUID
 	CreatedAt   time.Time    `json:"created_at"`   // time of creation, no deleted_at because deletion is permanent
 	UpdatedAt   time.Time    `json:"updated_at"`   // time of last update
-	EventName   string       `json:"event_name"`   // name of the event
+	EventTitle  string       `json:"event_title"`  // title of the event
+	Metatitle   string       `json:"meta_title"`   // metatitle of the event
+	Slug        string       `json:"slug"`         // slug of the event
 	Date        time.Time    `json:"date"`         // date of the event
 	Description string       `json:"description"`  // description of the event
 	Content     string       `json:"content"`      // for text content, ig/yt embed links
