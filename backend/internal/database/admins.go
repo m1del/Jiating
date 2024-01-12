@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"regexp"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 // ===== internal ===== //
@@ -139,7 +141,7 @@ func (s *service) CreateAdmin(admin models.Admin) (string, error) {
 		return "", errors.New("invalid email format")
 	}
 
-	exists, err := s.emailExists(admin.Email) {
+	exists, err := s.emailExists(admin.Email)
 	if err != nil {
 		loggers.Error.Printf("Error checking if email exists: %v", err)
 		return "", err
@@ -157,7 +159,7 @@ func (s *service) CreateAdmin(admin models.Admin) (string, error) {
     ) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`
 
 	currTime := time.Now()
-	err := s.db.QueryRowContext(
+	err = s.db.QueryRowContext(
 		ctx, query, currTime, currTime, admin.Name, admin.Email,
 		admin.Position, admin.Status,
 	).Scan(&id)
@@ -170,7 +172,7 @@ func (s *service) CreateAdmin(admin models.Admin) (string, error) {
 			case "23503": // foreign_key_violation
 				return "", errors.New("foreign key violation")
 			default:
-				return "", errorw.New ("database error: " + err.Code.Name())
+				return "", errors.New("database error: " + err.Code.Name())
 			}
 		}
 		loggers.Error.Printf("Error creating admin: %v", err)
@@ -193,7 +195,7 @@ func (s *service) AssociateAdminWithEvent(adminID, eventID string) error {
 			case "23503": // foreign_key_violation
 				return errors.New("invalid adminID or eventID")
 			default:
-				return errorw.New ("unknown error: " + err.Code.Name())
+				return errors.New("unknown error: " + err.Code.Name())
 			}
 		}
 		loggers.Error.Printf("Error associating admin with event: %v", err)
@@ -204,30 +206,29 @@ func (s *service) AssociateAdminWithEvent(adminID, eventID string) error {
 }
 
 func (s *service) DeleteAdminByID(adminID string) error {
-    ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-    defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
 
-    const softDeleteAdminQuery = `
+	const softDeleteAdminQuery = `
 	UPDATE admins 
 	SET deleted_at = $1 
 	WHERE id = $2 
 		AND status != 'permanent' 
 	RETURNING id`
-    
-    var deletedAdminID string
-    err := s.db.QueryRowContext(ctx, softDeleteAdminQuery, time.Now(), adminID).Scan(&deletedAdminID)
-    if err != nil {
-        if err == sql.ErrNoRows {
-            // either the admin is permanent or does not exist
-            return fmt.Errorf("cannot delete admin: admin is either permanent or does not exist")
-        }
-        loggers.Error.Printf("Error deleting admin: %v", err)
-        return err
-    }
 
-    return nil
+	var deletedAdminID string
+	err := s.db.QueryRowContext(ctx, softDeleteAdminQuery, time.Now(), adminID).Scan(&deletedAdminID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// either the admin is permanent or does not exist
+			return fmt.Errorf("cannot delete admin: admin is either permanent or does not exist")
+		}
+		loggers.Error.Printf("Error deleting admin: %v", err)
+		return err
+	}
+
+	return nil
 }
-
 
 func (s *service) DeleteAdminByEmail(adminEmail string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
@@ -255,32 +256,31 @@ func (s *service) DeleteAdminByEmail(adminEmail string) error {
 }
 
 func (s *service) GetAdminByID(adminID string) (*models.Admin, error) {
-    ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-    defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
 
-    const query = `
+	const query = `
     SELECT id, created_at, updated_at, deleted_at, name, email, position, status 
     FROM admins 
 	WHERE id = $1 
 		AND deleted_at IS NULL`
-    row := s.db.QueryRowContext(ctx, query, adminID)
+	row := s.db.QueryRowContext(ctx, query, adminID)
 
-    var admin models.Admin
-    err := row.Scan(&admin.ID, &admin.CreatedAt, &admin.UpdatedAt,
-        &admin.DeletedAt, &admin.Name, &admin.Email, &admin.Position, &admin.Status)
-    
-    if err != nil {
-        if err == sql.ErrNoRows {
-            loggers.Error.Printf("No admin found with ID: %v", adminID)
-            return nil, fmt.Errorf("admin not found")
-        }
-        loggers.Error.Printf("Error getting admin: %v", err)
-        return nil, err
-    }
+	var admin models.Admin
+	err := row.Scan(&admin.ID, &admin.CreatedAt, &admin.UpdatedAt,
+		&admin.DeletedAt, &admin.Name, &admin.Email, &admin.Position, &admin.Status)
 
-    return &admin, nil
+	if err != nil {
+		if err == sql.ErrNoRows {
+			loggers.Error.Printf("No admin found with ID: %v", adminID)
+			return nil, fmt.Errorf("admin not found")
+		}
+		loggers.Error.Printf("Error getting admin: %v", err)
+		return nil, err
+	}
+
+	return &admin, nil
 }
-
 
 func (s *service) GetAdminByEmail(adminEmail string) (*models.Admin, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
@@ -310,46 +310,44 @@ func (s *service) GetAdminByEmail(adminEmail string) (*models.Admin, error) {
 
 func (s *service) UpdateAdmin(adminID string, updateData models.AdminUpdateData) error {
 	// TODO add handler
-    ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-    defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
 
-    // check if the admin is permanent
-    var status string
-    const getStatusQuery = `SELECT status FROM admins WHERE id = $1`
-    err := s.db.QueryRowContext(ctx, getStatusQuery, adminID).Scan(&status)
-    if err != nil {
-        loggers.Error.Printf("Error retrieving admin status: %v", err)
-        return err
-    }
-    if status == "permanent" {
-        return fmt.Errorf("cannot update a permanent admin")
-    }
+	// check if the admin is permanent
+	var status string
+	const getStatusQuery = `SELECT status FROM admins WHERE id = $1`
+	err := s.db.QueryRowContext(ctx, getStatusQuery, adminID).Scan(&status)
+	if err != nil {
+		loggers.Error.Printf("Error retrieving admin status: %v", err)
+		return err
+	}
+	if status == "permanent" {
+		return fmt.Errorf("cannot update a permanent admin")
+	}
 
-    // Uupdate logic
-    const updateQuery = `
+	// Uupdate logic
+	const updateQuery = `
     UPDATE admins
     SET name = $1, position = $2, status = $3, email = $4, updated_at = $5
     WHERE id = $6`
-    _, err = s.db.ExecContext(ctx, updateQuery, updateData.Name, updateData.Position, updateData.Status, updateData.Email, time.Now(), adminID)
-    if err != nil {
-        loggers.Error.Printf("Error updating admin: %v", err)
-        return err
-    }
+	_, err = s.db.ExecContext(ctx, updateQuery, updateData.Name, updateData.Position, updateData.Status, updateData.Email, time.Now(), adminID)
+	if err != nil {
+		loggers.Error.Printf("Error updating admin: %v", err)
+		return err
+	}
 
-    return nil
+	return nil
 }
 
 // AdminUpdateData is a struct to hold the updatable fields for an Admin
 type AdminUpdateData struct {
-    Name     string
-    Position string
-    Status   string
-    Email    string
+	Name     string
+	Position string
+	Status   string
+	Email    string
 }
 
-
-
-func (s *service) UpdateAdmin(admin models.Admin) error {
+func (s *service) UpdateAdminOLD(admin models.Admin) error {
 	// TODO review this function
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
