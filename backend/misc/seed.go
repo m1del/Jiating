@@ -54,12 +54,23 @@ func Seed(dbService database.Service, numAdmins, numEvents, maxImagesPerEvent in
 }
 
 func createRandomEventRequest(adminIDs []string, maxImagesPerEvent int) models.CreateEventRequest {
+
+	isDraft := rand.Intn(2) == 0 // 50% chance of being a draft
+	var published_at time.Time
+
+	// a draft event has no published_at, otherwise it needds one
+	if !isDraft {
+		date := randomDate()
+		published_at = date
+	}
+
 	return models.CreateEventRequest{
 		EventName:   fmt.Sprintf("Event %d", rand.Intn(100)),
 		Date:        randomDate(),
 		Description: fmt.Sprintf("Description for event %d", rand.Intn(100)),
 		Content:     fmt.Sprintf("Content for event %d", rand.Intn(100)),
 		IsDraft:     rand.Intn(2) == 0,
+		PublishedAt: published_at,
 		Images:      createRandomImages(maxImagesPerEvent),
 		AuthorIDs:   selectRandomAdmins(adminIDs),
 	}
@@ -108,7 +119,7 @@ func createRandomImages(max int) []models.EventImage {
 	return images
 }
 
-func randomDate() string {
+func randomDate() time.Time {
 	// Define the range for the random date
 	start := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC) // Start date (e.g., Jan 1, 2020)
 	end := time.Date(2023, 12, 31, 0, 0, 0, 0, time.UTC) // End date (e.g., Dec 31, 2023)
@@ -122,6 +133,6 @@ func randomDate() string {
 	// Add the random number of days to the start date
 	randomDate := start.AddDate(0, 0, daysToAdd)
 
-	// Return the formatted date string
-	return randomDate.Format("2006-01-02")
+	// Return the random date as a time.Time object
+	return randomDate
 }
