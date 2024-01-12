@@ -21,6 +21,8 @@ const Editor = () => {
     [{ 'font': [] }],
     [{ 'align': [] }],
 
+    ['image', 'video'],                                 //embeds
+
     ['clean'],                                         // remove formatting
   ];
 
