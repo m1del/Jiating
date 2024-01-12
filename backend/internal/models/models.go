@@ -47,6 +47,12 @@ type EventImage struct {
 }
 
 // http requests
+type AdminUpdateData struct {
+	Name     string
+	Position string
+	Status   string
+	Email    string
+}
 
 type UpdateEventRequest struct {
 	UpdatedData     map[string]interface{} `json:"updated_data"`
