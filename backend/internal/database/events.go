@@ -16,7 +16,7 @@ func createEventTable(db *sql.DB) error {
         created_at TIMESTAMP WITH TIME ZONE NOT NULL,
         updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
         event_name VARCHAR(255) NOT NULL,
-        date VARCHAR(255) NOT NULL,
+        date TIMESTAMP WITH TIME ZONE NOT NULL,
         description TEXT NOT NULL,
         content TEXT NOT NULL,
         is_draft BOOLEAN NOT NULL,
@@ -95,6 +95,12 @@ func (s *service) CreateEvent(event models.Event, adminIDs []string) (string, er
 	if err != nil {
 		loggers.Error.Printf("Error starting transaction: %v", err)
 		return "", err
+	}
+
+	// if the event is not a draft, set the published_at field
+	if !event.IsDraft {
+		currentTime := time.Now()
+		event.PublishedAt = &currentTime
 	}
 
 	// insert the event
