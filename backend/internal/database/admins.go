@@ -339,34 +339,6 @@ func (s *service) UpdateAdmin(adminID string, updateData models.AdminUpdateData)
 	return nil
 }
 
-// AdminUpdateData is a struct to hold the updatable fields for an Admin
-type AdminUpdateData struct {
-	Name     string
-	Position string
-	Status   string
-	Email    string
-}
-
-func (s *service) UpdateAdminOLD(admin models.Admin) error {
-	// TODO review this function
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-
-	const query = `
-    UPDATE admins
-    SET name = $1, email = $2, position = $3, status = $4, updated_at = $5
-    WHERE id = $6`
-
-	_, err := s.db.ExecContext(ctx, query, admin.Name, admin.Email,
-		admin.Position, admin.Status, time.Now(), admin.ID)
-	if err != nil {
-		loggers.Error.Printf("Error updating admin: %v", err)
-		return err
-	}
-
-	return nil
-}
-
 func (s *service) GetAdminCount() (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
