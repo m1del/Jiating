@@ -33,6 +33,20 @@ type Event struct {
 	Authors     []Admin      `json:"authors"`      // authors associated with the event
 }
 
+type CreateEventRequest struct {
+	ID          string       `json:"id"` //UUID, optional, if not provided, will be generated in db
+	EventTitle  string       `json:"event_title" validate:"nonzero"`
+	Metatitle   string       `json:"meta_title" validate:"nonzero"`
+	Slug        string       `json:"slug" validate:"nonzero"`
+	Date        time.Time    `json:"date"` // ISO8601
+	Description string       `json:"description"`
+	Content     string       `json:"content"`
+	IsDraft     bool         `json:"is_draft"`
+	PublishedAt *time.Time   `json:"published_at"`
+	Images      []EventImage `json:"images"`
+	AuthorID    string       `json:"author_id"` // UUID, CRUD: only one user can create/modifiy an event at a time
+}
+
 type EventAuthor struct {
 	AdminID string `json:"admin_id"` // foreign key to admin
 	EventID string `json:"event_id"` // foreign key to event
@@ -41,8 +55,8 @@ type EventAuthor struct {
 type EventImage struct {
 	ID        string    `json:"id"`         // primary key, UUID
 	CreatedAt time.Time `json:"created_at"` // time of creation, no deleted_at because deletion is permanent
-	UpdatedAt time.Time `json:"updated_at"` // time of last update
 	ImageURL  string    `json:"image_url"`  // url of the image (s3), presigned url (?)
+	AltText   string    `json:"alt_text"`   // alt text for the image
 	IsDisplay bool      `json:"is_display"` // if the image is the display image for the event, only one image can be display
 }
 
@@ -60,15 +74,4 @@ type UpdateEventRequest struct {
 	RemovedImageIDs []string               `json:"removed_image_ids"`
 	NewDisplayImage string                 `json:"new_display_image_id"`
 	EditorAdminID   string                 `json:"editor_admin_id"`
-}
-
-type CreateEventRequest struct {
-	EventName   string       `json:"event_name"`
-	Date        time.Time    `json:"date"`
-	Description string       `json:"description"`
-	Content     string       `json:"content"`
-	IsDraft     bool         `json:"is_draft"`
-	Images      []EventImage `json:"images"`
-	AuthorIDs   []string     `json:"author_ids"`
-	PublishedAt *time.Time   `json:"published_at"`
 }

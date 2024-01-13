@@ -105,30 +105,30 @@ func CreateAdminHandler(s database.Service) http.HandlerFunc {
 	}
 }
 
-func AssociateAdminWithEventHandler(s database.Service) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// decode json  into EventAuthor struct
-		var eventAuthor models.EventAuthor
-		err := json.NewDecoder(r.Body).Decode(&eventAuthor)
-		if err != nil {
-			loggers.Error.Printf("Error decoding json body: %v", err)
-			http.Error(w, "Bad Request", http.StatusBadRequest)
-			return
-		}
+// func AssociateAdminWithEventHandler(s database.Service) http.HandlerFunc {
+// 	return func(w http.ResponseWriter, r *http.Request) {
+// 		// decode json  into EventAuthor struct
+// 		var eventAuthor models.EventAuthor
+// 		err := json.NewDecoder(r.Body).Decode(&eventAuthor)
+// 		if err != nil {
+// 			loggers.Error.Printf("Error decoding json body: %v", err)
+// 			http.Error(w, "Bad Request", http.StatusBadRequest)
+// 			return
+// 		}
 
-		// use database service to associate admin with event
-		err = s.AssociateAdminWithEvent(eventAuthor.AdminID, eventAuthor.EventID)
-		if err != nil {
-			loggers.Error.Printf("Error associating admin with event: %v", err)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
+// 		// use database service to associate admin with event
+// 		err = s.AssociateAdminWithEvent(eventAuthor.AdminID, eventAuthor.EventID)
+// 		if err != nil {
+// 			loggers.Error.Printf("Error associating admin with event: %v", err)
+// 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+// 			return
+// 		}
 
-		// success response
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("Admin associated with event successfully"))
-	}
-}
+// 		// success response
+// 		w.WriteHeader(http.StatusOK)
+// 		w.Write([]byte("Admin associated with event successfully"))
+// 	}
+// }
 
 func DeleteAdminByIDHandler(s database.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -238,27 +238,27 @@ func GetAdminByEmailHandler(s database.Service) http.HandlerFunc {
 	}
 }
 
-func UpdateAdminHandler(s database.Service) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// decode json body into admin struct
-		var admin models.Admin
-		err := json.NewDecoder(r.Body).Decode(&admin)
-		if err != nil {
-			loggers.Error.Printf("Error decoding json body: %v", err)
-			http.Error(w, "Bad Request", http.StatusBadRequest)
-			return
-		}
+// func UpdateAdminHandler(s database.Service) http.HandlerFunc {
+// 	return func(w http.ResponseWriter, r *http.Request) {
+// 		// decode json body into admin struct
+// 		var admin models.Admin
+// 		err := json.NewDecoder(r.Body).Decode(&admin)
+// 		if err != nil {
+// 			loggers.Error.Printf("Error decoding json body: %v", err)
+// 			http.Error(w, "Bad Request", http.StatusBadRequest)
+// 			return
+// 		}
 
-		// use database service to update admin
-		err = s.UpdateAdmin(admin)
-		if err != nil {
-			loggers.Error.Printf("Error updating admin: %v", err)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
+// 		// use database service to update admin
+// 		err = s.UpdateAdmin(admin)
+// 		if err != nil {
+// 			loggers.Error.Printf("Error updating admin: %v", err)
+// 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+// 			return
+// 		}
 
-		// success response
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("Admin updated successfully"))
-	}
-}
+// 		// success response
+// 		w.WriteHeader(http.StatusOK)
+// 		w.Write([]byte("Admin updated successfully"))
+// 	}
+// }

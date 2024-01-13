@@ -19,32 +19,34 @@ type Service interface {
 
 	// admin operations
 	GetAllAdmins() ([]models.Admin, error)
-	GetAdminByID(adminID string) (*models.Admin, error)
-	GetAdminByEmail(adminEmail string) (*models.Admin, error)
 	GetAllAdminsExceptFounder() ([]models.Admin, error)
 	CreateAdmin(admin models.Admin) (string, error)
+	//AssociateAdminWithEvent(adminID string, eventID string) error
 	DeleteAdminByID(adminID string) error
 	DeleteAdminByEmail(adminEmail string) error
-	UpdateAdmin(admin models.Admin) error
-	AssociateAdminWithEvent(adminID string, eventID string) error
+	GetAdminByEmail(adminEmail string) (*models.Admin, error)
+	GetAdminByID(adminID string) (*models.Admin, error)
+	UpdateAdmin(adminID string, updateData models.AdminUpdateData) error
 	GetAdminCount() (int, error)
 
 	// event operations
-	GetAuthorsByEventID(eventID string) ([]models.Admin, error)
-	CreateEvent(event models.Event, adminIDs []string) (string, error)
-	UpdateEvent(event models.Event, editorAdminID string, newImages []models.EventImage, removedImageIDs []string, newDisplayImageID string) error
-	UpdateEventByID(eventID string, req models.UpdateEventRequest) error
-	GetEventByID(eventID string) (*models.Event, error)
-	GetLastSevenPublishedEvents() ([]models.Event, error)
+	// TODO: refactor
+	CreateEvent(ctx context.Context, event models.Event, adminID string) (string, error)
+	// GetAuthorsByEventID(eventID string) ([]models.Admin, error)
+	// CreateEvent(event models.Event, adminIDs []string) (string, error)
+	// UpdateEvent(event models.Event, editorAdminID string, newImages []models.EventImage, removedImageIDs []string, newDisplayImageID string) error
+	// UpdateEventByID(eventID string, req models.UpdateEventRequest) error
+	// GetEventByID(eventID string) (*models.Event, error)
+	// GetLastSevenPublishedEvents() ([]models.Event, error)
 
 	// event helpers
-	UpdateDynamicEventFields(tx *sql.Tx, eventID string, updatedData map[string]interface{}) error
-	UpdateEventAuthorship(tx *sql.Tx, eventID, editorAdminID string) error
+	//UpdateDynamicEventFields(tx *sql.Tx, eventID string, updatedData map[string]interface{}) error
+	//UpdateEventAuthorship(tx *sql.Tx, eventID, editorAdminID string) error
 
 	// image operations
-	AddImageToEvent(image models.EventImage, eventID string) error
-	RemoveImageFromEvent(imageID string) error
-	SetDisplayImageForEvent(imageID string, eventID string) error
+	//AddImageToEvent(image models.EventImage, eventID string) error
+	//RemoveImageFromEvent(imageID string) error
+	//SetDisplayImageForEvent(imageID string, eventID string) error
 }
 
 type service struct {

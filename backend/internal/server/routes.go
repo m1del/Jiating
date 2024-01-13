@@ -60,28 +60,28 @@ func (s *Server) RegisterRoutes() http.Handler {
 			r.With().Get("/get-all", handlers.GetAllAdminsHandler(s.db))
 			r.With().Get("/get-all-not-founder", handlers.GetAllAdminsExceptFounderHandler(s.db))
 			r.With().Post("/create", handlers.CreateAdminHandler(s.db))
-			r.With().Post("/associate-with-event", handlers.AssociateAdminWithEventHandler(s.db))
+			//r.With().Post("/associate-with-event", handlers.AssociateAdminWithEventHandler(s.db))
 			r.With().Delete("/delete-by-id/{adminID}", handlers.DeleteAdminByIDHandler(s.db))
 			r.With().Delete("/delete-by-email/{adminEmail}", handlers.DeleteAdminByEmailHandler(s.db))
 			r.With().Get("/get/{adminID}", handlers.GetAdminByIDHandler(s.db))
 			r.With().Get("/get-by-email/{adminEmail}", handlers.GetAdminByEmailHandler(s.db))
-			r.With().Post("/update", handlers.UpdateAdminHandler(s.db))
+			//r.With().Post("/update", handlers.UpdateAdminHandler(s.db))
 		})
 
 		// event routes
 		r.Route("/event", func(r chi.Router) {
 			// todo add auth middleware after testing
 			// admin only functions
-			r.With().Post("/update/{eventID}", handlers.UpdateEventByIDHandler(s.db))
+			//r.With().Post("/update/{eventID}", handlers.UpdateEventByIDHandler(s.db))
 			r.With().Post("/create", handlers.CreateEventHandler(s.db))
 
 			// public event functions
-			r.Get("/get-authors/{eventID}", handlers.GetAuthorsByEventID(s.db))
-			r.Get("/get/{eventID}", handlers.GetEventByIDHandler(s.db))
-			r.Get("/get-last-seven", handlers.GetLastSevenPublishedEventsHandler(s.db))
+			//r.Get("/get-authors/{eventID}", handlers.GetAuthorsByEventID(s.db))
+			//r.Get("/get/{eventID}", handlers.GetEventByIDHandler(s.db))
+			//r.Get("/get-last-seven", handlers.GetLastSevenPublishedEventsHandler(s.db))
 
 			//event s3 routes for images
-			r.Post("/upload/{event}/{file}", deps.DevGetPresignedUploadURLHandler())
+			//r.Post("/upload/{event}/{file}", deps.DevGetPresignedUploadURLHandler())
 		})
 
 		// media photo routes

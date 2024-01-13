@@ -28,8 +28,9 @@ func createAdminTable(db *sql.DB) error {
         email VARCHAR(255) NOT NULL UNIQUE,
         position VARCHAR(255) NOT NULL,
         status VARCHAR(50) NOT NULL
-		INDEX(email)
-    );`
+    );
+	
+	CREATE INDEX IF NOT EXISTS idx_admins_email on admins (email);`
 
 	_, err := db.Exec(createAdminTableSQL)
 	if err != nil {
@@ -182,13 +183,33 @@ func (s *service) CreateAdmin(admin models.Admin) (string, error) {
 	return id, nil
 }
 
-func (s *service) AssociateAdminWithEvent(adminID, eventID string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
+// func (s *service) AssociateAdminWithEvent(ctx context.Context, adminID, eventID string) error {
+// 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+// 	defer cancel()
 
+// 	const query = `INSERT INTO event_authors (admin_id, event_id) VALUES ($1, $2)`
+
+// 	_, err := s.db.ExecContext(ctx, query, adminID, eventID)
+// 	if err != nil {
+// 		if err, ok := err.(*pq.Error); ok {
+// 			switch err.Code {
+// 			case "23503": // foreign_key_violation
+// 				return errors.New("invalid adminID or eventID")
+// 			default:
+// 				return errors.New("unknown error: " + err.Code.Name())
+// 			}
+// 		}
+// 		loggers.Error.Printf("Error associating admin with event: %v", err)
+// 		return err
+// 	}
+
+// 	return nil
+// }
+
+func (s *service) AssociateAdminWithEventTx(ctx context.Context, tx *sql.Tx, adminID, eventID string) error {
 	const query = `INSERT INTO event_authors (admin_id, event_id) VALUES ($1, $2)`
 
-	_, err := s.db.ExecContext(ctx, query, adminID, eventID)
+	_, err := tx.ExecContext(ctx, query, adminID, eventID)
 	if err != nil {
 		if err, ok := err.(*pq.Error); ok {
 			switch err.Code {
