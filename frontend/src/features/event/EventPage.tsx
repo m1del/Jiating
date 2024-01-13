@@ -27,21 +27,40 @@ type Event = {
 
 const EventForm: React.FC<EventFormProps> = ({ onSubmit }) => {
   const [event, setEvent] = useState<Event>({
-    // initialize state with default values or fetch existing data if updating
+    // initialize state with default values or fetch existing data if updating?
   });
+
+
+  const [editorContent, setEditorContent] = useState<string>('');
+
+  const handleEditorContentChange = (content: string) => {
+    setEditorContent(content);
+  };
+
+  const handleSubmit = (event: React.FormEvent) => { // TODO: implement
+    event.preventDefault();
+    // use editorContent to submit to backend
+    const content = editorContent;
+    // parse content, find img with data.isdisplay set to true
+    // extract the URL of the display image and other necessary data
+    // Submit the data to  backend
+
+    //TODO: figure out how to handle slice of images?
+    console.log(content)
+  }
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setEvent({ ...event, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
-  event.preventDefault();
-  const content = quill?.root.innerHTML;
-  // parse content to find the image with data.IsDisplay set to true
-  // extract the URL of the display image and other necessary data
-  // Submit the data to  backend
-};
-
+//   const handleSubmit = (event: React.FormEvent) => {
+//   event.preventDefault();
+//   const content = quill?.root.innerHTML;
+//   // parse content to find the image with data.IsDisplay set to true
+//   // extract the URL of the display image and other necessary data
+//   // Submit the data to  backend
+// };
 
   return (
         <form onSubmit={handleSubmit} className="container mx-auto flex flex-col p-6 bg-white shadow-md rounded-lg">
@@ -66,7 +85,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit }) => {
                 <input type="checkbox" name="isDraft" checked={event.isDraft} onChange={e => setEvent({ ...event, isDraft: e.target.checked })} className="ml-2 h-5 w-5" />
             </label>
             <div className="mx-auto mb-4">
-                <Editor />
+                <Editor onContentChange={handleEditorContentChange}/>
             </div>
             <button type="submit" className="w-full p-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors">Submit</button>
         </form>
