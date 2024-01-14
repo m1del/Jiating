@@ -137,6 +137,10 @@ func (s *service) SessionInfoHandler() http.HandlerFunc {
 			"name":          session.Values["name"],
 			"email":         session.Values["email"],
 			"avatar_url":    session.Values["avatar_url"],
+
+			// admin info
+			"adminID":       session.Values["adminID"],
+			"adminPosition": session.Values["adminPosition"],
 		}
 		json.NewEncoder(w).Encode(userInfo)
 	}
