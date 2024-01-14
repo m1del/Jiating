@@ -99,6 +99,10 @@ func (s *service) LogoutHandler() http.HandlerFunc {
 			session.Values["email"] = nil
 			session.Values["avatar_url"] = nil
 
+			// delete admin data
+			session.Values["adminID"] = nil
+			session.Values["adminPosition"] = nil
+
 			session.Options.MaxAge = -1
 			// save changes
 			session.Save(r, w)
