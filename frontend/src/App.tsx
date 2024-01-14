@@ -4,7 +4,7 @@ import { Event, Footer, Navbar } from './components';
 import { AuthProvider } from './context/AuthContext';
 import AdminDashboard from './features/admin/AdminDashboard';
 import ProtectedRoute from './features/authentication/components/ProtectedRoute';
-import EventPage from './features/event/EventPage';
+import EventPage from './features/event/EventForm';
 import Media from './features/media/Media';
 import { Contact, CreateEvent, Events, Home } from './pages';
 
