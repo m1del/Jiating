@@ -131,7 +131,7 @@ func (s *service) CreateEvent(ctx context.Context, event models.Event, adminID s
 	}
 
 	// associate admiin as author of event
-	s.AssociateAdminWithEventTx(ctx, tx, adminID, eventID) // error handling is done in the function
+	s.associateAdminWithEventTx(ctx, tx, adminID, eventID) // error handling is done in the function
 
 	// insert image metadata into images table
 	for _, img := range event.Images {

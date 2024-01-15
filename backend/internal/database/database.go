@@ -9,7 +9,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/DATA-DOG/go-sqlmock"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -21,7 +20,6 @@ type Service interface {
 	GetAllAdmins() ([]models.Admin, error)
 	GetAllAdminsExceptFounder() ([]models.Admin, error)
 	CreateAdmin(admin models.Admin) (string, error)
-	//AssociateAdminWithEvent(adminID string, eventID string) error
 	DeleteAdminByID(adminID string) error
 	DeleteAdminByEmail(adminEmail string) error
 	GetAdminByEmail(adminEmail string) (*models.Admin, error)
@@ -79,17 +77,6 @@ func New(db *sql.DB) Service {
 	}
 
 	return &service{db: db}
-}
-
-// NewMock function for testing
-func NewMock() (Service, sqlmock.Sqlmock, error) {
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		return nil, nil, err
-	}
-
-	service := New(db)
-	return service, mock, nil
 }
 
 func initTables(db *sql.DB) error {

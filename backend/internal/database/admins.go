@@ -52,7 +52,76 @@ func createAdminTable(db *sql.DB) error {
 	return nil
 }
 
+func (s *service) associateAdminWithEventTx(ctx context.Context, tx *sql.Tx, adminID, eventID string) error {
+	const query = `INSERT INTO event_authors (admin_id, event_id) VALUES ($1, $2)`
+
+	_, err := tx.ExecContext(ctx, query, adminID, eventID)
+	if err != nil {
+		if err, ok := err.(*pq.Error); ok {
+			switch err.Code {
+			case "23503": // foreign_key_violation
+				return errors.New("invalid adminID or eventID")
+			default:
+				return errors.New("unknown error: " + err.Code.Name())
+			}
+		}
+		loggers.Error.Printf("Error associating admin with event: %v", err)
+		return err
+	}
+
+	return nil
+}
+
 // ===== external ===== //
+
+// CRUD operations for admins
+
+func (s *service) CreateAdmin(admin models.Admin) (string, error) {
+	// validate admin email format and check if it already exists
+	if !isValidEmail(admin.Email) {
+		return "", errors.New("invalid email format")
+	}
+
+	exists, err := s.emailExists(admin.Email)
+	if err != nil {
+		loggers.Error.Printf("checking if email exists: %v", err)
+		return "", err
+	}
+	if exists {
+		return "", errors.New("email already exists")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	var id string
+	const query = `INSERT INTO admins (
+        created_at, updated_at, name, email, position, status
+    ) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`
+
+	currTime := time.Now()
+	err = s.db.QueryRowContext(
+		ctx, query, currTime, currTime, admin.Name, admin.Email,
+		admin.Position, admin.Status,
+	).Scan(&id)
+
+	if err != nil {
+		if err, ok := err.(*pq.Error); ok {
+			switch err.Code {
+			case "23505": // unique_violation
+				return "", errors.New("email already exists")
+			case "23503": // foreign_key_violation
+				return "", errors.New("foreign key violation")
+			default:
+				return "", errors.New("database error: " + err.Code.Name())
+			}
+		}
+		loggers.Error.Printf("Error creating admin: %v", err)
+		return "", err
+	}
+
+	return id, nil
+}
 
 func (s *service) GetAllAdmins() ([]models.Admin, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
@@ -119,73 +188,6 @@ func (s *service) GetAllAdminsExceptFounder() ([]models.Admin, error) {
 	}
 
 	return admins, nil
-}
-
-func (s *service) CreateAdmin(admin models.Admin) (string, error) {
-	// validate admin email format and check if it already exists
-	if !isValidEmail(admin.Email) {
-		return "", errors.New("invalid email format")
-	}
-
-	exists, err := s.emailExists(admin.Email)
-	if err != nil {
-		loggers.Error.Printf("Error checking if email exists: %v", err)
-		return "", err
-	}
-	if exists {
-		return "", errors.New("email already exists")
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-
-	var id string
-	const query = `INSERT INTO admins (
-        created_at, updated_at, name, email, position, status
-    ) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`
-
-	currTime := time.Now()
-	err = s.db.QueryRowContext(
-		ctx, query, currTime, currTime, admin.Name, admin.Email,
-		admin.Position, admin.Status,
-	).Scan(&id)
-
-	if err != nil {
-		if err, ok := err.(*pq.Error); ok {
-			switch err.Code {
-			case "23505": // unique_violation
-				return "", errors.New("email already exists")
-			case "23503": // foreign_key_violation
-				return "", errors.New("foreign key violation")
-			default:
-				return "", errors.New("database error: " + err.Code.Name())
-			}
-		}
-		loggers.Error.Printf("Error creating admin: %v", err)
-		return "", err
-	}
-
-	return id, nil
-}
-
-func (s *service) AssociateAdminWithEventTx(ctx context.Context, tx *sql.Tx, adminID, eventID string) error {
-	const query = `INSERT INTO event_authors (admin_id, event_id) VALUES ($1, $2)`
-
-	_, err := tx.ExecContext(ctx, query, adminID, eventID)
-	if err != nil {
-		if err, ok := err.(*pq.Error); ok {
-			switch err.Code {
-			case "23503": // foreign_key_violation
-				return errors.New("invalid adminID or eventID")
-			default:
-				return errors.New("unknown error: " + err.Code.Name())
-			}
-		}
-		loggers.Error.Printf("Error associating admin with event: %v", err)
-		return err
-	}
-
-	return nil
 }
 
 func (s *service) DeleteAdminByID(adminID string) error {
