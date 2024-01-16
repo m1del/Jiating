@@ -55,21 +55,28 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// api routes
 	r.Route("/api", func(r chi.Router) {
 		// admin routes
-		r.Route("/admin", func(r chi.Router) {
-			// todo: add auth middleware after testing
-			r.With().Get("/get-all", handlers.GetAllAdminsHandler(s.db))
-			r.With().Get("/get-all-not-founder", handlers.GetAllAdminsExceptFounderHandler(s.db))
-			r.With().Post("/create", handlers.CreateAdminHandler(s.db))
-			//r.With().Post("/associate-with-event", handlers.AssociateAdminWithEventHandler(s.db))
-			r.With().Delete("/delete-by-id/{adminID}", handlers.DeleteAdminByIDHandler(s.db))
-			r.With().Delete("/delete-by-email/{adminEmail}", handlers.DeleteAdminByEmailHandler(s.db))
-			r.With().Get("/get/{adminID}", handlers.GetAdminByIDHandler(s.db))
-			r.With().Get("/get-by-email/{adminEmail}", handlers.GetAdminByEmailHandler(s.db))
+		r.Route("/admins", func(r chi.Router) {
+			// TODO: add auth middleware after testing
+			r.With().Post("/", handlers.CreateAdminHandler(s.db))
+			// optional query params: page, pageSize
+			r.With().Get("/", handlers.GetAllAdminsHandler(s.db.GetAllAdmins, s.db))
+			r.With().Get("/except-founder", handlers.GetAllAdminsHandler(s.db.GetAllAdminsExceptFounder, s.db))
+			// param -> id or email, usage: pass in id or email as param
+			r.With().Get("/{param}", handlers.GetAdminHandler(s.db))
+			r.With().Get("/count", handlers.GetAdminCountHandler(s.db))
+
+			r.With().Put("/{id}", handlers.UpdateAdminHandler(s.db))
+
+			r.With().Delete("/{param}", handlers.DeleteAdminHandler(s.db))
+
+			// //r.With().Post("/associate-with-event", handlers.AssociateAdminWithEventHandler(s.db))
+			// r.With().Delete("/delete-by-id/{adminID}", handlers.DeleteAdminByIDHandler(s.db))
+			// r.With().Delete("/delete-by-email/{adminEmail}", handlers.DeleteAdminByEmailHandler(s.db))
 			//r.With().Post("/update", handlers.UpdateAdminHandler(s.db))
 		})
 
 		// event routes
-		r.Route("/event", func(r chi.Router) {
+		r.Route("/events", func(r chi.Router) {
 			// todo add auth middleware after testing
 			// admin only functions
 			//r.With().Post("/update/{eventID}", handlers.UpdateEventByIDHandler(s.db))
@@ -85,7 +92,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 		})
 
 		// media photo routes
-		r.Route("/photoshoot", func(r chi.Router) {
+		r.Route("/photoshoots", func(r chi.Router) {
 			r.Get("/years", deps.GetPhotoshootYearsHandler())
 			r.Get("/events/{year}", deps.GetPhotoshootEventsHandler())
 			r.Get("/list/{year}/{event}", deps.ListPhotoshootPhotosHandler())

@@ -3,6 +3,7 @@ package tests
 import (
 	"backend/internal/database"
 	"backend/internal/models"
+	"context"
 	"fmt"
 	"regexp"
 	"sync"
@@ -43,7 +44,7 @@ func TestCreateAdminSuccess(t *testing.T) {
 		admin.Position, admin.Status).
 		WillReturnRows(rows)
 
-	id, err := s.CreateAdmin(admin)
+	id, err := s.CreateAdmin(context.Background(), admin)
 
 	assert.NoError(t, err)
 	assert.Equal(t, expectedID, id, "Expected ID does not match returned ID")
@@ -81,7 +82,7 @@ func TestCreateAdminFailure(t *testing.T) {
 		admin.Position, admin.Status).
 		WillReturnError(fmt.Errorf("sql error"))
 
-	id, err := s.CreateAdmin(admin)
+	id, err := s.CreateAdmin(context.TODO(), admin)
 
 	assert.Error(t, err)
 	assert.Empty(t, id, "Expected ID to be empty when an error occurs")
@@ -114,7 +115,7 @@ func TestCreateAdminDuplicateEmail(t *testing.T) {
 		WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
 
 	// mocking insert query
-	id, err := s.CreateAdmin(admin)
+	id, err := s.CreateAdmin(context.TODO(), admin)
 
 	assert.Error(t, err)
 	assert.Empty(t, id, "Expected ID to be empty when an error occurs")
@@ -134,7 +135,7 @@ func TestCreateAdminInvalidEmail(t *testing.T) {
 		Position: "invalid email",
 		Status:   "active",
 	}
-	id, err := s.CreateAdmin(admin)
+	id, err := s.CreateAdmin(context.TODO(), admin)
 	assert.Error(t, err)
 	assert.Empty(t, id, "Expected ID to be empty when an error occurs")
 	assert.Contains(t, err.Error(), "invalid email", "Expected error message for invalid email")
@@ -161,7 +162,7 @@ func TestCreateAdminUniqueViolation(t *testing.T) {
 		WithArgs(admin.Email).
 		WillReturnError(fmt.Errorf("database error"))
 
-	id, err := s.CreateAdmin(admin)
+	id, err := s.CreateAdmin(context.Background(), admin)
 
 	assert.Error(t, err)
 	assert.Empty(t, id, "Expected ID to be empty when an error occurs")
@@ -207,7 +208,7 @@ func TestCreateAdminRaceCondition(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			_, err := s.CreateAdmin(admin)
+			_, err := s.CreateAdmin(context.Background(), admin)
 			if err != nil {
 				failureCount++
 			} else {
@@ -270,7 +271,7 @@ func TestGetAllAdmins(t *testing.T) {
 	}
 
 	mock.ExpectQuery(regexp.QuoteMeta("SELECT id, created_at, updated_at, deleted_at, name, email, position, status FROM admins WHERE deleted_at IS NULL")).WillReturnRows(rows)
-	resultAdmins, err := s.GetAllAdmins()
+	resultAdmins, err := s.GetAllAdmins(context.Background(), 10, 10)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, resultAdmins)
@@ -295,7 +296,7 @@ func TestGetAllAdminsDatabaseQueryError(t *testing.T) {
 	mock.ExpectQuery(regexp.QuoteMeta("SELECT id, created_at, updated_at, deleted_at, name, email, position, status FROM admins WHERE deleted_at IS NULL")).
 		WillReturnError(fmt.Errorf("query error"))
 	// Simulte a database error during querying
-	admins, err := s.GetAllAdmins()
+	admins, err := s.GetAllAdmins(context.Background(), 10, 10)
 
 	assert.Error(t, err)
 	assert.Nil(t, admins)

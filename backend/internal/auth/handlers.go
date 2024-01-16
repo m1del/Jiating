@@ -31,7 +31,7 @@ func (s *service) GetAuthCallbackHandler() http.HandlerFunc {
 		}
 
 		// check if authenticated user is an admin in the database
-		admin, err := s.db.GetAdminByEmail(user.Email)
+		admin, err := s.db.GetAdmin(context.Background(), "email", user.Email)
 		if err != nil {
 			if err == sql.ErrNoRows {
 				loggers.Debug.Printf("No admin found with email %v", user.Email)

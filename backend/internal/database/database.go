@@ -17,19 +17,26 @@ type Service interface {
 	Health() map[string]string
 
 	// admin operations
-	GetAllAdmins() ([]models.Admin, error)
-	GetAllAdminsExceptFounder() ([]models.Admin, error)
-	CreateAdmin(admin models.Admin) (string, error)
-	DeleteAdminByID(adminID string) error
-	DeleteAdminByEmail(adminEmail string) error
-	GetAdminByEmail(adminEmail string) (*models.Admin, error)
-	GetAdminByID(adminID string) (*models.Admin, error)
-	UpdateAdmin(adminID string, updateData models.AdminUpdateData) error
-	GetAdminCount() (int, error)
+
+	// done
+	CreateAdmin(ctx context.Context, admin models.Admin) (string, error)
+
+	GetAllAdmins(ctx context.Context, page, pageSize int) ([]models.Admin, error)
+	GetAllAdminsExceptFounder(ctx context.Context, page, pageSize int) ([]models.Admin, error)
+	GetAdmin(ctx context.Context, field, value string) (*models.Admin, error)
+
+	GetAdminCount(ctx context.Context) (int, error)
+
+	UpdateAdmin(ctx context.Context, admin models.Admin) error
+	// needs revision
+	//TODO: deletion
 
 	// event operations
-	// TODO: refactor
+
+	// done
 	CreateEvent(ctx context.Context, event models.Event, adminID string) (string, error)
+
+	// TODO: refactor
 	// GetAuthorsByEventID(eventID string) ([]models.Admin, error)
 	// CreateEvent(event models.Event, adminIDs []string) (string, error)
 	// UpdateEvent(event models.Event, editorAdminID string, newImages []models.EventImage, removedImageIDs []string, newDisplayImageID string) error

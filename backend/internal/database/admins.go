@@ -76,23 +76,15 @@ func (s *service) associateAdminWithEventTx(ctx context.Context, tx *sql.Tx, adm
 
 // CRUD operations for admins
 
-func (s *service) CreateAdmin(admin models.Admin) (string, error) {
-	// validate admin email format and check if it already exists
-	if !isValidEmail(admin.Email) {
-		return "", errors.New("invalid email format")
-	}
+// ========== CREATE ========== //
 
-	exists, err := s.emailExists(admin.Email)
+func (s *service) CreateAdmin(ctx context.Context, admin models.Admin) (string, error) {
+	// validate admin email format and check if it already exists
+	err := SanitizeAdminInput(&admin)
 	if err != nil {
-		loggers.Error.Printf("checking if email exists: %v", err)
+		loggers.Debug.Printf("invalid admin input: %v", err)
 		return "", err
 	}
-	if exists {
-		return "", errors.New("email already exists")
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	defer cancel()
 
 	var id string
 	const query = `INSERT INTO admins (
@@ -123,220 +115,192 @@ func (s *service) CreateAdmin(admin models.Admin) (string, error) {
 	return id, nil
 }
 
-func (s *service) GetAllAdmins() ([]models.Admin, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-
-	const query = `
-	SELECT id, created_at, updated_at, deleted_at, name, email, 
-	position, status 
-	FROM admins
-	WHERE deleted_at IS NULL`
-	rows, err := s.db.QueryContext(ctx, query)
-	if err != nil {
-		loggers.Error.Printf("Error getting admins: %v", err)
-		return nil, err
-	}
-	defer rows.Close()
-
+// ========== READ ========== //
+func scanAdmins(rows *sql.Rows) ([]models.Admin, error) {
 	var admins []models.Admin
 	for rows.Next() {
 		var admin models.Admin
-		if err := rows.Scan(&admin.ID, &admin.CreatedAt, &admin.UpdatedAt,
+		if err := rows.Scan(
+			&admin.ID, &admin.CreatedAt, &admin.UpdatedAt,
 			&admin.DeletedAt, &admin.Name, &admin.Email, &admin.Position, &admin.Status); err != nil {
-			loggers.Error.Printf("Error scanning admin: %v", err)
-			continue
+			loggers.Error.Printf("scanning admin: %v", err)
+			continue // skip partial results
 		}
 		admins = append(admins, admin)
 	}
-
 	if err := rows.Err(); err != nil {
 		loggers.Error.Printf("Error iterating over admins: %v", err)
 		return nil, err
 	}
-
 	return admins, nil
 }
 
-func (s *service) GetAllAdminsExceptFounder() ([]models.Admin, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-
-	const query = `
-	SELECT id, created_at, updated_at, deleted_at, name, email, position, status 
-	FROM admins WHERE position != 'Founder'`
-	rows, err := s.db.QueryContext(ctx, query)
-	if err != nil {
-		loggers.Error.Printf("Error getting admins: %v", err)
-		return nil, err
-	}
-	defer rows.Close()
-
-	var admins []models.Admin
-	for rows.Next() {
-		var admin models.Admin
-		if err := rows.Scan(&admin.ID, &admin.CreatedAt, &admin.UpdatedAt, &admin.DeletedAt, &admin.Name, &admin.Email, &admin.Position, &admin.Status); err != nil {
-			loggers.Error.Printf("Error scanning admin: %v", err)
-			continue
-		}
-		admins = append(admins, admin)
-	}
-
-	if err := rows.Err(); err != nil {
-		loggers.Error.Printf("Error iterating over admins: %v", err)
-		return nil, err
-	}
-
-	return admins, nil
-}
-
-func (s *service) DeleteAdminByID(adminID string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-
-	const softDeleteAdminQuery = `
-	UPDATE admins 
-	SET deleted_at = $1 
-	WHERE id = $2 
-		AND status != 'permanent' 
-	RETURNING id`
-
-	var deletedAdminID string
-	err := s.db.QueryRowContext(ctx, softDeleteAdminQuery, time.Now(), adminID).Scan(&deletedAdminID)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// either the admin is permanent or does not exist
-			return fmt.Errorf("cannot delete admin: admin is either permanent or does not exist")
-		}
-		loggers.Error.Printf("Error deleting admin: %v", err)
-		return err
-	}
-
-	return nil
-}
-
-func (s *service) DeleteAdminByEmail(adminEmail string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-
-	const softDeleteAdminQuery = `
-	UPDATE admins
-	SET deleted_at = $1
-	WHERE email = $2
-		AND status != 'permanent'
-	RETURNING id`
-
-	var deletedAdminID string
-	err := s.db.QueryRowContext(ctx, softDeleteAdminQuery, time.Now(), adminEmail).Scan(&deletedAdminID)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			// either the admin is permanent or does not exist
-			return fmt.Errorf("cannot delete admin: admin is either permanent or does not exist")
-		}
-		loggers.Error.Printf("Error deleting admin: %v", err)
-		return err
-	}
-
-	return nil
-}
-
-func (s *service) GetAdminByID(adminID string) (*models.Admin, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-
-	const query = `
-    SELECT id, created_at, updated_at, deleted_at, name, email, position, status 
-    FROM admins 
-	WHERE id = $1 
-		AND deleted_at IS NULL`
-	row := s.db.QueryRowContext(ctx, query, adminID)
+func (s *service) getAdmin(ctx context.Context, query string, param string) (*models.Admin, error) {
+	row := s.db.QueryRowContext(ctx, query, param)
 
 	var admin models.Admin
 	err := row.Scan(&admin.ID, &admin.CreatedAt, &admin.UpdatedAt,
 		&admin.DeletedAt, &admin.Name, &admin.Email, &admin.Position, &admin.Status)
-
 	if err != nil {
 		if err == sql.ErrNoRows {
-			loggers.Error.Printf("No admin found with ID: %v", adminID)
+			loggers.Error.Printf("No admin found with parameter: %v", param)
 			return nil, fmt.Errorf("admin not found")
 		}
 		loggers.Error.Printf("Error getting admin: %v", err)
 		return nil, err
 	}
-
 	return &admin, nil
 }
 
-func (s *service) GetAdminByEmail(adminEmail string) (*models.Admin, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
+// define a function type for fetching admins to use in generalizzed handler
+type AdminFetchFunc func(ctx context.Context, page, pageSize int) ([]models.Admin, error)
 
+func (s *service) GetAllAdmins(ctx context.Context, page, pageSize int) ([]models.Admin, error) {
+	offset := getOffset(page, pageSize)
+	const query = `
+	SELECT id, created_at, updated_at, deleted_at, name, email, 
+	position, status 
+	FROM admins
+	WHERE deleted_at IS NULL
+	ORDER BY created_at DESC
+	LIMIT $1 OFFSET $2`
+	rows, err := s.db.QueryContext(ctx, query, pageSize, offset)
+	if err != nil {
+		loggers.Error.Printf("getting admins: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	return scanAdmins(rows)
+}
+
+func (s *service) GetAllAdminsExceptFounder(ctx context.Context, page, pageSize int) ([]models.Admin, error) {
+	offset := getOffset(page, pageSize)
 	const query = `
 	SELECT id, created_at, updated_at, deleted_at, name, email, position, status 
 	FROM admins 
-	WHERE email = $1
-		AND deleted_at IS NULL`
-	row := s.db.QueryRowContext(ctx, query, adminEmail)
-
-	var admin models.Admin
-	err := row.Scan(&admin.ID, &admin.CreatedAt, &admin.UpdatedAt,
-		&admin.DeletedAt, &admin.Name, &admin.Email, &admin.Position, &admin.Status)
+	WHERE position != 'Founder' AND deleted_at IS NULL
+	ORDER BY created_at DESC
+	LIMIT $1 OFFSET $2`
+	rows, err := s.db.QueryContext(ctx, query, pageSize, offset)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			loggers.Error.Printf("No admin found with email: %v", adminEmail)
-			return nil, err
-		}
-		loggers.Error.Printf("Error getting admin: %v", err)
+		loggers.Error.Printf("getting admins: %v", err)
 		return nil, err
 	}
+	defer rows.Close()
 
-	return &admin, nil
+	return scanAdmins(rows)
 }
 
-func (s *service) UpdateAdmin(adminID string, updateData models.AdminUpdateData) error {
-	// TODO add handler
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
+// fetch admin by field: email or id exclusively
+func (s *service) GetAdmin(ctx context.Context, field, value string) (*models.Admin, error) {
+	query := fmt.Sprintf(`
+    SELECT id, created_at, updated_at, deleted_at, name, email, position, status 
+    FROM admins 
+    WHERE %s = $1 
+    AND deleted_at IS NULL`, field)
 
-	// check if the admin is permanent
-	var status string
-	const getStatusQuery = `SELECT status FROM admins WHERE id = $1`
-	err := s.db.QueryRowContext(ctx, getStatusQuery, adminID).Scan(&status)
-	if err != nil {
-		loggers.Error.Printf("Error retrieving admin status: %v", err)
-		return err
-	}
-	if status == "permanent" {
-		return fmt.Errorf("cannot update a permanent admin")
-	}
-
-	// Uupdate logic
-	const updateQuery = `
-    UPDATE admins
-    SET name = $1, position = $2, status = $3, email = $4, updated_at = $5
-    WHERE id = $6`
-	_, err = s.db.ExecContext(ctx, updateQuery, updateData.Name, updateData.Position, updateData.Status, updateData.Email, time.Now(), adminID)
-	if err != nil {
-		loggers.Error.Printf("Error updating admin: %v", err)
-		return err
-	}
-
-	return nil
+	return s.getAdmin(ctx, query, value)
 }
 
-func (s *service) GetAdminCount() (int, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-
+func (s *service) GetAdminCount(ctx context.Context) (int, error) {
 	const query = `SELECT COUNT(*) FROM admins`
 	row := s.db.QueryRowContext(ctx, query)
-
 	var count int
 	err := row.Scan(&count)
 	if err != nil {
 		loggers.Error.Printf("Error getting admin count: %v", err)
 		return 0, err
 	}
-
 	return count, nil
 }
+
+// ========== UPDATE ========== //
+
+func (s *service) UpdateAdmin(ctx context.Context, admin models.Admin) error {
+	err := SanitizeAdminInput(&admin)
+	if err != nil {
+		loggers.Debug.Printf("invalid admin input: %v", err)
+		return err
+	}
+	const query = `
+	UPDATE admins SET
+	updated_at = $1, name = $2, email = $3, position = $4, status = $5
+	WHERE id = $6
+	AND deleted_at IS NULL`
+
+	_, err = s.db.ExecContext(
+		ctx, query, time.Now(), admin.Name, admin.Email, admin.Position, admin.Status, admin.ID,
+	)
+	if err != nil {
+		if err, ok := err.(*pq.Error); ok {
+			switch err.Code {
+			case "23505": // unique_violation
+				return errors.New("email already exists")
+			default:
+				return errors.New("database error: " + err.Code.Name())
+			}
+		}
+		loggers.Error.Printf("updated admin: %v", err)
+		return err
+	}
+	return nil
+}
+
+// TODO: everything below this line needs to be refactored
+
+// ========== DELETE ========== //
+
+func (s *service) DeleteAdmin(ctx context.Context, param string) (models.Admin, error) {
+	return models.Admin{}, nil
+}
+
+// func (s *service) DeleteAdminByID(adminID string) error {
+// 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+// 	defer cancel()
+
+// 	const softDeleteAdminQuery = `
+// 	UPDATE admins
+// 	SET deleted_at = $1
+// 	WHERE id = $2
+// 		AND status != 'permanent'
+// 	RETURNING id`
+
+// 	var deletedAdminID string
+// 	err := s.db.QueryRowContext(ctx, softDeleteAdminQuery, time.Now(), adminID).Scan(&deletedAdminID)
+// 	if err != nil {
+// 		if err == sql.ErrNoRows {
+// 			// either the admin is permanent or does not exist
+// 			return fmt.Errorf("cannot delete admin: admin is either permanent or does not exist")
+// 		}
+// 		loggers.Error.Printf("Error deleting admin: %v", err)
+// 		return err
+// 	}
+
+// 	return nil
+// }
+
+// func (s *service) DeleteAdminByEmail(adminEmail string) error {
+// 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+// 	defer cancel()
+
+// 	const softDeleteAdminQuery = `
+// 	UPDATE admins
+// 	SET deleted_at = $1
+// 	WHERE email = $2
+// 		AND status != 'permanent'
+// 	RETURNING id`
+
+// 	var deletedAdminID string
+// 	err := s.db.QueryRowContext(ctx, softDeleteAdminQuery, time.Now(), adminEmail).Scan(&deletedAdminID)
+// 	if err != nil {
+// 		if err == sql.ErrNoRows {
+// 			// either the admin is permanent or does not exist
+// 			return fmt.Errorf("cannot delete admin: admin is either permanent or does not exist")
+// 		}
+// 		loggers.Error.Printf("Error deleting admin: %v", err)
+// 		return err
+// 	}
+
+// 	return nil
+// }

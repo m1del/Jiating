@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+// ===== internal ===== //
+
 func createEventTable(db *sql.DB) error {
 	createEventTableSQL := `
     CREATE TABLE IF NOT EXISTS events (
@@ -35,59 +37,11 @@ func createEventTable(db *sql.DB) error {
 	return nil
 }
 
-func createEventAuthorTable(db *sql.DB) error {
-	createEventAuthorTableSQL := `
-    CREATE TABLE IF NOT EXISTS event_authors (
-        admin_id UUID NOT NULL,
-        event_id UUID NOT NULL,
-        PRIMARY KEY (admin_id, event_id),
-        FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE NO ACTION,
-        FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
-    );`
+// ===== exported ===== //
 
-	_, err := db.Exec(createEventAuthorTableSQL)
-	if err != nil {
-		loggers.Error.Printf("Error creating event_author table: %v", err)
-		return err
-	}
+// CRUD operations
 
-	return nil
-}
-
-func (s *service) GetAuthorsByEventID(eventID string) ([]models.Admin, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-
-	const query = `
-    SELECT a.id, a.created_at, a.updated_at, a.deleted_at, a.name, a.email, a.position, a.status
-    FROM admins a
-    INNER JOIN event_authors ea ON a.id = ea.admin_id
-    WHERE ea.event_id = $1`
-
-	rows, err := s.db.QueryContext(ctx, query, eventID)
-	if err != nil {
-		loggers.Error.Printf("Error retrieving authors for event: %v", err)
-		return nil, err
-	}
-	defer rows.Close()
-
-	var authors []models.Admin
-	for rows.Next() {
-		var author models.Admin
-		if err := rows.Scan(&author.ID, &author.CreatedAt, &author.UpdatedAt, &author.DeletedAt, &author.Name, &author.Email, &author.Position, &author.Status); err != nil {
-			loggers.Error.Printf("Error scanning author: %v", err)
-			continue
-		}
-		authors = append(authors, author)
-	}
-
-	if err := rows.Err(); err != nil {
-		loggers.Error.Printf("Error iterating over authors: %v", err)
-		return nil, err
-	}
-
-	return authors, nil
-}
+// Create operations:
 
 func (s *service) CreateEvent(ctx context.Context, event models.Event, adminID string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
@@ -135,7 +89,7 @@ func (s *service) CreateEvent(ctx context.Context, event models.Event, adminID s
 
 	// insert image metadata into images table
 	for _, img := range event.Images {
-		if err := s.addImageToEventTx(tx, img, eventID); err != nil {
+		if err := s.AddImageToEventTx(tx, img, eventID); err != nil {
 			tx.Rollback()
 			loggers.Error.Printf("Error adding image to event: %v", err)
 			return "", err
@@ -151,84 +105,135 @@ func (s *service) CreateEvent(ctx context.Context, event models.Event, adminID s
 	return eventID, nil
 }
 
-// func (s *service) CreateEvent(event models.Event, adminIDs []string, displayImageID string) (string, error) {
+// Read Operations:
+
+// func (s *service) GetEventByID(eventID string) (*models.Event, error) {
 // 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 // 	defer cancel()
 
-// 	// start a transaction
-// 	tx, err := s.db.BeginTx(ctx, nil)
+// 	// fetch the event details
+// 	const getEventQuery = `SELECT id, created_at, updated_at, event_name, date, description, content, is_draft, published_at FROM events WHERE id = $1`
+// 	row := s.db.QueryRowContext(ctx, getEventQuery, eventID)
+
+// 	var event models.Event
+// 	err := row.Scan(&event.ID, &event.CreatedAt, &event.UpdatedAt, &event.EventName, &event.Date, &event.Description, &event.Content, &event.IsDraft, &event.PublishedAt)
 // 	if err != nil {
-// 		loggers.Error.Printf("Error starting transaction: %v", err)
-// 		return "", err
+// 		loggers.Error.Printf("Error retrieving event: %v", err)
+// 		return nil, err
 // 	}
 
-// 	// if the event is not a draft, set the published_at field
-// 	if !event.IsDraft {
-// 		currentTime := time.Now()
-// 		event.PublishedAt = &currentTime
-// 	}
-
-// 	// insert the event
-// 	const insertEventQuery = `
-// 	INSERT INTO events (
-// 		event_name, date, description, content, is_draft, published_at, created_at, updated_at
-// 	) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
-// 	RETURNING id`
-// 	var eventID string
-// 	err = tx.QueryRowContext(ctx, insertEventQuery, event.EventName, event.Date, event.Description,
-// 		event.Content, event.IsDraft, event.PublishedAt).Scan(&eventID)
+// 	// fetch associated images
+// 	const getImagesQuery = `SELECT id, image_url, is_display FROM images WHERE event_id = $1`
+// 	images, err := s.getImagesByEventID(ctx, eventID)
 // 	if err != nil {
-// 		tx.Rollback()
-// 		loggers.Error.Printf("Error inserting event: %v", err)
-// 		return "", err
+// 		loggers.Error.Printf("Error retrieving images for event: %v", err)
+// 		return nil, err
 // 	}
+// 	event.Images = images
 
-// 	// associate each admin with the event
-// 	for _, adminID := range adminIDs {
-// 		_, err = tx.ExecContext(ctx, `INSERT INTO event_authors (admin_id, event_id) VALUES ($1, $2)`,
-// 			adminID, eventID)
-// 		if err != nil {
-// 			tx.Rollback()
-// 			loggers.Error.Printf("Error associating admin with event: %v", err)
-// 			return "nil", err
-// 		}
+// 	// fetch associated authors
+// 	authors, err := s.GetAuthorsByEventID(eventID)
+// 	if err != nil {
+// 		loggers.Error.Printf("Error retrieving authors for event: %v", err)
+// 		return nil, err
 // 	}
+// 	event.Authors = authors
 
-// 	// inserting images
-// 	for _, img := range event.Images {
-// 		if err := s.AddImageToEventTx(tx, img, eventID); err != nil {
-// 			tx.Rollback()
-// 			loggers.Error.Printf("Error adding image to event: %v", err)
-// 			return "", err
-// 		}
-
-// 		// modification to have client manually set the display image
-// 		if img.ID == displayImageID {
-// 			if err := s.SetDisplayImageForEventTx(tx, img.ID, eventID); err != nil {
-// 				tx.Rollback()
-// 				loggers.Error.Printf("Error setting display image for event: %v", err)
-// 				return "", err
-// 			}
-// 		}
-// 	}
-
-// 	// // set the first image as display image by default (if images are present)
-// 	// if len(event.Images) > 0 {
-// 	// 	if err := s.SetDisplayImageForEventTx(tx, event.Images[0].ID, eventID); err != nil {
-// 	// 		tx.Rollback()
-// 	// 		loggers.Error.Printf("Error setting display image for event: %v", err)
-// 	// 		return "", err
-// 	// 	}
-// 	// }
-
-// 	// commit the transaction
-// 	if err = tx.Commit(); err != nil {
-// 		loggers.Error.Printf("Error committing transaction: %v", err)
-// 		return "", err
-// 	}
-
-// 	return eventID, nil
+// 	return &event, nil
 // }
+
+// func (s *service) GetAuthorsByEventID(eventID string) ([]models.Admin, error) {
+// 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+// 	defer cancel()
+
+// 	const query = `
+//     SELECT a.id, a.created_at, a.updated_at, a.deleted_at, a.name, a.email, a.position, a.status
+//     FROM admins a
+//     INNER JOIN event_authors ea ON a.id = ea.admin_id
+//     WHERE ea.event_id = $1`
+
+// 	rows, err := s.db.QueryContext(ctx, query, eventID)
+// 	if err != nil {
+// 		loggers.Error.Printf("Error retrieving authors for event: %v", err)
+// 		return nil, err
+// 	}
+// 	defer rows.Close()
+
+// 	var authors []models.Admin
+// 	for rows.Next() {
+// 		var author models.Admin
+// 		if err := rows.Scan(&author.ID, &author.CreatedAt, &author.UpdatedAt, &author.DeletedAt, &author.Name, &author.Email, &author.Position, &author.Status); err != nil {
+// 			loggers.Error.Printf("Error scanning author: %v", err)
+// 			continue
+// 		}
+// 		authors = append(authors, author)
+// 	}
+
+// 	if err := rows.Err(); err != nil {
+// 		loggers.Error.Printf("Error iterating over authors: %v", err)
+// 		return nil, err
+// 	}
+
+// 	return authors, nil
+// }
+
+// func (s *service) GetLastSevenPublishedEvents() ([]models.Event, error) {
+// 	eventIDs, err := s.getLastSevenPublishedEventIDs()
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	var events []models.Event
+// 	for _, id := range eventIDs {
+// 		event, err := s.GetEventByID(id)
+// 		if err != nil {
+// 			// log and skip this event
+// 			loggers.Error.Printf("Error retrieving event by ID: %v", err)
+// 			continue
+// 		}
+// 		events = append(events, *event)
+// 	}
+
+// 	return events, nil
+// }
+
+// func (s *service) getLastSevenPublishedEventIDs() ([]string, error) {
+// 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+// 	defer cancel()
+
+// 	const getEventIDsQuery = `
+//     SELECT id FROM events
+//     WHERE is_draft = false
+//     ORDER BY published_at DESC
+//     LIMIT 7`
+
+// 	rows, err := s.db.QueryContext(ctx, getEventIDsQuery)
+// 	if err != nil {
+// 		loggers.Error.Printf("Error retrieving last seven published event IDs: %v", err)
+// 		return nil, err
+// 	}
+// 	defer rows.Close()
+
+// 	var eventIDs []string
+// 	for rows.Next() {
+// 		var id string
+// 		if err := rows.Scan(&id); err != nil {
+// 			continue
+// 		}
+// 		eventIDs = append(eventIDs, id)
+// 	}
+
+// 	if err := rows.Err(); err != nil {
+// 		loggers.Error.Printf("Error iterating over event IDs: %v", err)
+// 		return nil, err
+// 	}
+
+// 	return eventIDs, nil
+// }
+
+// TODO: Update Operations
+
+// TODO: Delete Operations
 
 // func (s *service) UpdateEventByID(eventID string, req models.UpdateEventRequest) error {
 // 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
@@ -289,7 +294,7 @@ func (s *service) CreateEvent(ctx context.Context, event models.Event, adminID s
 // 	return nil
 // }
 
-// // update event helper functions
+// update event helper functions
 // func (s *service) UpdateDynamicEventFields(tx *sql.Tx, eventID string, updatedData map[string]interface{}) error {
 // 	updateQuery := "UPDATE events SET "
 // 	var args []interface{}
@@ -410,93 +415,4 @@ func (s *service) CreateEvent(ctx context.Context, event models.Event, adminID s
 // 	}
 
 // 	return nil
-// }
-
-// func (s *service) GetEventByID(eventID string) (*models.Event, error) {
-// 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-// 	defer cancel()
-
-// 	// fetch the event details
-// 	const getEventQuery = `SELECT id, created_at, updated_at, event_name, date, description, content, is_draft, published_at FROM events WHERE id = $1`
-// 	row := s.db.QueryRowContext(ctx, getEventQuery, eventID)
-
-// 	var event models.Event
-// 	err := row.Scan(&event.ID, &event.CreatedAt, &event.UpdatedAt, &event.EventName, &event.Date, &event.Description, &event.Content, &event.IsDraft, &event.PublishedAt)
-// 	if err != nil {
-// 		loggers.Error.Printf("Error retrieving event: %v", err)
-// 		return nil, err
-// 	}
-
-// 	// fetch associated images
-// 	const getImagesQuery = `SELECT id, image_url, is_display FROM images WHERE event_id = $1`
-// 	images, err := s.getImagesByEventID(ctx, eventID)
-// 	if err != nil {
-// 		loggers.Error.Printf("Error retrieving images for event: %v", err)
-// 		return nil, err
-// 	}
-// 	event.Images = images
-
-// 	// fetch associated authors
-// 	authors, err := s.GetAuthorsByEventID(eventID)
-// 	if err != nil {
-// 		loggers.Error.Printf("Error retrieving authors for event: %v", err)
-// 		return nil, err
-// 	}
-// 	event.Authors = authors
-
-// 	return &event, nil
-// }
-
-// func (s *service) getLastSevenPublishedEventIDs() ([]string, error) {
-// 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-// 	defer cancel()
-
-// 	const getEventIDsQuery = `
-//     SELECT id FROM events
-//     WHERE is_draft = false
-//     ORDER BY published_at DESC
-//     LIMIT 7`
-
-// 	rows, err := s.db.QueryContext(ctx, getEventIDsQuery)
-// 	if err != nil {
-// 		loggers.Error.Printf("Error retrieving last seven published event IDs: %v", err)
-// 		return nil, err
-// 	}
-// 	defer rows.Close()
-
-// 	var eventIDs []string
-// 	for rows.Next() {
-// 		var id string
-// 		if err := rows.Scan(&id); err != nil {
-// 			continue
-// 		}
-// 		eventIDs = append(eventIDs, id)
-// 	}
-
-// 	if err := rows.Err(); err != nil {
-// 		loggers.Error.Printf("Error iterating over event IDs: %v", err)
-// 		return nil, err
-// 	}
-
-// 	return eventIDs, nil
-// }
-
-// func (s *service) GetLastSevenPublishedEvents() ([]models.Event, error) {
-// 	eventIDs, err := s.getLastSevenPublishedEventIDs()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	var events []models.Event
-// 	for _, id := range eventIDs {
-// 		event, err := s.GetEventByID(id)
-// 		if err != nil {
-// 			// log and skip this event
-// 			loggers.Error.Printf("Error retrieving event by ID: %v", err)
-// 			continue
-// 		}
-// 		events = append(events, *event)
-// 	}
-
-// 	return events, nil
 // }

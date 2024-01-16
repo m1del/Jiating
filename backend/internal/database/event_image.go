@@ -6,6 +6,7 @@ import (
 	"database/sql"
 )
 
+// Initialize image table in database on startup
 func createImageTable(db *sql.DB) error {
 	createImageTableSQL := `
     CREATE TABLE IF NOT EXISTS event_images (
@@ -26,7 +27,15 @@ func createImageTable(db *sql.DB) error {
 	return nil
 }
 
-func (s *service) addImageToEventTx(tx *sql.Tx, image models.EventImage, eventID string) error {
+// ========== CRUD OPERATIONS ========== //
+
+// ========== CREATE ========== //
+// Note: images aren't "created" per say
+// image metadata is created when an event is created
+// images are uploaded to s3 and the url is stored in the db
+
+// addImageToEventTx adds an image to an event in a transaction
+func (s *service) AddImageToEventTx(tx *sql.Tx, image models.EventImage, eventID string) error {
 	const query = `
 	INSERT INTO event_images(
 		id, created_at, image_url, 
@@ -43,32 +52,11 @@ func (s *service) addImageToEventTx(tx *sql.Tx, image models.EventImage, eventID
 	return nil
 }
 
-// func (s *service) AddImageToEvent(image models.EventImage, eventID string) error {
-// 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-// 	defer cancel()
+// ========== READ ========== //
 
-// 	const query = `INSERT INTO event_images (image_url, is_display, event_id) VALUES ($1, $2, $3)`
+// ========== UPDATE ========== //
 
-// 	_, err := s.db.ExecContext(ctx, query, image.ImageURL, image.IsDisplay, eventID)
-// 	if err != nil {
-// 		loggers.Error.Printf("Error adding image to event: %v", err)
-// 		return err
-// 	}
-
-// 	return nil
-// }
-
-// func (s *service) AddImageToEventTx(tx *sql.Tx, image models.EventImage, eventID string) error {
-// 	const query = `INSERT INTO event_images (
-// 		image_url, is_display, event_id, created_at, updated_at)
-// 		VALUES ($1, $2, $3, NOW(), NOW())`
-// 	_, err := tx.Exec(query, image.ImageURL, image.IsDisplay, eventID)
-// 	if err != nil {
-// 		loggers.Error.Printf("Error adding image to event: %v", err)
-// 		return err
-// 	}
-// 	return nil
-// }
+// ========== DELETE ========== //
 
 // func (s *service) RemoveImageFromEvent(imageID string) error {
 // 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
