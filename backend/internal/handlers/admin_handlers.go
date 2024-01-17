@@ -6,6 +6,7 @@ import (
 	"backend/loggers"
 	"encoding/json"
 	"net/http"
+	"net/url"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -134,6 +135,34 @@ func DeleteAdminByIDHandler(s database.Service) http.HandlerFunc {
 		// extract admin id from url
 		adminID := chi.URLParam(r, "adminID")
 		err := s.DeleteAdminByID(adminID)
+		if err != nil {
+			if err.Error() == "cannot delete a permanent admin" {
+				http.Error(w, "Forbidden", http.StatusForbidden)
+				return
+			}
+
+			loggers.Error.Printf("Error deleting admin: %v", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		// success response
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("Admin deleted successfully"))
+	}
+}
+
+func DeleteAdminByEmailHandler(s database.Service) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// extract admin email from url and decode
+		adminEmail := chi.URLParam(r, "adminEmail")
+		decodedEmail, err := url.QueryUnescape(adminEmail)
+		if err != nil {
+			loggers.Error.Printf("Error decoding admin email: %v", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		err = s.DeleteAdminByEmail(decodedEmail)
 		if err != nil {
 			if err.Error() == "cannot delete a permanent admin" {
 				http.Error(w, "Forbidden", http.StatusForbidden)

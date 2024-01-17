@@ -1,6 +1,8 @@
-import AdminForm from './AdminForm';
 import AdminList from './AdminList';
-import UserInfo from './UserInfo';
+import CreateAdmin from './CreateAdmin';
 import CreateEventButton from './CreateEventButton';
+import DeleteAdmin from './DeleteAdmin';
+import UserInfo from './UserInfo';
 
-export { AdminForm, AdminList, UserInfo, CreateEventButton };
+export { AdminList, CreateAdmin, CreateEventButton, DeleteAdmin, UserInfo };
+

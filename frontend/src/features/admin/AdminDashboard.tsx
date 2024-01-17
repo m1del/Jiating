@@ -4,9 +4,10 @@ import { useAuth } from '../../context/AuthContext';
 import { GoogleLogoutButton } from '../authentication';
 import CheckAuth from './CheckAuth';
 import {
-  AdminForm,
   AdminList,
+  CreateAdmin,
   CreateEventButton,
+  DeleteAdmin,
   UserInfo,
 } from './components';
 
@@ -23,7 +24,8 @@ const AdminDashboard = () => {
 
       {authUser && <UserInfo user={authUser} />}
 
-      <AdminForm />
+      <CreateAdmin />
+      <DeleteAdmin/>
       <AdminList />
 
       <CreateEventButton />

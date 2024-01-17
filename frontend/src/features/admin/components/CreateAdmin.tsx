@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { styles } from '../../../styles';
+import Button from './Button';
 
 type Admin = {
   name: string;
@@ -8,7 +9,7 @@ type Admin = {
   status: string;
 };
 
-function AdminForm() {
+function CreateAdmin() {
   const [admin, setAdmin] = useState<Admin>({
     name: '',
     email: '',
@@ -123,11 +124,11 @@ function AdminForm() {
           </svg>
         </div>
       </div>
-      <button type="submit" className={`${styles.button}`}>
-        Create Admin
-      </button>
+
+      
+      <Button buttonText="Create Admin" type="submit" additionalClasses={styles.button} />
     </form>
   );
 }
 
-export default AdminForm;
+export default CreateAdmin;
