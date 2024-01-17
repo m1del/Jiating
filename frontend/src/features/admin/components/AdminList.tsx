@@ -51,7 +51,7 @@ const AdminList: React.FC = () => {
   }
 
   return(
-    <div className='container mx-auto mb-5 p-6 max-w-4xl rounded-lg bg-white shadow-md'>
+    <div className='container m-auto p-6 rounded-lg bg-white shadow-md'>
       <div className='text-center'>
         <h2 className='mb-4 text-2xl font-semibold text-gray-700'>
           Admin Management
