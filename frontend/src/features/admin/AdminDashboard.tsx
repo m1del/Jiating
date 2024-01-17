@@ -1,4 +1,5 @@
 // components/AdminDashboard.tsx
+import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Button } from '../../components';
 import { useAuth } from '../../context/useAuth';
@@ -11,13 +12,19 @@ import {
   DeleteAdmin,
   UserInfo,
 } from './components';
-import DropdownMenu from './ui/Dropdown';
+import DropdownMenu from './form/Dropdown';
+import Position from './form/Position';
 
 const AdminDashboard = () => {
   const { authUser, isAuthenticated} = useAuth();
+  const [position, setPosition] = useState('');
 
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
+  }
+
+  const handlePositionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPosition(e.target.value);
   }
 
   return (
@@ -29,6 +36,9 @@ const AdminDashboard = () => {
             {authUser && <UserInfo user={authUser}/>}
 
             <DropdownMenu/>
+            <div className='m-4'>
+              <Position value={position} onChange={handlePositionChange}/>
+            </div>
 
             <Button 
               buttonText="Logout"
