@@ -1,36 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Navigate } from 'react-router-dom';
+import { useAuth } from '../../../context/useAuth';
 
-const ProtectedRoute: React.FC<React.PropsWithChildren<{}>> = ({ children }) => {
-    const [isLoading, setIsLoading] = useState(true);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-    useEffect(() => {
-        fetch('http://localhost:3000/auth/session-info', { credentials: 'include' })
-            .then(res => {
-                if (res.ok) {
-                    return res.json();
-                } else {
-                    throw new Error('Not Authenticated');
-                }
-            })
-            .then(data => {
-                setIsAuthenticated(data.authenticated);
-                setIsLoading(false);
-            })
-            .catch(error => {
-                console.error("Authentication error: ", error);
-                setIsLoading(false);
-            });
-    }, []);
-
-    if (isLoading) {
-        return <div>Loading...</div>;
-    }
-
-    // If the user is authenticated, return the protected component
-    // Else, redirect the user to the home lol TODO: add need to login message in a page?
-    return isAuthenticated ? children : <Navigate to="/" />;
+type ProtectedRouteProps = {
+    children: React.ReactNode;
 };
+const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+  const { isAuthenticated } = useAuth();
+
+  if (isAuthenticated === undefined) {
+    // auth status is unknown, show loading TODO: add loading spinner
+    return <div>Loading...</div>;
+  }
+
+  if (!isAuthenticated) {
+    // not authenticated, redirect to login //TODO nothing exists on this route, (how do we want to handle this?)
+    return <Navigate to="/login" />;
+  }
+  // authenticated, render the protected content
+  return <>{children}</>;
+};
+
 
 export default ProtectedRoute;

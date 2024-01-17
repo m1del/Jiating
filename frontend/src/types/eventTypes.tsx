@@ -1,4 +1,4 @@
-type Admin = {
+export type Admin = {
   id: string;
   created_at: string;
   updated_at: string;
@@ -10,7 +10,7 @@ type Admin = {
   events: Array<EventAuthor>;
 };
 
-type EventData = {
+export type EventData = {
   id: string;
   created_at: string | null;
   updated_at: string | null;
@@ -24,12 +24,12 @@ type EventData = {
   authors: Array<Admin>;
 };
 
-type EventAuthor = {
+export type EventAuthor = {
   admin_id: string;
   event_id: string;
 };
 
-type EventImage = {
+export type EventImage = {
   id: string; // primary key, UUID
   created_at: string; // time of creation
   updated_at: string; // time of last update
@@ -37,7 +37,7 @@ type EventImage = {
   is_display: boolean; // if the image is the display image for the event
 };
 
-type UpdateEventRequest = {
+export type UpdateEventRequest = {
   updated_data: object;
   new_images: Array<EventImage>;
   removed_image_ids: Array<string>;
@@ -45,7 +45,7 @@ type UpdateEventRequest = {
   editor_admin_id: string;
 };
 
-type CreateEventRequest = {
+export type CreateEventRequest = {
   event_name: string;
   date: string;
   description: string;
@@ -55,11 +55,3 @@ type CreateEventRequest = {
   author_ids: Array<string>;
 };
 
-export type {
-  Admin,
-  EventData,
-  EventAuthor,
-  EventImage,
-  UpdateEventRequest,
-  CreateEventRequest,
-};

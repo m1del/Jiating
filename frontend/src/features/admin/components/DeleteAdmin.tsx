@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Modal } from '../../../components';
-import Button from './Button';
+import { Button, Modal } from '../../../components';
 
 function DeleteAdmin() {
   const [email, setEmail] = useState('');

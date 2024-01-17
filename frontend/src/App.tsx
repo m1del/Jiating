@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { Event, Footer, Navbar } from './components';
 import { AuthProvider } from './context/AuthContext';
@@ -6,7 +6,6 @@ import AdminDashboard from './features/admin/AdminDashboard';
 import ProtectedRoute from './features/authentication/components/ProtectedRoute';
 import Media from './features/media/Media';
 import { Contact, CreateEvent, Events, Home } from './pages';
-import { styles } from './styles';
 
 function App() {
   const [intersecting, setIntersecting] = useState(true);

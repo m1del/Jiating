@@ -3,6 +3,7 @@ import Modal from './Modal';
 import Navbar from './Navbar';
 import Event from './events/Event';
 import EmailForm from './form/EmailForm';
+import Button from './ui/Button';
 
-export { EmailForm, Event, Footer, Modal, Navbar };
+export { Button, EmailForm, Event, Footer, Modal, Navbar };
 

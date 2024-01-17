@@ -1,9 +1,9 @@
 import {
   CreateEventRequest,
-  UpdateEventRequest,
   EventData,
   EventImage,
-} from '../../components/events/EventModel';
+  UpdateEventRequest,
+} from '../types/eventTypes';
 
 const getAdminByEmail = async (
   adminEmail: string | undefined,
@@ -134,4 +134,5 @@ const updateEvent = async (
 //   }
 // }
 
-export { getAdminByEmail, createEvent, updateEvent };
+export { createEvent, getAdminByEmail, updateEvent };
+

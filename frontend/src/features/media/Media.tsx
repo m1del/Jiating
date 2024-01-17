@@ -17,7 +17,7 @@ function Media() {
     useEffect(() => {
         const fetchYears = async () => {
             try {
-                const response = await fetch('http://localhost:3000/api/get/photoshoot-years');
+                const response = await fetch('http://localhost:3000/api/photoshoot/years');
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
@@ -38,7 +38,7 @@ function Media() {
         setLoadingEvents(true);
 
         try {
-            const response = await fetch(`http://localhost:3000/api/get/photoshoot-events/${year}`);
+            const response = await fetch(`http://localhost:3000/api/photoshoot/events/${year}`);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -55,7 +55,7 @@ function Media() {
     const handleEventSelect = async (event: string) => {
         setLoadingPhotos(true);
         try {
-            const response = await fetch(`http://localhost:3000/api/get/photoshoot-photos/${selectedYear}/${event}`);
+            const response = await fetch(`http://localhost:3000/api/photoshoot/photos/${selectedYear}/${event}`);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }

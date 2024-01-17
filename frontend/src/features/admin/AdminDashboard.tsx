@@ -1,8 +1,8 @@
 // components/AdminDashboard.tsx
-import { useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { GoogleLogoutButton } from '../authentication';
-import CheckAuth from './CheckAuth';
+import { Navigate } from 'react-router-dom';
+import { Button } from '../../components';
+import { useAuth } from '../../context/useAuth';
+import { logoutGoogleUser } from '../../services/authService';
 import {
   AdminList,
   CreateAdmin,
@@ -12,11 +12,11 @@ import {
 } from './components';
 
 const AdminDashboard = () => {
-  const { authUser, setAuthUser, setIsLoggedin } = useAuth();
+  const { authUser, isAuthenticated} = useAuth();
 
-  useEffect(() => {
-    CheckAuth(setAuthUser, setIsLoggedin);
-  }, [setAuthUser, setIsLoggedin]);
+  if (!isAuthenticated) {
+    return <Navigate to="/login" />;
+  }
 
   return (
     <div className="flex flex-col items-center justify-center rounded-lg bg-gray-100 p-10 shadow-md">
@@ -31,7 +31,11 @@ const AdminDashboard = () => {
       <CreateEventButton />
 
       <div className="mt-5">
-        <GoogleLogoutButton />
+        <Button 
+          buttonText="Logout"
+          onClick={() => logoutGoogleUser()}
+          additionalClasses="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+        />
       </div>
     </div>
   );
