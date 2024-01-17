@@ -1,48 +1,28 @@
 package misc
 
-// func Seed(dbService database.Service, numAdmins, numEvents, maxImagesPerEvent int) error {
+import (
+	"backend/internal/database"
+	"backend/internal/models"
+	"context"
+	"math/rand"
+)
 
-// 	// Generate and insert Admins
-// 	var adminIDs []string
-// 	for i := 0; i < numAdmins; i++ {
-// 		admin := createRandomAdmin()
-// 		adminID, err := dbService.CreateAdmin(admin)
-// 		if err != nil {
-// 			return err
-// 		}
-// 		adminIDs = append(adminIDs, adminID)
-// 	}
+func Seed(dbService database.Service, numAdmins, numEvents, maxImagesPerEvent int) error {
 
-// 	// Generate and insert Events
-// 	for i := 0; i < numEvents; i++ {
-// 		eventRequest := createRandomEventRequest(adminIDs, maxImagesPerEvent)
+	// Generate and insert Admins
+	var adminIDs []string
+	for i := 0; i < numAdmins; i++ {
+		admin := createRandomAdmin()
+		adminID, err := dbService.CreateAdmin(context.Background(), admin)
+		if err != nil {
+			return err
+		}
+		adminIDs = append(adminIDs, adminID)
+	}
 
-// 		// Validate and log the admin IDs
-// 		for _, adminID := range eventRequest.AuthorIDs {
-// 			if adminID == "" {
-// 				loggers.Error.Printf("Found empty admin ID")
-// 				return fmt.Errorf("empty admin ID found")
-// 			}
-// 		}
-
-// 		newEvent := models.Event{
-// 			EventName:   eventRequest.EventName,
-// 			Date:        eventRequest.Date,
-// 			Description: eventRequest.Description,
-// 			Content:     eventRequest.Content,
-// 			IsDraft:     eventRequest.IsDraft,
-// 			Images:      eventRequest.Images,
-// 		}
-
-// 		// Insert event using the database service
-// 		_, err := dbService.CreateEvent(newEvent, eventRequest.AuthorIDs)
-// 		if err != nil {
-// 			return err
-// 		}
-// 	}
-
-// 	return nil
-// }
+	//TODO: Generate and insert Events
+	return nil
+}
 
 // func createRandomEventRequest(adminIDs []string, maxImagesPerEvent int) models.CreateEventRequest {
 
@@ -67,23 +47,23 @@ package misc
 // 	}
 // }
 
-// func createRandomAdmin() models.Admin {
-// 	return models.Admin{
-// 		Name:     randomString(10),
-// 		Email:    randomString(10) + "@example.com",
-// 		Position: randomString(10),
-// 		Status:   "active",
-// 	}
-// }
+func createRandomAdmin() models.Admin {
+	return models.Admin{
+		Name:     randomString(10),
+		Email:    randomString(10) + "@example.com",
+		Position: randomString(10),
+		Status:   "active",
+	}
+}
 
-// func randomString(length int) string {
-// 	letters := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-// 	b := make([]byte, length)
-// 	for i := range b {
-// 		b[i] = letters[rand.Intn(len(letters))]
-// 	}
-// 	return string(b)
-// }
+func randomString(length int) string {
+	letters := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
+}
 
 // func selectRandomAdmins(adminIDs []string) []string {
 // 	rand.Shuffle(len(adminIDs), func(i, j int) {

@@ -92,9 +92,24 @@ func GetAllAdminsHandler(fetchFunc database.AdminFetchFunc, s database.Service) 
 			return
 		}
 
+		totalCount, err := s.GetAdminCount(r.Context())
+		if err != nil {
+			loggers.Error.Printf("getting total admin count: %v", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		response := struct {
+			Admins     []models.Admin `json:"admins"`
+			TotalCount int            `json:"totalCount"`
+		}{
+			Admins:     admins,
+			TotalCount: totalCount,
+		}
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		if err := json.NewEncoder(w).Encode(admins); err != nil {
+		if err := json.NewEncoder(w).Encode(response); err != nil {
 			loggers.Error.Printf("Error writing response: %v", err)
 		}
 	}

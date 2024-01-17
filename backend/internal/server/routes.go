@@ -67,7 +67,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 			r.With().Put("/{id}", handlers.UpdateAdminHandler(s.db))
 
-			r.With().Delete("/{param}", handlers.DeleteAdminHandler(s.db))
+			r.With().Delete("/{param}", handlers.DeleteAdminHandler(s.db)) //TODO implement
 
 			// //r.With().Post("/associate-with-event", handlers.AssociateAdminWithEventHandler(s.db))
 			// r.With().Delete("/delete-by-id/{adminID}", handlers.DeleteAdminByIDHandler(s.db))
