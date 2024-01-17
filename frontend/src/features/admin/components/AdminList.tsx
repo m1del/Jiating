@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Button } from '../../../components';
 
 type Admin = {
   id: string;
@@ -45,12 +46,17 @@ const AdminList: React.FC = () => {
     setCurrentPage(page);
   };
 
+  const refreshData = () => {
+    fetchAdmins(currentPage);
+  }
+
   return(
     <div className='container mx-auto mb-5 p-6 max-w-4xl rounded-lg bg-white shadow-md'>
       <div className='text-center'>
         <h2 className='mb-4 text-2xl font-semibold text-gray-700'>
           Admin Management
         </h2>
+      <Button buttonText='Refresh' type='submit'onClick={refreshData}/>
       </div>
 
       {error && (

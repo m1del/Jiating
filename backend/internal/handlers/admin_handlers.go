@@ -9,6 +9,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -38,6 +39,11 @@ func CreateAdminHandler(s database.Service) http.HandlerFunc {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
+		admin.Name = strings.ToLower(admin.Name)
+		admin.Email = strings.ToLower(admin.Email)
+		admin.Status = strings.ToLower(admin.Status)
+		admin.Position = strings.ToLower(admin.Position)
+
 		ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
 		defer cancel()
 
