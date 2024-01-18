@@ -13,7 +13,7 @@ type UserInfoProps = {
 
 const UserInfo: React.FC<UserInfoProps> = ({ user }) => {
   return (
-    <div className="flex flex-col items-center justify-center rounded-lg bg-white p-4 shadow">
+    <div className="flex flex-col items-center justify-center rounded-lg bg-white p-4 ">
       <img
         className="m-3 h-24 w-24 rounded-full border-2 border-gray-300"
         src={user.avatar_url}
