@@ -31,7 +31,7 @@ func (s *service) GetAuthCallbackHandler() http.HandlerFunc {
 		}
 
 		// check if authenticated user is an admin in the database
-		admin, err := s.db.GetAdminByEmail(user.Email)
+		admin, err := s.db.GetAdmin(context.Background(), "email", user.Email)
 		if err != nil {
 			if err == sql.ErrNoRows {
 				loggers.Debug.Printf("No admin found with email %v", user.Email)
@@ -99,6 +99,10 @@ func (s *service) LogoutHandler() http.HandlerFunc {
 			session.Values["email"] = nil
 			session.Values["avatar_url"] = nil
 
+			// delete admin data
+			session.Values["adminID"] = nil
+			session.Values["adminPosition"] = nil
+
 			session.Options.MaxAge = -1
 			// save changes
 			session.Save(r, w)
@@ -137,6 +141,10 @@ func (s *service) SessionInfoHandler() http.HandlerFunc {
 			"name":          session.Values["name"],
 			"email":         session.Values["email"],
 			"avatar_url":    session.Values["avatar_url"],
+
+			// admin info
+			"adminID":       session.Values["adminID"],
+			"adminPosition": session.Values["adminPosition"],
 		}
 		json.NewEncoder(w).Encode(userInfo)
 	}

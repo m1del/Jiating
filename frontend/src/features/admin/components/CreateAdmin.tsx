@@ -53,7 +53,7 @@ function CreateAdmin() {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/api/admin/create', {
+      const response = await fetch('http://localhost:3000/api/admins', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
