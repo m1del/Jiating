@@ -33,20 +33,6 @@ type Event struct {
 	Authors     []Admin      `json:"authors"`      // authors associated with the event
 }
 
-type CreateEventRequest struct {
-	ID          string       `json:"id"` //UUID, optional, if not provided, will be generated in db
-	EventTitle  string       `json:"event_title" validate:"nonzero"`
-	Metatitle   string       `json:"meta_title" validate:"nonzero"`
-	Slug        string       `json:"slug" validate:"nonzero"`
-	Date        time.Time    `json:"date"` // ISO8601
-	Description string       `json:"description"`
-	Content     string       `json:"content"`
-	IsDraft     bool         `json:"is_draft"`
-	PublishedAt *time.Time   `json:"published_at"`
-	Images      []EventImage `json:"images"`
-	AuthorID    string       `json:"author_id"` // UUID, CRUD: only one user can create/modifiy an event at a time
-}
-
 type EventAuthor struct {
 	AdminID string `json:"admin_id"` // foreign key to admin
 	EventID string `json:"event_id"` // foreign key to event
@@ -61,6 +47,20 @@ type EventImage struct {
 }
 
 // http requests
+type CreateEventRequest struct {
+	ID          string       `json:"id"` //UUID, optional, if not provided, will be generated in db
+	EventTitle  string       `json:"event_title" validate:"nonzero"`
+	Metatitle   string       `json:"meta_title" validate:"nonzero"`
+	Slug        string       `json:"slug" validate:"nonzero"`
+	Date        time.Time    `json:"date"` // ISO8601
+	Description string       `json:"description"`
+	Content     string       `json:"content"`
+	IsDraft     bool         `json:"is_draft"`
+	PublishedAt *time.Time   `json:"published_at"`
+	Images      []EventImage `json:"images"`
+	AuthorID    string       `json:"author_id"` // UUID, CRUD: only one user can create/modifiy an event at a time
+}
+
 type AdminUpdateData struct {
 	Name     string
 	Position string
