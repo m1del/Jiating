@@ -21,11 +21,11 @@ type Service interface {
 	GetPhotoshootPhotos(ctx context.Context, year, event string) ([]string, error)
 
 	// events image upload using presigned urls
-	GenerateEventImageUploadURL(eventID, filename string, lifetimeSecs int64) (string, error)
-	DevGenerateEventImageUploadURL(eventID, filename string, lifetimeSecs int64) (string, error)
+	GenerateEventImageUploadURL(ctx context.Context, eventID, filename string, lifetimeSecs int64) (string, error)
+	DevGenerateEventImageUploadURL(ctx context.Context, eventID, filename string, lifetimeSecs int64) (string, error)
 
 	// generic
-	GetPresignedURL(bucket, key string, lifetimeSecs int64) (string, error)
+	GetPresignedURL(ctx context.Context, bucket, key string, lifetimeSecs int64) (string, error)
 }
 
 // S3ClientAPI defines the methods used from the S3 client.
@@ -35,9 +35,9 @@ type S3ClientAPI interface {
 
 // PresignerAPI defines the methods used from the presigner.
 type PresignerAPI interface {
-	GetObject(bucketName string, objectKey string, lifetimeSecs int64) (*v4.PresignedHTTPRequest, error)
-	PutObject(bucketName string, objectKey string, lifetimeSecs int64) (*v4.PresignedHTTPRequest, error)
-	DeleteObject(bucketName string, objectKey string) (*v4.PresignedHTTPRequest, error)
+	GetObject(ctx context.Context, bucketName string, objectKey string, lifetimeSecs int64) (*v4.PresignedHTTPRequest, error)
+	PutObject(ctx context.Context, bucketName string, objectKey string, lifetimeSecs int64) (*v4.PresignedHTTPRequest, error)
+	DeleteObject(ctx context.Context, bucketName string, objectKey string) (*v4.PresignedHTTPRequest, error)
 }
 
 // service struct
@@ -82,8 +82,8 @@ func NewAWSConfig() (aws.Config, error) {
 	return cfg, nil
 }
 
-func (s *service) GetPresignedURL(bucket, key string, lifetimeSecs int64) (string, error) {
-	request, err := s.presigner.GetObject(bucket, key, lifetimeSecs)
+func (s *service) GetPresignedURL(ctx context.Context, bucket, key string, lifetimeSecs int64) (string, error) {
+	request, err := s.presigner.GetObject(ctx, bucket, key, lifetimeSecs)
 	if err != nil {
 		return "", err
 	}

@@ -120,7 +120,7 @@ func (s *service) GetPhotoshootPhotos(ctx context.Context, year, event string) (
 
 	var photoURLs []string
 	for _, content := range output.Contents {
-		request, err := s.presigner.GetObject(bucket, *content.Key, 900) // 900 seconds = 15 minutes
+		request, err := s.presigner.GetObject(ctx, bucket, *content.Key, 900) // 900 seconds = 15 minutes
 		if err != nil {
 			log.Printf("failed to create presigned URL for %s: %v", *content.Key, err)
 			continue // log error and continue with the next object
