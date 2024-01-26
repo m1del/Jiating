@@ -26,7 +26,7 @@ type Presigner struct {
 // The presigned request is valid for the specified number of seconds.
 func (presigner Presigner) GetObject(ctx context.Context,
 	bucketName string, objectKey string, lifetimeSecs int64) (*v4.PresignedHTTPRequest, error) {
-	request, err := presigner.PresignClient.PresignGetObject(context.TODO(), &s3.GetObjectInput{
+	request, err := presigner.PresignClient.PresignGetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(objectKey),
 	}, func(opts *s3.PresignOptions) {
@@ -43,7 +43,7 @@ func (presigner Presigner) GetObject(ctx context.Context,
 // The presigned request is valid for the specified number of seconds.
 func (presigner Presigner) PutObject(ctx context.Context,
 	bucketName string, objectKey string, lifetimeSecs int64) (*v4.PresignedHTTPRequest, error) {
-	request, err := presigner.PresignClient.PresignPutObject(context.TODO(), &s3.PutObjectInput{
+	request, err := presigner.PresignClient.PresignPutObject(ctx, &s3.PutObjectInput{
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(objectKey),
 	}, func(opts *s3.PresignOptions) {
@@ -59,7 +59,7 @@ func (presigner Presigner) PutObject(ctx context.Context,
 // DeleteObject makes a presigned request that can be used to delete an object from a bucket.
 func (presigner Presigner) DeleteObject(ctx context.Context,
 	bucketName string, objectKey string) (*v4.PresignedHTTPRequest, error) {
-	request, err := presigner.PresignClient.PresignDeleteObject(context.TODO(), &s3.DeleteObjectInput{
+	request, err := presigner.PresignClient.PresignDeleteObject(ctx, &s3.DeleteObjectInput{
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(objectKey),
 	})

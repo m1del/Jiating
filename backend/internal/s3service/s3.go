@@ -71,7 +71,7 @@ func NewService() Service {
 
 // newAWSConfig creates and returns a new AWS configuration.
 func NewAWSConfig() (aws.Config, error) {
-	cfg, err := config.LoadDefaultConfig(context.TODO(),
+	cfg, err := config.LoadDefaultConfig(context.Background(),
 		config.WithRegion(os.Getenv("AWS_REGION")),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(os.Getenv("AWS_ACCESS_KEY_ID"), os.Getenv("AWS_SECRET_ACCESS_KEY"), "")),
 	)
